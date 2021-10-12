@@ -15,7 +15,7 @@
 //Variables passed from the calling file using includeWithVariables()
 
 //Heredoc syntax start ID - do not indent or follow with chars
-$hb_form_variables = <<<HTML
+$output_with_variables = <<<HTML
 
         <form class="HB__form" id="jsFormHandler" method="post" autocomplete="on">
 
@@ -64,4 +64,4 @@ $hb_form_variables = <<<HTML
         </form>
 
 HTML;
-echo $hb_form_variables;
+echo $output_with_variables;

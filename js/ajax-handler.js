@@ -35,7 +35,7 @@
                 type: "POST",
                 // Post to PHP handler
                 // Note non-.php URI otherwise Nginx drops message contents on redirect
-                url: hb_contact_form_vars.plugin_directory + 'parts/smtp-handler.php',
+                url: hb_contact_form_vars.plugin_directory + 'functions/class-smtp-send.php',
                 data: $form.serialize(),
                 // Use success callback to call this function
                 success: afterFormSubmission,

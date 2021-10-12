@@ -1,4 +1,5 @@
 <?php
+namespace Jefferson\HB_Contact_Form;
 
 /**
  * Herringbone Contact Form Widget.
@@ -12,29 +13,28 @@
  * @copyright Copyright (c) 2021, Jefferson Real
  * @license GPL2+
  */
+use WP_Widget;
 
-
-class HB_Contact_Form_Widget extends WP_Widget {
+class Widget extends WP_Widget {
 
 
     /**
      * Construct the contact form widget.
      */
-    function __construct() {
+    public function __construct() {
 
-    $widget_options = array (
-        'classname' => 'HB_Contact_Form_Widget',
-        'description' => 'Add an SMTP contact form.'
-    );
-    parent::__construct( 'HB_Contact_Form_Widget', 'HB Contact Form', $widget_options );
-
+        $widget_options = array (
+            'classname' => 'Widget',
+            'description' => 'Add an SMTP contact form.'
+        );
+        parent::__construct( 'Widget', 'HB Contact Form', $widget_options );
     }
 
 
     /**
      * output the contact form widget settings form.
      */
-    function form( $instance ) {
+    public function form( $instance ) {
 
         $title = ! empty( $instance[ 'title' ] ) ? $instance[ 'title' ] : 'HB Contact Form';
         $message = ! empty( $instance['message'] ) ? $instance['message'] : 'Complete this contact form to send me a message';
@@ -57,7 +57,7 @@ class HB_Contact_Form_Widget extends WP_Widget {
     /**
      * display the contact form widget on the front end.
      */
-    function widget( $args, $instance ) {
+    public function widget( $args, $instance ) {
 
         //enqueue contact form and styles
         wp_enqueue_script('hb_contact_form_js');
@@ -72,13 +72,15 @@ class HB_Contact_Form_Widget extends WP_Widget {
 
             //include the form template with the widget vars
             //custom function defined in hb-contact-form.php
-            $hb_form_variables = hb_include_with_variables(
-                plugin_dir_path( __FILE__ ) . 'hb-contact-form.php',
+            $output_with_variables = Init::include_with_variables(
+                plugin_dir_path( __DIR__ ) . 'parts/form.php',
+
                 array(
                     'title' => $title,
                     'message' => $message,
                 )
             );
+            //echo $output_with_variables;
 
         echo $args[ 'after_widget' ];
 
@@ -88,20 +90,13 @@ class HB_Contact_Form_Widget extends WP_Widget {
     /**
      * define the data saved by the contact form widget.
      */
-    function update( $new_instance, $old_instance ) {
+    public function update( $new_instance, $old_instance ) {
         $instance = $old_instance;
         $instance[ 'title' ] = strip_tags( $new_instance[ 'title' ] );
         $instance[ 'message' ] = strip_tags( $new_instance[ 'message' ] );
         return $instance;
     }
 
-} // Class HB_Contact_Form_Widget end
+} // Class Widget end
 
 
-/**
- * Register and load the contact form widget.
- */
-function hb_contact_form_load_widget() {
-    register_widget( 'HB_Contact_Form_Widget' );
-}
-add_action( 'widgets_init', 'hb_contact_form_load_widget' );
