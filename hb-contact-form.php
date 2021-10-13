@@ -50,5 +50,4 @@ add_action( 'widgets_init', [ new Widget, '__construct' ] );
 /**
  * Add the admin user interface.
  */
-add_action( 'admin_menu', [ new Admin_Settings, 'add_admin_menu' ] );
-add_action( 'admin_init', [ new Admin_Settings, 'contact_form_settings_page_setup' ] );
+new Admin_Settings();

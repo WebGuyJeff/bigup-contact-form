@@ -17,6 +17,9 @@ namespace Jefferson\HB_Contact_Form;
 class Admin_Settings {
 
     public function __construct() {
+
+        add_action( 'admin_menu', [ &$this, 'register_sub_menu' ], 99 );
+        add_action( 'admin_init', [ &$this, 'page_setup' ] );
     }
 
     public $icon = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMzIgMTMyIj48cGF0aCBkPSJNMCAwdjEzYzAgNSAwIDEwIDggMTNsNTggMjcgNTgtMjdjOC0zIDgtOCA4LTEzVjBMNzQgMjZjLTggNC04IDktOCAxNCAwLTUgMC0xMC04LTE0em0wIDQwdjEzYzAgNCAwIDEwIDggMTNsNTggMjcgNTgtMjdjOC0zIDgtOSA4LTEzVjQwTDc0IDY2Yy04IDQtOCA5LTggMTMgMC00IDAtOS04LTEzem0wIDM5djE0YzAgNCAwIDkgOCAxM2w1OCAyNiA1OC0yNmM4LTQgOC05IDgtMTNWNzlsLTU4IDI3Yy04IDMtOCA5LTggMTMgMC00IDAtMTAtOC0xM3oiLz48L3N2Zz4=';
@@ -24,14 +27,15 @@ class Admin_Settings {
     /**
      * Add Herringbone admin menu option to sidebar
      */
-    public function add_admin_menu() {
+    public function register_sub_menu() {
         add_submenu_page(
-            'herringbone-settings',
-            'Contact Form Settings',
-            'Contact Form Settings',
-            'manage_options',
-            'contact-form-settings-page',
-            [ new Admin_Settings, 'contact_form_settings_page' ]
+            'herringbone-settings',                   //parent_slug
+            'Contact Form Settings',                  //page_title
+            'Contact Form',                           //menu_title
+            'manage_options',                         //capability
+            'contact-form-settings',                  //menu_slug
+            [ &$this, 'contact_form_settings_page' ], //function
+            null,                                     //position
         );
     }
 
@@ -73,11 +77,11 @@ class Admin_Settings {
     /**
      * Tell WordPress to build the admin page
      */
-    public function contact_form_settings_page_setup() {
+    public function page_setup() {
         add_settings_section( 'section', 'SMTP Account', null, 'contact_form_options' );
-        add_settings_field( 'username', 'Username', [ new Admin_Settings, 'setting_username' ], 'contact_form_options', 'section' );
-        add_settings_field( 'password', 'Password', [ new Admin_Settings, 'setting_password' ], 'contact_form_options', 'section' );
-        add_settings_field( 'recipient_email', 'Recipient Email', [ new Admin_Settings, 'setting_recipient_email' ], 'contact_form_options', 'section' );
+        add_settings_field( 'username', 'Username', [ &$this, 'setting_username' ], 'contact_form_options', 'section' );
+        add_settings_field( 'password', 'Password', [ &$this, 'setting_password' ], 'contact_form_options', 'section' );
+        add_settings_field( 'recipient_email', 'Recipient Email', [ &$this, 'setting_recipient_email' ], 'contact_form_options', 'section' );
 
         register_setting( 'section', 'username' );
         register_setting( 'section', 'password' );

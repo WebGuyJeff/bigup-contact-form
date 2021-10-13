@@ -80,7 +80,7 @@ class Widget extends WP_Widget {
                     'message' => $message,
                 )
             );
-            //echo $output_with_variables;
+            echo $output_with_variables;
 
         echo $args[ 'after_widget' ];
 
