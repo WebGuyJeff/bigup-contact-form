@@ -25,47 +25,55 @@ class SMTP_Send {
 
     public function compile_email() {
 
+        // Assign form contents to variables
+        $name = $_POST[ 'phpInputName' ];
+        $email = $_POST[ 'phpInputEmail' ];
+        $message = $_POST[ 'phpInputMessage' ];
 
         // Local variables
-        $username = //db setting
-        $password = //d bsetting
-        $site_url = get_bloginfo( 'url' );
-        $admin_email = get_bloginfo( 'admin_email' );
+        $smtp_username = //db setting
+        $smtp_password = //db setting
+        $smtp_host     = 'smtp.office365.com';
+        $smtp_port     = '587';
+        $smtp_auth     = true;
+
+        $site_url         = get_bloginfo( 'url' );
+        $site_name        = get_bloginfo( 'name' );
+        $site_admin_email = get_bloginfo( 'admin_email' );
 
         // Specify the recipient email of form entries
-        $to = $admin_email;
+        $headers_from     = //db setting || $site_admin_email;
+        $headers_to       = //db setting || $site_admin_email;
+        $headers_subject  = 'Message from: ' . $name . ' via ' . $site_url;
+        $headers_reply_to = $email;
 
-        // Assign form contents to variables
-        $field_name = $_POST[ 'phpInputName' ];
-        $field_email = $_POST[ 'phpInputEmail' ];
-        $field_message = $_POST[ 'phpInputMessage' ];
-
-        // Build email content from form variables
-        $body_message = "[ This message was submitted via the contact form at " . $site_url . " ]\n\n";
-        $body_message .= 'From: '.$field_name."\n";
-        $body_message .= 'E-mail: '.$field_email."\n\n";
-        $body_message .= 'Message: '.$field_message;
+        // Build email content from form inputs
+        $n = "\n";
+        $body_message  = "This message was sent via the contact form at {$site_url}";
+        $body_message .= "{$n}{$n}From: {$name}";
+        $body_message .= "{$n}E-mail: {$email}";
+        $body_message .= "{$n}{$n}{$message}";
         $body = $body_message;
 
         // Declare mail headers
         $headers = array(
-            'From' => $to,
-            'To' => $to,
-            'Subject' => 'Message from: ' . $field_name . ' via ' . $site_url,
-            'Reply-To' => $field_email
+            'To'        => $headers_to,
+            'From'      => $headers_from,
+            'Reply-To'  => $headers_reply_to,
+            'Subject'   => $headers_subject
         );
 
-        // SMTP Outlook Settings
+        // Declare SMTP account settings
         $smtp = Mail::factory( 'smtp', array(
-            'host' => 'smtp.office365.com',
-            'port' => '587',
-            'auth' => true,
-            'username' => $username,
-            'password' => $password
+            'host'      => $smtp_host,
+            'port'      => $smtp_port,
+            'auth'      => $smtp_auth,
+            'username'  => $smtp_username,
+            'password'  => $smtp_password
         ) );
 
-        // Compose and send email
-        $mail = $smtp->send( $to, $headers, $body );
+        // Compose/send email and send a response to caller (front end js)
+        $mail = $smtp->send( $headers_to, $headers, $body );
         $response = array( "result" => "success" );
         echo json_encode( $response );
 

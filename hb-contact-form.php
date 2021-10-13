@@ -50,4 +50,6 @@ add_action( 'widgets_init', [ new Widget, '__construct' ] );
 /**
  * Add the admin user interface.
  */
-new Admin_Settings();
+if ( is_admin() ){
+    new Admin_Settings();
+}
