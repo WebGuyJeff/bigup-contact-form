@@ -15,6 +15,18 @@ namespace Jefferson\HB_Contact_Form;
  * @license GPL2+
  */
 
+//Import PHPMailer classes into the global namespace
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\SMTP;
+use PHPMailer\PHPMailer\Exception;
+
+//Load Composer's autoloader
+require 'vendor/autoload.php';
+
+//https://github.com/PHPMailer/PHPMailer
+
+
+
 // PHPMailer Library Dependency
 require_once "Mail.php";
 
