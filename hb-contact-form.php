@@ -15,6 +15,8 @@ namespace Jefferson\HB_Contact_Form;
  *
  * Provides a PHPMailer SMTP contact form which can be placed as a widget or using
  * a shortcode. The dependency PHPMailer is included with this plugin.
+ * 
+ * This core file acts as a loader init the plugin.
  *
  * @package Herringbone
  * @subpackage HB_Contact_Form
@@ -27,6 +29,22 @@ namespace Jefferson\HB_Contact_Form;
  * Load the PHP autoloader from it's own file
  */
 require_once( plugin_dir_path( __FILE__ ) . 'functions/autoload.php');
+
+
+/**
+ * Load the PHP autoloader from it's own file
+ */
+require_once( plugin_dir_path( __FILE__ ) . 'functions/autoload.php');
+
+
+/**
+ * Add hooks to safely handle ajax form submission the WordPress way.
+ * 
+ * The first is called for logged in users only, the second for all users submitting the form.
+ * If both logged in and not logged in users are to submit, both actions must be included!
+ */
+add_action( "wp_ajax_hb_contact_form_submit", "form_submission_logged_in_users_only" );
+add_action( "wp_ajax_nopriv_hb_contact_form_submit", "form_submission_all_users" );
 
 
 /**
@@ -44,7 +62,7 @@ add_shortcode( 'hb_contact_form', [ new Shortcode, 'display_shortcode' ] );
 /**
  * Register and load the contact form widget.
  */
-add_action( 'widgets_init', [ new Widget, '__construct' ] );
+add_action( 'widgets_init', new Widget );
 
 
 /**

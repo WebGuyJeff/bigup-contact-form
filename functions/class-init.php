@@ -21,14 +21,16 @@ class Init {
      */
     public static function register_scripts_and_styles() {
    
-
         function localize_vars() {
             return array(
-                'plugin_directory' => plugin_dir_url( __DIR__ )
-            );  // access in js: hb_contact_form_vars.plugin_directory
+                'handler_url' => plugin_dir_url( __DIR__ ) . 'parts/form-handler.php',
+                'wp_ajax_url' => admin_url( 'admin-ajax.php' )
+            );
+            // To access in js: hb_contact_form_vars.plugin_directory
         }
-        wp_register_script ('hb_contact_form_js', plugins_url ( 'js/ajax-handler.js', __DIR__ ), array( 'jquery' ), '0.5', false);
+        wp_register_script ( 'hb_contact_form_js', plugins_url ( 'js/ajax-handler.js', __DIR__ ), array( 'jquery' ), '0.5', false );
         wp_localize_script( 'hb_contact_form_js', 'hb_contact_form_vars', localize_vars() );
+
         wp_register_style( 'hb_contact_form_css', plugins_url ( 'css/hb-contact-form.css', __DIR__ ), array(), '0.1', 'all' );
     }
 

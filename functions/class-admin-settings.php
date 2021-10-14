@@ -27,14 +27,30 @@ namespace Jefferson\HB_Contact_Form;
 class Admin_Settings {
 
 
-    public function __construct() {
+    /**
+     * Settings group name called by settings_fields().
+     */
+    public $group_name = 'group_contact_form_settings';
 
+
+    /**
+     * Settings page slug to add with add_submenu_page().
+     */
+    public $page_slug = 'contact-form-settings';
+
+    /**
+     * base64 uri svg icon used next to page title.
+     */
+    public $icon = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMzIgMTMyIj48cGF0aCBkPSJNMCAwdjEzYzAgNSAwIDEwIDggMTNsNTggMjcgNTgtMjdjOC0zIDgtOCA4LTEzVjBMNzQgMjZjLTggNC04IDktOCAxNCAwLTUgMC0xMC04LTE0em0wIDQwdjEzYzAgNCAwIDEwIDggMTNsNTggMjcgNTgtMjdjOC0zIDgtOSA4LTEzVjQwTDc0IDY2Yy04IDQtOCA5LTggMTMgMC00IDAtOS04LTEzem0wIDM5djE0YzAgNCAwIDkgOCAxM2w1OCAyNiA1OC0yNmM4LTQgOC05IDgtMTNWNzlsLTU4IDI3Yy04IDMtOCA5LTggMTMgMC00IDAtMTAtOC0xM3oiLz48L3N2Zz4=';
+
+
+    /**
+     * Init the class by hooking into the admin interface.
+     */
+    public function __construct() {
         add_action( 'admin_menu', [ &$this, 'register_sub_menu' ], 99 );
         add_action( 'admin_init', [ &$this, 'register_settings' ] );
     }
-
-
-    public $icon = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMzIgMTMyIj48cGF0aCBkPSJNMCAwdjEzYzAgNSAwIDEwIDggMTNsNTggMjcgNTgtMjdjOC0zIDgtOCA4LTEzVjBMNzQgMjZjLTggNC04IDktOCAxNCAwLTUgMC0xMC04LTE0em0wIDQwdjEzYzAgNCAwIDEwIDggMTNsNTggMjcgNTgtMjdjOC0zIDgtOSA4LTEzVjQwTDc0IDY2Yy04IDQtOCA5LTggMTMgMC00IDAtOS04LTEzem0wIDM5djE0YzAgNCAwIDkgOCAxM2w1OCAyNiA1OC0yNmM4LTQgOC05IDgtMTNWNzlsLTU4IDI3Yy04IDMtOCA5LTggMTMgMC00IDAtMTAtOC0xM3oiLz48L3N2Zz4=';
 
 
     /**
@@ -72,12 +88,14 @@ class Admin_Settings {
             <form method="post" action="options.php">
 
                 <?php
-                /* Add the hidden input goodies */
-                settings_fields( 'page_contact_form_settings' );
-                /* Show 'em what you got */
-                do_settings_sections( 'contact-form-settings' );
-                /* Cherry on top */
-                submit_button( 'Save' );
+                    /* Setup hidden input functionality */
+                    settings_fields( $this->group_name );
+
+                    /* Print the input fields */
+                    do_settings_sections( $this->page_slug );
+
+                    /* Print the submit button */
+                    submit_button( 'Save' );
                 ?>
 
             </form>
@@ -91,16 +109,16 @@ class Admin_Settings {
      * Form Fields - SMTP Account Settings
      */
     public function echo_field_username() {
-        echo '<input type="text" name="username" id="username" value="' . get_option('username') . '" >';
+        echo '<input type="text" name="username" id="username" value="' . get_option('username') . '" required>';
     }
     public function echo_field_password() {
-        echo '<input type="password" name="password" id="password" value="' . get_option('password') . '" >';
+        echo '<input type="password" name="password" id="password" value="' . get_option('password') . '" required>';
     }
     public function echo_field_host() {
-        echo '<input type="text" name="host" id="host" value="' . get_option('host') . '" >';
+        echo '<input type="text" name="host" id="host" value="' . get_option('host') . '" required>';
     }
     public function echo_field_port() {
-        echo '<input type="number" min="1" max="65535" step="1" name="port" id="port" value="' . get_option('port') . '" >';
+        echo '<input type="number" min="1" max="65535" step="1" name="port" id="port" value="' . get_option('port') . '" required>';
     }
     public function echo_field_auth() {
         echo '<input type="checkbox" name="auth" id="auth" value="1"' . checked( '1', get_option('auth'), false ) . '>';
@@ -132,34 +150,43 @@ class Admin_Settings {
      */
     public function register_settings() {
 
-
-        //Form Fields - SMTP Account Settings
-        add_settings_section( 'section_smtp', 'SMTP Account', null, 'contact-form-settings' );
-
-            add_settings_field( 'username', 'Username', [ &$this, 'echo_field_username' ], 'contact-form-settings', 'section_smtp' );
-            register_setting( 'page_contact_form_settings', 'username', 'sanitize_text_field' );
-
-            add_settings_field( 'password', 'Password', [ &$this, 'echo_field_password' ], 'contact-form-settings', 'section_smtp' );
-            register_setting( 'page_contact_form_settings', 'password', 'sanitize_text_field' );
-
-            add_settings_field( 'host', 'Host', [ &$this, 'echo_field_host' ], 'contact-form-settings', 'section_smtp' );
-            register_setting( 'page_contact_form_settings', 'host', [ &$this, 'validate_domain' ] );
-
-            add_settings_field( 'port', 'Port', [ &$this, 'echo_field_port' ], 'contact-form-settings', 'section_smtp' );
-            register_setting( 'page_contact_form_settings', 'port', [ &$this, 'validate_port' ] );
-
-            add_settings_field( 'auth', 'Authentication', [ &$this, 'echo_field_auth' ], 'contact-form-settings', 'section_smtp' );
-            register_setting( 'page_contact_form_settings', 'auth', [ &$this, 'validate_checkbox' ] );
+        $group = $this->group_name;
+        $page = $this->page_slug;
 
 
-        //Form Fields - Message Header Settings
-        add_settings_section( 'section_headers', 'Message Headers', [ &$this, 'echo_intro_section_headers' ], 'contact-form-settings' );
+        /**
+         * Register section and fields - SMTP Account Settings
+         */
+        $section = 'section_smtp';
+        add_settings_section( $section, 'SMTP Account', null, $page );
 
-            add_settings_field( 'recipient_email', 'Recipient Email Address', [ &$this, 'echo_field_recipient_email' ], 'contact-form-settings', 'section_headers' );
-            register_setting( 'page_contact_form_settings', 'recipient_email', 'sanitize_email' );
+            add_settings_field( 'username', 'Username', [ &$this, 'echo_field_username' ], $page, $section );
+            register_setting( $group, 'username', 'sanitize_text_field' );
 
-            add_settings_field( 'sent_from', 'Sent-from Email Address', [ &$this, 'echo_field_sent_from' ], 'contact-form-settings', 'section_headers' );
-            register_setting( 'page_contact_form_settings', 'sent_from', 'sanitize_email' );
+            add_settings_field( 'password', 'Password', [ &$this, 'echo_field_password' ], $page, $section );
+            register_setting( $group, 'password', 'sanitize_text_field' );
+
+            add_settings_field( 'host', 'Host', [ &$this, 'echo_field_host' ], $page, $section );
+            register_setting( $group, 'host', [ &$this, 'validate_domain' ] );
+
+            add_settings_field( 'port', 'Port', [ &$this, 'echo_field_port' ], $page, $section );
+            register_setting( $group, 'port', [ &$this, 'validate_port' ] );
+
+            add_settings_field( 'auth', 'Authentication', [ &$this, 'echo_field_auth' ], $page, $section );
+            register_setting( $group, 'auth', [ &$this, 'validate_checkbox' ] );
+
+
+        /**
+         * Register section and fields - Message Header Settings
+         */
+        $section = 'section_headers';
+        add_settings_section( $section, 'Message Headers', [ &$this, 'echo_intro_section_headers' ], $page );
+
+            add_settings_field( 'recipient_email', 'Recipient Email Address', [ &$this, 'echo_field_recipient_email' ], $page, $section );
+            register_setting( $group, 'recipient_email', 'sanitize_email' );
+
+            add_settings_field( 'sent_from', 'Sent-from Email Address', [ &$this, 'echo_field_sent_from' ], $page, $section );
+            register_setting( $group, 'sent_from', 'sanitize_email' );
 
     }
 
@@ -187,7 +214,6 @@ class Admin_Settings {
         if ( is_int( $port )
             && $port >= 1
             && $port <= 65535 ) {
-                echo $port;
             return $port;
         } else {
             return '';

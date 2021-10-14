@@ -10,9 +10,10 @@
  * @license GPL2+
  */
 
-// wp_localize_script variable: hb_contact_form_vars.plugin_directory
-
 ;(function($) {
+
+    // wp_localize_script variable
+    let wp_ajax_url = hb_contact_form_vars.wp_ajax_url;
 
     function formInit() {
 
@@ -34,8 +35,8 @@
             $.ajax( {
                 type: "POST",
                 // Post to PHP handler
-                // Note non-.php URI otherwise Nginx drops message contents on redirect
-                url: hb_contact_form_vars.plugin_directory + 'functions/class-smtp-send.php',
+                // PRETTY URL WARNING - extensionless php will break this line if not adjusted to match
+                url: wp_ajax_url,
                 data: $form.serialize(),
                 // Use success callback to call this function
                 success: afterFormSubmission,
@@ -47,7 +48,8 @@
 
         // Action upon ajax post response
         function afterFormSubmission( data ) {
-            // Check json post response for success
+
+            // Check json post response
             if ( data.result == 'success' ) {
 
                 // Show success message and hide form & error
@@ -55,17 +57,30 @@
                 $( '#jsErrorMessage' ).hide();
                 $( '#jsHideOnSuccess' ).hide();
 
+            } else if ( data.result == 'settings_missing' ) {
+
+                // Display error
+                $( '#jsErrorMessage' ).append( '<p>SMTP settings are incomplete. Please alert website admin.</p>' );
+                $( '#jsErrorMessage' ).show();
+                $( '#jsButtonSubmit' ).text('Error');
+
+            } else if ( data.result == 'settings_invalid' ) {
+
+                // Display error
+                $( '#jsErrorMessage' ).append( '<p>SMTP settings are invalid. Please alert website admin.</p>' );
+                $( '#jsErrorMessage' ).show();
+                $( '#jsButtonSubmit' ).text('Error');
+
             } else {
 
-                // Append error log to error message div
+                // Display error
                 $( '#jsErrorMessage' ).append( '<ul></ul>' );
+
                 jQuery.each(data.errors, function (key, val) {
                     $( '#jsErrorMessage ul' ).append( '<li>' + key + ':' + val + '</li>' );
                 });
 
-                // Show error
                 $( '#jsErrorMessage' ).show();
-                // Change button label to 'Error'
                 $( '#jsButtonSubmit' ).text('Error');
 
             }
