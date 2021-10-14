@@ -22,11 +22,14 @@ class Init {
     public static function register_scripts_and_styles() {
    
         function localize_vars() {
+
+            // PRETTY URL WARNING - extensionless php will break form submission
+            // if these urls are not adjusted to match.
+            // To access in js: hb_contact_form_vars.plugin_directory
+
             return array(
-                'handler_url' => plugin_dir_url( __DIR__ ) . 'parts/form-handler.php',
                 'wp_ajax_url' => admin_url( 'admin-ajax.php' )
             );
-            // To access in js: hb_contact_form_vars.plugin_directory
         }
         wp_register_script ( 'hb_contact_form_js', plugins_url ( 'js/ajax-handler.js', __DIR__ ), array( 'jquery' ), '0.5', false );
         wp_localize_script( 'hb_contact_form_js', 'hb_contact_form_vars', localize_vars() );

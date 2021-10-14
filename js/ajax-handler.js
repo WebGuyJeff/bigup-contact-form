@@ -34,8 +34,7 @@
             // Post the form using Ajax
             $.ajax( {
                 type: "POST",
-                // Post to PHP handler
-                // PRETTY URL WARNING - extensionless php will break this line if not adjusted to match
+                // Post to WP ajax handler
                 url: wp_ajax_url,
                 data: $form.serialize(),
                 // Use success callback to call this function
