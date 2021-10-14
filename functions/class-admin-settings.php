@@ -167,10 +167,13 @@ class Admin_Settings {
      * Validate a domain name.
      */
     function validate_domain( $domain ) {
-
+ 
         $ip = gethostbyname( $domain );
         $ip = filter_var( $ip, FILTER_VALIDATE_IP );
-        if ( $ip ) {
+
+        if ( $domain == '' || $domain == null ) {
+            return '';
+        } elseif ( $ip ) {
             return $domain;
         } else {
             return 'INVALID DOMAIN';
