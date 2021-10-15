@@ -18,16 +18,16 @@
 
 ?>
 
-<form class="HB__form" id="jsFormHandler" method="post" autocomplete="on">
+<form class="HB__form ajaxFormHandler" method="post" autocomplete="on">
 
     <header class="HB__form_section">
-        <h3 id="aria_form-title" class="HB__form_title" id="jsSuccessMessage"><?php echo $title ?></h3>
+        <h3 id="aria_form-title" class="HB__form_title jsSuccessMessage"><?php echo $title ?></h3>
         <p id="aria_form-desc" class="HB__form_message"><?php echo $message ?></p>
     </header>
 
-    <div class="HB__form_section" id="jsHideOnSuccess">
+    <div class="HB__form_section jsHideOnSuccess">
 
-        <input class="HB__form_input" id="jsSaveTheBees" name="required_field" type="text" autocomplete="off">
+        <input class="HB__form_input jsSaveTheBees" name="required_field" type="text" autocomplete="off">
 
         <div class="HB__form_inputWrap HB__form_inputWrap-short">
             <?php wp_nonce_field('hb_contact_form_submit', 'hb_contact_form_name_nonce'); ?>
@@ -50,7 +50,7 @@
             <span class="HB__form_focusFlag">Type</span>
         </div>
 
-        <button class="button" id="jsButtonSubmit" type="submit" value="Submit">
+        <button class="button jsButtonSubmit" type="submit" value="Submit">
             <span>
                 Submit
             </span>
@@ -59,9 +59,12 @@
     </div>
 
     <footer>
-        <div class="HB__form_section HB__form_section-hidden" id="jsErrorMessage" style="display:none;">
-            <p>Error</p>
-            <p>Something went wrong. Please refresh and try again, or <a href="mailto:me@jeffersonreal.com?subject=FormErr%20New%20Website%20Message">click here</a> to send an email</p>
+        <div class="HB__form_section HB__form_section-hidden jsErrorMessage" style="display:none;">
+            <p>
+                Sincere apologies, something went wrong. Please refresh and try again, or
+                <a href="mailto:me@jeffersonreal.com?subject=FormErr%20New%20Website%20Message">click here</a>
+                to send an email.
+            </p>
         </div>
     </footer>
 

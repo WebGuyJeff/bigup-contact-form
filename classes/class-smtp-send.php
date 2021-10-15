@@ -20,18 +20,16 @@ use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
 
-// Load Composer's autoloader
-require 'vendor/autoload.php';
-
 // WordPress Dependencies
 use function get_bloginfo;
 use function get_option;
 use function is_email;
 use function wp_strip_all_tags;
 use function wp_kses;
+use function plugin_dir_path;
 
-
-echo '<script>console.log("HI THERE!!!");</script>';
+// Load Composer's autoloader
+require plugin_dir_path( __FILE__ ) . 'vendor/autoload.php';
 
 
 class SMTP_Send {
@@ -161,7 +159,7 @@ class SMTP_Send {
         $submitted_name = substr( strip_tags( $submitted_name ), 0, 255 );
 
         // Make sure address is valid
-        if ( !PHPMailer::validateAddress( $submitted_email ) {
+        if ( !PHPMailer::validateAddress( $submitted_email ) ) {
             respond( 'email_invalid' );
             return;
         }

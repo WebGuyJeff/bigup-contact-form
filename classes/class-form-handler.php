@@ -24,19 +24,23 @@ class Form_Handler {
     /**
      * Handle form submission for LOGGED IN USERS ONLY.
      */
-    public static function form_submission_logged_in_users_only() {
+    public static function catch_ajax_logged_in() {
+
+
+echo '<script>console.log("HELLO!!!")</script>';
 
         status_header(200);
 
         $form_values = array(
-            'submitted_email'     => $_POST[ 'hb_contact_form_email_nonce' ],
-            'submitted_name'      => $_POST[ 'hb_contact_form_name_nonce' ],
-            'submitted_message'   => $_POST[ 'hb_contact_form_message_nonce' ]
+            'submitted_email'     => $_REQUEST[ 'hb_contact_form_email_nonce' ],
+            'submitted_name'      => $_REQUEST[ 'hb_contact_form_name_nonce' ],
+            'submitted_message'   => $_REQUEST[ 'hb_contact_form_message_nonce' ]
         );
 
         self::nonce_validation( $form_values );
 
         //request handlers should exit() when they complete their task
+        var_dump( $form_values );
         exit( "Server received the form submission from your browser.");
     }
 
@@ -44,14 +48,14 @@ class Form_Handler {
     /**
      * Handle form submission for ALL USERS.
      */
-    public static function form_submission_all_users() {
+    public static function catch_ajax_all_users() {
 
         status_header(200);
 
         $form_values = array(
-            'submitted_email'     => $_POST[ 'hb_contact_form_email_nonce' ],
-            'submitted_name'      => $_POST[ 'hb_contact_form_name_nonce' ],
-            'submitted_message'   => $_POST[ 'hb_contact_form_message_nonce' ]
+            'submitted_email'     => $_REQUEST[ 'hb_contact_form_email_nonce' ],
+            'submitted_name'      => $_REQUEST[ 'hb_contact_form_name_nonce' ],
+            'submitted_message'   => $_REQUEST[ 'hb_contact_form_message_nonce' ]
         );
 
         self::nonce_validation( $form_values );
@@ -72,7 +76,7 @@ class Form_Handler {
                 // BAD nonce
                 $response = array( "result" => "insecure_failed_nonce" );
                 echo json_encode( $response );
-                return;
+                exit;
             }
         }
 

@@ -31,7 +31,7 @@ class Init {
                 'wp_ajax_url' => admin_url( 'admin-ajax.php' )
             );
         }
-        wp_register_script ( 'hb_contact_form_js', plugins_url ( 'js/ajax-handler.js', __DIR__ ), array( 'jquery' ), '0.5', false );
+        wp_register_script ( 'hb_contact_form_js', plugins_url ( 'js/ajax-form-handler.js', __DIR__ ), array( 'jquery' ), '0.5', false );
         wp_localize_script( 'hb_contact_form_js', 'hb_contact_form_vars', localize_vars() );
 
         wp_register_style( 'hb_contact_form_css', plugins_url ( 'css/hb-contact-form.css', __DIR__ ), array(), '0.1', 'all' );
