@@ -12,13 +12,13 @@
  */
 
 
-(function($) {
+(function ajax_form_handler() {
 
     /**
      * Hold the form DOM node that was submitted so the same
      * element can be updated by the ajax callback. This saves
-     * passing the object to and from the server with ajax data.
-     * This also helps avoid the use of element IDs as this
+     * passing the object to and from the server inside the cb.
+     * This also helps avoid the use of element IDs so this
      * form can exist multiple times in a page.
      * 
      */
@@ -34,8 +34,14 @@
         let honeypot = document.querySelectorAll( '.jsSaveTheBees' );
         honeypot.forEach( input => { input.style.display = "none" } )
 
-        // Attach ajax handler function to the form(s)
-        document.querySelectorAll( '.ajaxFormHandler' ).forEach( (element) => { element.submit( ajax_form_submit ) } );
+        // Attach 'click' listener with ajax handler callback to the form(s)
+        document.querySelectorAll( '.ajaxFormHandler' ).forEach( ( form ) => {
+            form.addEventListener( 'submit', ( event ) => {
+                // Prevent normal form submit action
+                event.preventDefault();
+                ajax_form_submit( form );
+            } );
+        } );
     };
 
 
@@ -45,13 +51,16 @@
      * @param {object} form: The submitted form data.
      * 
      */
-    function ajax_form_submit() {
+    function ajax_form_submit( form ) {
+
 
         // Remember which form was used
-        current_form = this;
+        current_form = form;
 
-        // Stop form from submitting normally
-        current_form.preventDefault();
+alert('hola2');
+console.log(current_form);
+
+
 
         // Change button text
         current_form.querySelectorAll( '.jsButtonSubmit > *:first-child' ).textContent = 'One mo...';
@@ -158,4 +167,4 @@
     }, 100);
 
 
-})(jQuery);
+})();
