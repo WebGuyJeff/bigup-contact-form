@@ -14,6 +14,11 @@
 
 (function ajax_form_handler() {
 
+    // grab wp_localize_script variables
+    let wp_ajax_url = hb_contact_form_vars.wp_ajax_url;
+    let wp_admin_email = hb_contact_form_vars.wp_admin_email;
+
+
     /**
      * Hold the form DOM node that was submitted so the same
      * element can be updated by the ajax callback. This saves
@@ -57,22 +62,24 @@
         // Remember which form was used
         current_form = form;
 
-alert('hola2');
-console.log(current_form);
-
-
+        // Get form values
+        form_data = new FormData( current_form );
 
         // Change button text
-        current_form.querySelectorAll( '.jsButtonSubmit > *:first-child' ).textContent = 'One mo...';
+        current_form.querySelectorAll( '.jsButtonSubmit' ).disabled = true;
+        current_form.querySelectorAll( '.jsButtonSubmit > *:first-child' )[0].textContent = 'One mo...';
 
-        // grab wp_localize_script variable
-        let wp_ajax_url = hb_contact_form_vars.wp_ajax_url;
+console.log(form_data);
 
         // Ajax request
-        $.ajax( {
+        jQuery.ajax( {
             method: "POST",
+            timeout: 3000,
+            enctype: 'multipart/form-data',
+            processData: false,
+            contentType: false,
+            data: form_data,
             url: wp_ajax_url,
-            data: current_form.serialize(),
             dataType: 'json',
             success: ajax_respose,
             error: ajax_error
@@ -89,10 +96,10 @@ console.log(current_form);
     function ajax_respose( data, textStatus, jqXHR ) {
 
         // Get the elems of the form that was used
-        let el_success = current_form.querySelectorAll( '.jsSuccessMessage' );
-        let el_error = current_form.querySelectorAll( '.jsErrorMessage' );
-        let el_hide = current_form.querySelectorAll( '.jsHideOnSuccess' );
-        let el_button = current_form.querySelectorAll( '.jsButtonSubmit > *:first-child' );
+        let el_success = current_form.querySelectorAll( '.jsSuccessMessage' )[0];
+        let el_error = current_form.querySelectorAll( '.jsErrorMessage' )[0];
+        let el_hide = current_form.querySelectorAll( '.jsHideOnSuccess' )[0];
+        let el_button = current_form.querySelectorAll( '.jsButtonSubmit > *:first-child' )[0];
 
         // Check json ajax response
         if ( data.result == 'success' ) {
@@ -120,6 +127,8 @@ console.log(current_form);
             el_error.style.display = 'block';
             el_button.textContent = 'Error';
         }
+        // re-enable button
+        current_form.querySelectorAll( '.jsButtonSubmit' ).disabled = false;
     }
 
 
@@ -133,15 +142,17 @@ console.log(current_form);
      */
     function ajax_error( jqXHR, textStatus, errorThrown ) {
 
-        let el_error = current_form.querySelectorAll( '.jsErrorMessage' );
-        let el_button = current_form.querySelectorAll( '.jsButtonSubmit > *:first-child' );
+        let el_error = current_form.querySelectorAll( '.jsErrorMessage' )[0];
+        let el_button = current_form.querySelectorAll( '.jsButtonSubmit > *:first-child' )[0];
 
-        let message  = '<p>Sincere apologies, we&apos;re having trouble getting your message';
-            message += 'sent to the server. Please <a href="mailto:me@jeffersonreal.com">click';
-            message += 'here</a> to send a message using the email client on your device.</p>';
+        let message  = '<p>Sincere apologies, something went wrong.</p>';
+            message += '<p>Please <a href="mailto:' + wp_admin_email + '">click ';
+            message += 'here</a> to send a message using the email app on your device.</p>';
 
-        el_error.append( '<p class="alert">' + textStatus + ': ' + errorThrown + '</p>' );
-        el_error.append( message );
+        let error = '<p class="alert">' + textStatus + ': ' + errorThrown + '</p>';
+
+        el_error.innerHTML = error;
+        el_error.innerHTML += message;
         el_error.style.display = 'block';
         el_button.textContent = 'Error';
 
@@ -151,6 +162,8 @@ console.log(current_form);
             console.log( textStatus );
             console.log( errorThrown );
         }
+        // re-enable button
+        current_form.querySelectorAll( '.jsButtonSubmit' ).disabled = false;
     }
 
 

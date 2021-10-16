@@ -32,19 +32,19 @@ require_once( plugin_dir_path( __FILE__ ) . 'classes/autoload.php');
 
 
 /**
- * Init scripts, styles and localize vars to pass to front end.
- */
-add_action( 'wp_enqueue_scripts', [ new Init, 'register_scripts_and_styles' ] );
-
-
-/**
  * Add hooks to safely handle ajax form submission the WordPress way.
  * 
  * The first is called for logged in users only, the second for all users submitting the form.
  * If both logged in and not logged in users are to submit, both actions must be included!
  */
-add_action( "wp_ajax_hb_contact_form_submit", [ 'Form_Handler', 'catch_ajax_logged_in' ] );
-add_action( "wp_ajax_nopriv_hb_contact_form_submit", [ 'Form_Handler', 'catch_ajax_all_users' ] );
+add_action( "wp_ajax_hb_contact_form_submit", [ new Form_Handler, 'catch_ajax_logged_in' ] );
+add_action( "wp_ajax_nopriv_hb_contact_form_submit", [ new Form_Handler, 'catch_ajax_all_users' ] );
+
+
+/**
+ * Init scripts, styles and localize vars to pass to front end.
+ */
+add_action( 'wp_enqueue_scripts', [ new Init, 'register_scripts_and_styles' ] );
 
 
 /**

@@ -13,6 +13,9 @@ namespace Jefferson\HB_Contact_Form;
  * @license GPL2+
  */
 
+use admin_url;
+use get_bloginfo;
+
 class Init {
 
 
@@ -28,7 +31,8 @@ class Init {
             // To access in js: hb_contact_form_vars.plugin_directory
 
             return array(
-                'wp_ajax_url' => admin_url( 'admin-ajax.php' )
+                'wp_ajax_url' => admin_url( 'admin-ajax.php' ),
+                'wp_admin_email' => get_bloginfo( 'admin_email' )
             );
         }
         wp_register_script ( 'hb_contact_form_js', plugins_url ( 'js/ajax-form-handler.js', __DIR__ ), array( 'jquery' ), '0.5', false );
