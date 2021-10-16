@@ -29,7 +29,7 @@ use function wp_kses;
 use function plugin_dir_path;
 
 // Load Composer's autoloader
-require plugin_dir_path( __FILE__ ) . 'vendor/autoload.php';
+require plugin_dir_path( __DIR__ ) . 'vendor/autoload.php';
 
 
 class SMTP_Send {

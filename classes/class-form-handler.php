@@ -27,20 +27,29 @@ class Form_Handler {
     public static function catch_ajax_logged_in() {
 
 
-echo '<script>console.log("HELLO!!!")</script>';
+error_log ('HELLO from form-handler.php!!!');
+
 
         status_header(200);
 
         $form_values = array(
-            'submitted_email'     => $_REQUEST[ 'hb_contact_form_email_nonce' ],
-            'submitted_name'      => $_REQUEST[ 'hb_contact_form_name_nonce' ],
-            'submitted_message'   => $_REQUEST[ 'hb_contact_form_message_nonce' ]
+            'nonce'               => $_REQUEST[ 'nonce' ],
+            'action'              => $_REQUEST[ 'action' ],
+            'submitted_email'     => $_REQUEST[ 'email' ],
+            'submitted_name'      => $_REQUEST[ 'name' ],
+            'submitted_message'   => $_REQUEST[ 'message' ]
         );
 
-        self::nonce_validation( $form_values );
+        if ( self::is_nonce_valid( $form_values[ 'nonce' ], $form_values[ 'action' ] ) ) {
+            // Good nonce
+            $smtp_mailer = new SMTP_Send( $form_values );
+        } else {
+            // Bad nonce
+            $response = array( "result" => "insecure_failed_nonce" );
+            echo json_encode( $response );
+        }
 
-        //request handlers should exit() when they complete their task
-        var_dump( $form_values );
+        //request handlers should exit() when done
         exit( "Server received the form submission from your browser.");
     }
 
@@ -50,38 +59,56 @@ echo '<script>console.log("HELLO!!!")</script>';
      */
     public static function catch_ajax_all_users() {
 
-        status_header(200);
+
+error_log ('HELLO from form-handler.php!!!');
+
 
         $form_values = array(
-            'submitted_email'     => $_REQUEST[ 'hb_contact_form_email_nonce' ],
-            'submitted_name'      => $_REQUEST[ 'hb_contact_form_name_nonce' ],
-            'submitted_message'   => $_REQUEST[ 'hb_contact_form_message_nonce' ]
+            'nonce'               => $_REQUEST[ 'nonce' ],
+            'action'              => $_REQUEST[ 'action' ],
+            'submitted_email'     => $_REQUEST[ 'email' ],
+            'submitted_name'      => $_REQUEST[ 'name' ],
+            'submitted_message'   => $_REQUEST[ 'message' ]
         );
 
-        self::nonce_validation( $form_values );
+        if ( self::is_nonce_valid( $form_values[ 'nonce' ], $form_values[ 'action' ] ) ) {
+            // Good nonce
+            $smtp_mailer = new SMTP_Send( $form_values );
+        } else {
+            // Bad nonce
+            $response = array( "result" => "insecure_failed_nonce" );
+            echo json_encode( $response );
+        }
 
-        //request handlers should exit() when they complete their task
-        exit;
+        exit; //request handlers should exit() when done
     }
 
 
     /**
-     * Validate nonces then pass to SMTP_Send on pass.
+     * Validate WordPress nonces.
      */
-    private static function nonce_validation( $form_values ) {
+    private static function is_nonce_valid( $nonce_to_check, $action ) {
 
-        foreach ( $form_values as $nonce ) {
-            if ( !wp_verify_nonce( $nonce, 'hb_contact_form_submit' ) ) {
+        $nonce_ok = true;
 
-                // BAD nonce
-                $response = array( "result" => "insecure_failed_nonce" );
-                echo json_encode( $response );
-                exit;
+        if ( is_string( $nonce_to_check ) && !wp_verify_nonce( $nonce_to_check, $action ) ) {
+            // Bad nonce
+            $nonce_ok = false;
+
+        } else if ( is_array( $nonce_to_check ) ) {
+            foreach ( $nonce_to_check as $nonce ) {
+                if ( !wp_verify_nonce( $nonce, $action ) ) {
+                    // Bad nonce
+                    $nonce_ok = false;
+                }
             }
         }
 
-        // GOOD nonce
-        $smtp_mailer = new SMTP_Send( $form_values );
+        if ( $nonce_ok ) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
 

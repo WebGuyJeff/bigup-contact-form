@@ -17,7 +17,8 @@
     // grab wp_localize_script variables
     let wp_ajax_url = hb_contact_form_vars.wp_ajax_url;
     let wp_admin_email = hb_contact_form_vars.wp_admin_email;
-
+    let wp_nonce = hb_contact_form_vars.wp_nonce;
+    let wp_action = hb_contact_form_vars.wp_action;
 
     /**
      * Hold the form DOM node that was submitted so the same
@@ -44,7 +45,7 @@
             form.addEventListener( 'submit', ( event ) => {
                 // Prevent normal form submit action
                 event.preventDefault();
-                ajax_form_submit( form );
+                form_submit( form );
             } );
         } );
     };
@@ -56,35 +57,72 @@
      * @param {object} form: The submitted form data.
      * 
      */
-    function ajax_form_submit( form ) {
-
+    function form_submit( form ) {
 
         // Remember which form was used
         current_form = form;
 
         // Get form values
-        form_data = new FormData( current_form );
-
-        // Change button text
-        current_form.querySelectorAll( '.jsButtonSubmit' ).disabled = true;
-        current_form.querySelectorAll( '.jsButtonSubmit > *:first-child' )[0].textContent = 'One mo...';
+        let form_data = {
+            nonce:      wp_nonce,
+            action:     wp_action,
+            name:       form.querySelector( '[name="HB__form_name"]' ).value,
+            email:      form.querySelector( '[name="HB__form_email"]' ).value,
+            message:    form.querySelector( '[name="HB__form_message"]' ).value
+        };
 
 console.log(form_data);
+
+        // Update button
+        form.querySelectorAll( '.jsButtonSubmit' ).disabled = true;
+        form.querySelectorAll( '.jsButtonSubmit > *:first-child' )[0].textContent = 'One mo...';
+
+
+
+        fetch( wp_ajax_url, {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Cache-Control': 'no-cache',
+            },
+            body: new URLSearchParams( {
+                action: wp_action,
+                nonce:      wp_nonce,
+                name:       form.querySelector( '[name="HB__form_name"]' ).value,
+                email:      form.querySelector( '[name="HB__form_email"]' ).value,
+                message:    form.querySelector( '[name="HB__form_message"]' ).value
+            } )
+        } )
+           .then( ( response ) => response.json() )
+            .then( ( data ) => {
+                if ( data ) {
+                    console.log(data);
+                }
+            } )
+            .catch( ( error ) => {
+                console.error( error );
+            } );
+
+
+/*
 
         // Ajax request
         jQuery.ajax( {
             method: "POST",
-            timeout: 3000,
-            enctype: 'multipart/form-data',
-            processData: false,
-            contentType: false,
-            data: form_data,
             url: wp_ajax_url,
+            timeout: 3000,
+            data: form_data,
+            encode: true,
             dataType: 'json',
-            success: ajax_respose,
+            success: ajax_response,
             error: ajax_error
         } );
-    }
+*/
+
+
+    } //func end
+
 
 
     /**
@@ -93,13 +131,15 @@ console.log(form_data);
      * @param {json} data The json response sent by the server.
      * 
      */
-    function ajax_respose( data, textStatus, jqXHR ) {
+    function ajax_response( data, textStatus, jqXHR ) {
+
+        form = current_form;
 
         // Get the elems of the form that was used
-        let el_success = current_form.querySelectorAll( '.jsSuccessMessage' )[0];
-        let el_error = current_form.querySelectorAll( '.jsErrorMessage' )[0];
-        let el_hide = current_form.querySelectorAll( '.jsHideOnSuccess' )[0];
-        let el_button = current_form.querySelectorAll( '.jsButtonSubmit > *:first-child' )[0];
+        let el_success = form.querySelectorAll( '.jsSuccessMessage' )[0];
+        let el_error = form.querySelectorAll( '.jsErrorMessage' )[0];
+        let el_hide = form.querySelectorAll( '.jsHideOnSuccess' )[0];
+        let el_button = form.querySelectorAll( '.jsButtonSubmit > *:first-child' )[0];
 
         // Check json ajax response
         if ( data.result == 'success' ) {
@@ -128,7 +168,7 @@ console.log(form_data);
             el_button.textContent = 'Error';
         }
         // re-enable button
-        current_form.querySelectorAll( '.jsButtonSubmit' ).disabled = false;
+    //    form.querySelectorAll( '.jsButtonSubmit' ).disabled = false;
     }
 
 
@@ -142,8 +182,10 @@ console.log(form_data);
      */
     function ajax_error( jqXHR, textStatus, errorThrown ) {
 
-        let el_error = current_form.querySelectorAll( '.jsErrorMessage' )[0];
-        let el_button = current_form.querySelectorAll( '.jsButtonSubmit > *:first-child' )[0];
+        form = current_form;
+
+        let el_error = form.querySelectorAll( '.jsErrorMessage' )[0];
+        let el_button = form.querySelectorAll( '.jsButtonSubmit > *:first-child' )[0];
 
         let message  = '<p>Sincere apologies, something went wrong.</p>';
             message += '<p>Please <a href="mailto:' + wp_admin_email + '">click ';
@@ -163,7 +205,7 @@ console.log(form_data);
             console.log( errorThrown );
         }
         // re-enable button
-        current_form.querySelectorAll( '.jsButtonSubmit' ).disabled = false;
+    //    form.querySelectorAll( '.jsButtonSubmit' ).disabled = false;
     }
 
 

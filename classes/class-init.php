@@ -23,19 +23,23 @@ class Init {
      * Init scripts, styles and localize vars to pass to front end.
      */
     public static function register_scripts_and_styles() {
-   
+        
         function localize_vars() {
+
+            $action = 'hb_contact_form_submit';
 
             // PRETTY URL WARNING - extensionless php will break form submission
             // if these urls are not adjusted to match.
             // To access in js: hb_contact_form_vars.plugin_directory
 
             return array(
-                'wp_ajax_url' => admin_url( 'admin-ajax.php' ),
-                'wp_admin_email' => get_bloginfo( 'admin_email' )
+                'wp_ajax_url'    => admin_url( 'admin-ajax.php' ),
+                'wp_admin_email' => get_bloginfo( 'admin_email' ),
+                'wp_nonce'       => wp_create_nonce( $action ),
+                'wp_action'      => $action
             );
         }
-        wp_register_script ( 'hb_contact_form_js', plugins_url ( 'js/ajax-form-handler.js', __DIR__ ), array( 'jquery' ), '0.5', false );
+        wp_register_script ( 'hb_contact_form_js', plugins_url ( 'js/form-submit-handler.js', __DIR__ ), array(), '0.5', false );
         wp_localize_script( 'hb_contact_form_js', 'hb_contact_form_vars', localize_vars() );
 
         wp_register_style( 'hb_contact_form_css', plugins_url ( 'css/hb-contact-form.css', __DIR__ ), array(), '0.1', 'all' );
