@@ -36,7 +36,7 @@ class SMTP_Send {
 
 
     /**
-     * Holds submitted form values passed by Form_Handler.
+     * Holds submitted form values passed by Form_Receiver.
      */
     private $form_values;
 

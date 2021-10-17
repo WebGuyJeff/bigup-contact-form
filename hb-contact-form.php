@@ -10,13 +10,16 @@ namespace Jefferson\HB_Contact_Form;
  * Author URI: https://jeffersonreal.com
  * License: GPL2
  *
- *
- * An SMTP Contact Form
+ * An SMTP Form Plugin
  *
  * Provides a PHPMailer SMTP contact form which can be placed as a widget or using
  * a shortcode. The dependency PHPMailer is included with this plugin.
  * 
- * This core file acts as a loader init the plugin.
+ * This core file acts as a loader by:
+ * 
+ *      1. include the php autoloader to ready the classes.
+ *      2. Call the Init class which in turn calls all plugin dependencies.
+ *      3. If the user is on admin page, process the admin settings menu.
  *
  * @package Herringbone
  * @subpackage HB_Contact_Form
@@ -26,37 +29,15 @@ namespace Jefferson\HB_Contact_Form;
 
 
 /**
- * Load the PHP autoloader from it's own file
+ * Load PHP autoloader.
  */
 require_once( plugin_dir_path( __FILE__ ) . 'classes/autoload.php');
 
 
 /**
- * Add hooks to safely handle ajax form submission the WordPress way.
- * 
- * The first is called for logged in users only, the second for all users submitting the form.
- * If both logged in and not logged in users are to submit, both actions must be included!
+ * Init the plugin.
  */
-add_action( "wp_ajax_hb_contact_form_submit", [ new Form_Handler, 'catch_ajax_logged_in' ] );
-add_action( "wp_ajax_nopriv_hb_contact_form_submit", [ new Form_Handler, 'catch_ajax_all_users' ] );
-
-
-/**
- * Init scripts, styles and localize vars to pass to front end.
- */
-add_action( 'wp_enqueue_scripts', [ new Init, 'register_scripts_and_styles' ] );
-
-
-/**
- * Register a shortcode to allow placement of form anywhere.
- */
-add_shortcode( 'hb_contact_form', [ new Shortcode, 'display_shortcode' ] );
-
-
-/**
- * Register and load the contact form widget.
- */
-add_action( 'widgets_init', [ new Widget, '__construct' ] );
+new Init();
 
 
 /**

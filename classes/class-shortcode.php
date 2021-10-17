@@ -38,7 +38,7 @@ class Shortcode {
         //include the form template with the widget vars
         //custom function defined in hb-contact-form.php
 
-        $output_with_variables = Init::include_with_variables(
+        $output_with_variables = Form_Template::include_with_variables(
             plugin_dir_path( __DIR__ ) . 'parts/form.php',
 
             array(

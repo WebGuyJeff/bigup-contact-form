@@ -18,13 +18,13 @@ use function plugin_dir_path;
 use function wp_verify_nonce;
 
 
-class Form_Handler {
+class Form_Receiver {
 
 
     /**
      * Handle form submission for LOGGED IN USERS ONLY.
      */
-    public static function catch_ajax_logged_in() {
+    public static function catch_form_submission_logged_in() {
 
         status_header(200);
 
@@ -54,7 +54,7 @@ class Form_Handler {
     /**
      * Handle form submission for ALL USERS.
      */
-    public static function catch_ajax_all_users() {
+    public static function catch_form_submission_all_users() {
 
         $form_values = array(
             'nonce'               => $_REQUEST[ 'nonce' ],

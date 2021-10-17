@@ -12,13 +12,13 @@
  */
 
 
-(function ajax_form_handler() {
+(function form_sender() {
 
     // grab wp_localize_script variables
-    let wp_ajax_url = hb_contact_form_vars.wp_ajax_url;
-    let wp_admin_email = hb_contact_form_vars.wp_admin_email;
-    let wp_nonce = hb_contact_form_vars.wp_nonce;
-    let wp_action = hb_contact_form_vars.wp_action;
+    let wp_ajax_url = wp_localize_form_vars.wp_ajax_url;
+    let wp_admin_email = wp_localize_form_vars.wp_admin_email;
+    let wp_nonce = wp_localize_form_vars.wp_nonce;
+    let wp_action = wp_localize_form_vars.wp_action;
 
     /**
      * Hold the form DOM node that was submitted so the same
@@ -74,7 +74,7 @@
                 'Cache-Control': 'no-cache',
             },
             body: new URLSearchParams( {
-                action: wp_action,
+                action:     wp_action,
                 nonce:      wp_nonce,
                 name:       form.querySelector( '[name="HB__form_name"]' ).value,
                 email:      form.querySelector( '[name="HB__form_email"]' ).value,

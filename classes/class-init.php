@@ -13,70 +13,84 @@ namespace Jefferson\HB_Contact_Form;
  * @license GPL2+
  */
 
+// WordPress dependencies.
 use admin_url;
 use get_bloginfo;
+use wp_localize_script;
+use wp_create_nonce;
+use add_action;
+use add_shortcode;
+
 
 class Init {
 
 
     /**
-     * Init scripts, styles and localize vars to pass to front end.
+     * Currently holds a static variable but should be used
+     * for dynamic form building in the future by accepting
+     * passed action names.
+     * 
+     * @param {string}  WordPress action name for the form.
      */
-    public static function register_scripts_and_styles() {
+    public $action = 'hb_contact_form_submit';
+
+
+    /**
+     * Use this function to initialise all dependencies for the plugin.
+     */
+    public function __construct() {
+
+        /**
+         * Add api hooks to safely receive fetch form submissions the WordPress way.
+         */
+        add_action( "wp_ajax_hb_contact_form_submit", [ new Form_Receiver, 'catch_form_submission_logged_in' ] );
+        add_action( "wp_ajax_nopriv_hb_contact_form_submit", [ new Form_Receiver, 'catch_form_submission_all_users' ] );
+
+        /**
+         * Init scripts/styles and localize vars to pass to front end.
+         */
+        add_action( 'wp_enqueue_scripts', [ $this, 'register_scripts_and_styles' ] );
+
+        /**
+         * Register a shortcode to allow placement of form anywhere.
+         */
+        add_shortcode( 'hb_contact_form', [ new Shortcode, 'display_shortcode' ] );
+
+        /**
+         * Register and load the contact form widget.
+         */
+        add_action( 'widgets_init', [ new Widget, '__construct' ] );
         
-        function localize_vars() {
-
-            $action = 'hb_contact_form_submit';
-
-            // PRETTY URL WARNING - extensionless php will break form submission
-            // if these urls are not adjusted to match.
-            // To access in js: hb_contact_form_vars.plugin_directory
-
-            return array(
-                'wp_ajax_url'    => admin_url( 'admin-ajax.php' ),
-                'wp_admin_email' => get_bloginfo( 'admin_email' ),
-                'wp_nonce'       => wp_create_nonce( $action ),
-                'wp_action'      => $action
-            );
-        }
-        wp_register_script ( 'hb_contact_form_js', plugins_url ( 'js/form-submit-handler.js', __DIR__ ), array(), '0.5', false );
-        wp_localize_script( 'hb_contact_form_js', 'hb_contact_form_vars', localize_vars() );
-
-        wp_register_style( 'hb_contact_form_css', plugins_url ( 'css/hb-contact-form.css', __DIR__ ), array(), '0.1', 'all' );
     }
 
 
     /**
-     * Helper function - include_with_variables.
-     *
-     * This function allows the passing of variables between template parts.
-     * Example of passing a title from index.php to header.php:
+     * Init scripts, styles and localize vars to pass to front end.
      * 
-     * index.php:
-     * includeWithVariables('header.php', array('title' => 'Header Title'));
+     * wp_localize_script() passes variables to front end script by dumping global
+     * js vars inline with the front end html. Not pretty, but it works. Don't use
+     * clashable var names! :)
      * 
-     * header.php:
-     * echo $title;
+     * WARNING - extensionless php will break form submission
+     * if ajax endpoint url is not adjusted to match.
      */
-    public static function include_with_variables( $filePath, $variables = array() )
-    {
-        $output = NULL;
-        if( file_exists( $filePath ) ) {
+    public function register_scripts_and_styles() {
+        
+        $action = $this->action;
 
-            // Extract variables to local namespace
-            extract( $variables );
+        wp_register_style( 'hb_contact_form_css', plugins_url ( 'css/hb-contact-form.css', __DIR__ ), array(), '0.1', 'all' );
+        wp_register_script ( 'hb_contact_form_js', plugins_url ( 'js/form-sender.js', __DIR__ ), array(), '0.5', false );
 
-            // Start output buffering
-            ob_start();
-
-            // Include the template file
-            include $filePath;
-
-            // End buffering and return its contents
-            $output = ob_get_clean();
-
-        }
-        return $output;
+        wp_localize_script(
+            'hb_contact_form_js',
+            'wp_localize_form_vars',
+            array(
+                'wp_ajax_url'    => admin_url( 'admin-ajax.php' ),
+                'wp_admin_email' => get_bloginfo( 'admin_email' ),
+                'wp_nonce'       => wp_create_nonce( $action ),
+                'wp_action'      => $action
+            )
+        );
     }
 
 
