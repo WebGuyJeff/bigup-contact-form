@@ -27,7 +27,7 @@ $admin_email = get_bloginfo( 'admin_email' );
         <p id="aria_form-desc" class="HB__form_message"><?php echo $message ?></p>
     </header>
 
-    <div class="HB__form_section jsHideOnSuccess">
+    <div class="HB__form_section jsHideForm">
 
         <input class="HB__form_input jsSaveTheBees" name="required_field" type="text" autocomplete="off">
 
@@ -58,7 +58,7 @@ $admin_email = get_bloginfo( 'admin_email' );
     </div>
 
     <footer>
-        <div class="HB__form_section HB__form_section-hidden jsErrorMessage" style="display:none;">
+        <div class="HB__form_section HB__form_section-hidden jsOutput" style="display:none;">
             <p>
                 Sincere apologies, something went wrong. Please refresh and try again, or
                 <a href="mailto:<?php echo $admin_email; ?>?subject=FormErr%20New%20Website%20Message">click here</a>

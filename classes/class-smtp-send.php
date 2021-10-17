@@ -38,7 +38,7 @@ class SMTP_Send {
     /**
      * Holds submitted form values passed by Form_Handler.
      */
-    public $form_values;
+    private $form_values;
 
 
     /**
@@ -100,35 +100,38 @@ class SMTP_Send {
      */
     public function __construct( $form_values ) {
         
+error_log( '__construct' );
+
+        // form data passed by handler.
         $this->form_values = $form_values;
 
+        // get options from db.
         $ok = false;
-        foreach ( $this->options as $option ) {
-
-            //populate the options array
+        foreach ( $this->options as $option => $value ) {
             $this->options[ $option ] = get_option( $option );
-
-            if ( $option !== 'auth' && '' == $option ) {
+            if ( $this->options[ $option ] !== 'auth' && '' == $this->options[ $option ] ) {
                 $ok = false;
+error_log( $option );
                 return;
-
             } else {
                 $ok = true;
             }
         }
 
         if ( $ok ) {
-            validate_settings( $options );
+            $this->validate_options( $this->options );
         } else {
-            respond( 'settings_missing' );
+            $this->respond( 'settings_missing' );
             return;
         }
     }
 
 
-    private function validate_settings( $options ) {
+    private function validate_options( $options ) {
 
-        extract( $options );
+error_log( 'validate_options' );
+
+        extract( $this->options );
 
         $pass = is_string( $username )
                 && is_string( $password )
@@ -138,22 +141,24 @@ class SMTP_Send {
                 && is_email( $recipient_email );
 
         if ( $pass ) {
-            compose_email( $options );
+            $this->compose_email( $options );
 
         } else {
                 //settings failed validation.
-                respond( 'settings_invalid' );
+                $this->respond( 'settings_invalid' );
                 return;
         }
     }
 
 
-    public function compose_email( $options ) {
+    private function compose_email( $options ) {
+
+error_log( 'compose_email' );
 
         $mail = new PHPMailer( true );
 
-        extract( $options );
-        extract( $form_values );
+        extract( $this->options );
+        extract( $this->form_values );
 
         // clean name
         $submitted_name = substr( strip_tags( $submitted_name ), 0, 255 );
@@ -225,6 +230,9 @@ class SMTP_Send {
 
 
     private function respond( $response ) {
+
+error_log( 'respond' );
+error_log( $response );
 
         switch ( $response ) {
 

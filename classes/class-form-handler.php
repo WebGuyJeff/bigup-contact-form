@@ -26,10 +26,6 @@ class Form_Handler {
      */
     public static function catch_ajax_logged_in() {
 
-
-error_log ('HELLO from form-handler.php!!!');
-
-
         status_header(200);
 
         $form_values = array(
@@ -49,8 +45,9 @@ error_log ('HELLO from form-handler.php!!!');
             echo json_encode( $response );
         }
 
-        //request handlers should exit() when done
-        exit( "Server received the form submission from your browser.");
+        $response = array( "response" => "Processing..." );
+        echo json_encode( $response );
+        exit; //request handlers should exit() when done
     }
 
 
@@ -58,10 +55,6 @@ error_log ('HELLO from form-handler.php!!!');
      * Handle form submission for ALL USERS.
      */
     public static function catch_ajax_all_users() {
-
-
-error_log ('HELLO from form-handler.php!!!');
-
 
         $form_values = array(
             'nonce'               => $_REQUEST[ 'nonce' ],
@@ -80,6 +73,8 @@ error_log ('HELLO from form-handler.php!!!');
             echo json_encode( $response );
         }
 
+        $response = array( "response" => "Processing..." );
+        echo json_encode( $response );
         exit; //request handlers should exit() when done
     }
 

@@ -22,8 +22,8 @@
 
     /**
      * Hold the form DOM node that was submitted so the same
-     * element can be updated by the ajax callback. This saves
-     * passing the object to and from the server inside the cb.
+     * form can be updated with response data.
+     * 
      * This also helps avoid the use of element IDs so this
      * form can exist multiple times in a page.
      * 
@@ -40,7 +40,7 @@
         let honeypot = document.querySelectorAll( '.jsSaveTheBees' );
         honeypot.forEach( input => { input.style.display = "none" } )
 
-        // Attach 'click' listener with ajax handler callback to the form(s)
+        // Attach submit listener callback to the form(s)
         document.querySelectorAll( '.ajaxFormHandler' ).forEach( ( form ) => {
             form.addEventListener( 'submit', ( event ) => {
                 // Prevent normal form submit action
@@ -62,22 +62,9 @@
         // Remember which form was used
         current_form = form;
 
-        // Get form values
-        let form_data = {
-            nonce:      wp_nonce,
-            action:     wp_action,
-            name:       form.querySelector( '[name="HB__form_name"]' ).value,
-            email:      form.querySelector( '[name="HB__form_email"]' ).value,
-            message:    form.querySelector( '[name="HB__form_message"]' ).value
-        };
-
-console.log(form_data);
-
         // Update button
-        form.querySelectorAll( '.jsButtonSubmit' ).disabled = true;
-        form.querySelectorAll( '.jsButtonSubmit > *:first-child' )[0].textContent = 'One mo...';
-
-
+//        form.querySelector( '.jsButtonSubmit' ).disabled = true;
+        form.querySelector( '.jsButtonSubmit > *:first-child' ).textContent = 'One mo...';
 
         fetch( wp_ajax_url, {
             method: 'POST',
@@ -94,32 +81,21 @@ console.log(form_data);
                 message:    form.querySelector( '[name="HB__form_message"]' ).value
             } )
         } )
-           .then( ( response ) => response.json() )
-            .then( ( data ) => {
-                if ( data ) {
-                    console.log(data);
+            .then( ( response ) => {
+                if ( !response.ok ) {
+                    throw new Error( "HTTP error, status = " + response.status );
+                }
+                return response.json();
+            } )
+            .then( ( json ) => {
+                if ( json ) {
+                    server_response( json );
                 }
             } )
             .catch( ( error ) => {
                 console.error( error );
+                http_error( error );
             } );
-
-
-/*
-
-        // Ajax request
-        jQuery.ajax( {
-            method: "POST",
-            url: wp_ajax_url,
-            timeout: 3000,
-            data: form_data,
-            encode: true,
-            dataType: 'json',
-            success: ajax_response,
-            error: ajax_error
-        } );
-*/
-
 
     } //func end
 
@@ -131,81 +107,80 @@ console.log(form_data);
      * @param {json} data The json response sent by the server.
      * 
      */
-    function ajax_response( data, textStatus, jqXHR ) {
+    function server_response( data ) {
 
         form = current_form;
 
         // Get the elems of the form that was used
-        let el_success = form.querySelectorAll( '.jsSuccessMessage' )[0];
-        let el_error = form.querySelectorAll( '.jsErrorMessage' )[0];
-        let el_hide = form.querySelectorAll( '.jsHideOnSuccess' )[0];
-        let el_button = form.querySelectorAll( '.jsButtonSubmit > *:first-child' )[0];
+        let title = form.querySelector( '.jsSuccessMessage' );
+        let output = form.querySelector( '.jsOutput' );
+        let hidden_form = form.querySelector( '.jsHideForm' );
+        let button = form.querySelector( '.jsButtonSubmit > *:first-child' );
+
+console.log(data);
 
         // Check json ajax response
-        if ( data.result == 'success' ) {
+/*        if ( data.result == 'success' ) {
 
             // Output message
-            el_success.textContent = 'Message Sent!';
-            el_error.style.display = "none";
-            el_hide.style.display = "none";
+            title.textContent = 'Message Sent!';
+            output.style.display = "none";
+            hidden_form.style.display = "none";
 
         } else if ( data.result == 'settings_missing' ) {
 
-            el_error.append( '<p>SMTP settings are incomplete. Please alert website admin.</p>' );
-            el_error.style.display = 'block';
-            el_button.textContent = 'Error';
+            output.append( '<p>SMTP settings are incomplete. Please alert website admin.</p>' );
+            output.style.display = 'block';
+            button.textContent = 'Error';
 
         } else if ( data.result == 'settings_invalid' ) {
 
-            el_error.append( '<p>SMTP settings are invalid. Please alert website admin.</p>' );
-            el_error.style.display = 'block';
-            el_button.textContent = 'Error';
+            output.append( '<p>SMTP settings are invalid. Please alert website admin.</p>' );
+            output.style.display = 'block';
+            button.textContent = 'Error';
 
         } else {
 
-            data.errors.forEach( (error, message) => el_error.append( '<p>' + error + ': ' + message + '</p>' ) );
-            el_error.style.display = 'block';
-            el_button.textContent = 'Error';
+            data.errors.forEach( (error, message) => output.append( '<p>' + error + ': ' + message + '</p>' ) );
+            output.style.display = 'block';
+            button.textContent = 'Error';
         }
+*/
         // re-enable button
-    //    form.querySelectorAll( '.jsButtonSubmit' ).disabled = false;
+        button.disabled = false;
     }
 
 
     /**
-     * Do this on ajax failure.
+     * Do this on server connection failure
      * 
-     * @param {object} jqXHR        Ajax object containing error data.
-     * @param {string} textStatus   Error status.
-     * @param {string} errorThrown  Error text name.
+     * @param {object} error An error object return by fetch.
      * 
      */
-    function ajax_error( jqXHR, textStatus, errorThrown ) {
+    function http_error( error ) {
 
         form = current_form;
 
-        let el_error = form.querySelectorAll( '.jsErrorMessage' )[0];
-        let el_button = form.querySelectorAll( '.jsButtonSubmit > *:first-child' )[0];
+        let message = '<p class="alert">Error: ' + error.message + '</p>';
+        let fallback  = '<p>Sincere apologies, something went wrong.</p>';
+            fallback += '<p>Please <a href="mailto:' + wp_admin_email + '">click ';
+            fallback += 'here</a> to send a message using the email app on your device.</p>';
 
-        let message  = '<p>Sincere apologies, something went wrong.</p>';
-            message += '<p>Please <a href="mailto:' + wp_admin_email + '">click ';
-            message += 'here</a> to send a message using the email app on your device.</p>';
+        let output = form.querySelector( '.jsOutput' );
+        output.innerHTML = message;
+        output.innerHTML += fallback;
+        output.style.display = 'block';
 
-        let error = '<p class="alert">' + textStatus + ': ' + errorThrown + '</p>';
-
-        el_error.innerHTML = error;
-        el_error.innerHTML += message;
-        el_error.style.display = 'block';
-        el_button.textContent = 'Error';
+        let button = form.querySelector( '.jsButtonSubmit > *:first-child' );
+        button.textContent = 'Error';
 
         // If logged in, dump to console
         if ( document.body.classList.contains( 'logged-in' ) ) {
-            console.log( jqXHR );
-            console.log( textStatus );
-            console.log( errorThrown );
+            console.log( 'Form input error! Error message will follow if captured...' );
+            console.log( error.message );
         }
         // re-enable button
-    //    form.querySelectorAll( '.jsButtonSubmit' ).disabled = false;
+        button.disabled = false;
     }
 
 
