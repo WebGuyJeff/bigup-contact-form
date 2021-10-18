@@ -38,6 +38,8 @@ class Form_Receiver {
 
         if ( self::is_nonce_valid( $form_values[ 'nonce' ], $form_values[ 'action' ] ) ) {
             // Good nonce
+            $response = array( "response" => "Processing..." );
+            echo json_encode( $response );
             $smtp_mailer = new SMTP_Send( $form_values );
         } else {
             // Bad nonce
@@ -45,8 +47,6 @@ class Form_Receiver {
             echo json_encode( $response );
         }
 
-        $response = array( "response" => "Processing..." );
-        echo json_encode( $response );
         exit; //request handlers should exit() when done
     }
 
@@ -55,6 +55,8 @@ class Form_Receiver {
      * Handle form submission for ALL USERS.
      */
     public static function catch_form_submission_all_users() {
+
+        status_header(200);
 
         $form_values = array(
             'nonce'               => $_REQUEST[ 'nonce' ],
@@ -66,6 +68,8 @@ class Form_Receiver {
 
         if ( self::is_nonce_valid( $form_values[ 'nonce' ], $form_values[ 'action' ] ) ) {
             // Good nonce
+            $response = array( "response" => "Processing..." );
+            echo json_encode( $response );
             $smtp_mailer = new SMTP_Send( $form_values );
         } else {
             // Bad nonce
@@ -73,8 +77,6 @@ class Form_Receiver {
             echo json_encode( $response );
         }
 
-        $response = array( "response" => "Processing..." );
-        echo json_encode( $response );
         exit; //request handlers should exit() when done
     }
 

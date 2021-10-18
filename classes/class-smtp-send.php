@@ -50,8 +50,8 @@ class SMTP_Send {
         'host' => '',
         'port' => '',
         'auth' => '',
-        'sent_from' => '',
-        'recipient_email' => '',
+        'from_email' => '',
+        'to_email' => '',
     );
 
 
@@ -105,23 +105,15 @@ error_log( '__construct' );
         // form data passed by handler.
         $this->form_values = $form_values;
 
-        // get options from db.
-        $ok = false;
-        foreach ( $this->options as $option => $value ) {
-            $this->options[ $option ] = get_option( $option );
-            if ( $this->options[ $option ] !== 'auth' && '' == $this->options[ $option ] ) {
-                $ok = false;
-error_log( $option );
-                return;
-            } else {
-                $ok = true;
-            }
-        }
+        $smtp_settings = Get_Settings::smtp();
 
-        if ( $ok ) {
-            $this->validate_options( $this->options );
+        if ( $smtp_settings ) {
+            
+            //send email
+
         } else {
-            $this->respond( 'settings_missing' );
+
+            //smtp settings are bad
             return;
         }
     }
@@ -129,18 +121,16 @@ error_log( $option );
 
     private function validate_options( $options ) {
 
-error_log( 'validate_options' );
-
         extract( $this->options );
 
-        $pass = is_string( $username )
+        $valid = ( is_string( $username )
                 && is_string( $password )
                 && is_string( $host )
-                && is_int( $port )
-                && is_email( $sent_from )
-                && is_email( $recipient_email );
+                && ( 1 <= (int)$port )
+                && PHPMailer::validateAddress( $from_email )
+                && PHPMailer::validateAddress( $to_email ) );
 
-        if ( $pass ) {
+        if ( $valid ) {
             $this->compose_email( $options );
 
         } else {
@@ -205,8 +195,8 @@ error_log( 'compose_email' );
             $mail->Port       = $port;                          //TCP port to connect to; use 587 if you have set `SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS`
         
             //Recipients
-            $mail->setFrom( $sent_from, 'HB Mailbot');
-            $mail->addAddress( $recipient_email, );
+            $mail->setFrom( $from_email, 'HB Mailbot');
+            $mail->addAddress( $to_email, );
             $mail->addReplyTo( $submitted_email, $submitted_name );
         
             //Attachments

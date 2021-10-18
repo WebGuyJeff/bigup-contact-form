@@ -15,7 +15,7 @@ namespace Jefferson\HB_Contact_Form;
  * for that page MUST BE IN THE SAME 'OPTION GROUP'. In the register_setting
  * function call this is the first argument as follows:
  * 
- * register_setting( 'option_group', 'sent_from' );
+ * register_setting( 'option_group', 'from_email' );
  *
  * @package Herringbone
  * @subpackage HB_Contact_Form
@@ -106,7 +106,7 @@ class Admin_Settings {
 
 
     /**
-     * Form Fields - SMTP Account Settings
+     * Output Form Fields - SMTP Account Settings
      */
     public function echo_field_username() {
         echo '<input type="text" name="username" id="username" value="' . get_option('username') . '" required>';
@@ -127,17 +127,17 @@ class Admin_Settings {
 
 
     /**
-     * Form Fields - Message Header Settings
+     * Output Form Fields - Message Header Settings
      */
     public function echo_intro_section_headers() {
         echo '<p>These email addresses can be set to anything, however, be aware that setting <b>sent from</b> to an address that doesn&apos;t match the SMTP domain will likely cause mail to be spam-filtered.</p>';
     }
 
-    public function echo_field_recipient_email() {
-        echo '<input type="email" name="recipient_email" id="recipient_email" value="' . get_option( 'recipient_email', get_bloginfo( 'admin_email' ) ) . '">';
+    public function echo_field_to_email() {
+        echo '<input type="email" name="to_email" id="to_email" value="' . get_option( 'to_email', get_bloginfo( 'admin_email' ) ) . '">';
     }
-    public function echo_field_sent_from() {
-        echo '<input type="email" name="sent_from" id="sent_from" value="' . get_option( 'sent_from', get_bloginfo( 'admin_email' ) ) . '">';
+    public function echo_field_from_email() {
+        echo '<input type="email" name="from_email" id="from_email" value="' . get_option( 'from_email', get_bloginfo( 'admin_email' ) ) . '">';
     }
 
 
@@ -152,7 +152,6 @@ class Admin_Settings {
 
         $group = $this->group_name;
         $page = $this->page_slug;
-
 
         /**
          * Register section and fields - SMTP Account Settings
@@ -173,8 +172,7 @@ class Admin_Settings {
             register_setting( $group, 'port', [ &$this, 'validate_port' ] );
 
             add_settings_field( 'auth', 'Authentication', [ &$this, 'echo_field_auth' ], $page, $section );
-            register_setting( $group, 'auth', [ &$this, 'validate_checkbox' ] );
-
+            register_setting( $group, 'auth', [ &$this, 'sanitise_checkbox' ] );
 
         /**
          * Register section and fields - Message Header Settings
@@ -182,11 +180,11 @@ class Admin_Settings {
         $section = 'section_headers';
         add_settings_section( $section, 'Message Headers', [ &$this, 'echo_intro_section_headers' ], $page );
 
-            add_settings_field( 'recipient_email', 'Recipient Email Address', [ &$this, 'echo_field_recipient_email' ], $page, $section );
-            register_setting( $group, 'recipient_email', 'sanitize_email' );
+            add_settings_field( 'to_email', 'Recipient Email Address', [ &$this, 'echo_field_to_email' ], $page, $section );
+            register_setting( $group, 'to_email', 'sanitize_email' );
 
-            add_settings_field( 'sent_from', 'Sent-from Email Address', [ &$this, 'echo_field_sent_from' ], $page, $section );
-            register_setting( $group, 'sent_from', 'sanitize_email' );
+            add_settings_field( 'from_email', 'Sent-from Email Address', [ &$this, 'echo_field_from_email' ], $page, $section );
+            register_setting( $group, 'from_email', 'sanitize_email' );
 
     }
 
@@ -226,10 +224,10 @@ class Admin_Settings {
     /**
      * Validate a checkbox.
      */
-    function validate_checkbox( $checkbox ) {
+    function sanitise_checkbox( $checkbox ) {
 
-        $checkbox_ok = ( 1 == $checkbox ) ? $checkbox : null;
-        return $checkbox_ok;
+        $checkbox = (bool)$checkbox;
+        return $checkbox;
     }
 
 }// Class end
