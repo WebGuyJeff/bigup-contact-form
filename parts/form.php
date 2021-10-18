@@ -23,8 +23,11 @@ $admin_email = get_bloginfo( 'admin_email' );
 <form class="HB__form ajaxFormHandler" method="post" autocomplete="on">
 
     <header class="HB__form_section">
-        <h3 id="aria_form-title" class="HB__form_title jsSuccessMessage"><?php echo $title ?></h3>
-        <p id="aria_form-desc" class="HB__form_message"><?php echo $message ?></p>
+        <?php
+            $title   = ( isset( $title ) ) ? '<h3 id="aria_form-title" class="HB__form_title">' . $title . '</h3>' : '';
+            $message = ( isset( $message ) ) ? '<p id="aria_form-desc" class="HB__form_message">' . $message . '</p>' : '';
+            echo $title . "\n" . $message . "\n";
+        ?>
     </header>
 
     <div class="HB__form_section jsHideForm">
