@@ -24,128 +24,132 @@ require plugin_dir_path( __DIR__ ) . 'vendor/autoload.php';
 class Get_Settings {
 
 
-    /**
-     * Init the class by grabbing the saved options.
-     * 
-     * Performs initial validation to ensure no values are empty.
-     */
-    public static function smtp() {
-        
-        $option_names = [
-            'username',
-            'password',
-            'host',
-            'port',
-            'auth',
-            'from_email',
-            'to_email',
-        ];
+	/**
+	 * Init the class by grabbing the saved options.
+	 * 
+	 * Performs initial validation to ensure no values are empty.
+	 */
+	public static function smtp() {
+		
+		$option_names = [
+			'username',
+			'password',
+			'host',
+			'port',
+			'auth',
+			'from_email',
+			'to_email',
+		];
 
-        $smtp_settings = Self::get_options_from_database( $option_names );
+		$smtp_settings = Self::get_options_from_database( $option_names );
 
-        if ( $smtp_settings && Self::validate_settings( $smtp_settings ) ) {
+		if ( Self::validate_settings( $smtp_settings ) ) {
 
-            // settings are good
-            return $smtp_settings;
+error_log( 'Jefferson\HB_Contact_Form\Get_Settings\smtp - good ' );
 
-        }
-        // settings are bad
-        return false;
-    }
+			// settings are good
+			return $smtp_settings;
+		}
+		// settings are bad
 
+error_log( 'Jefferson\HB_Contact_Form\Get_Settings\smtp - bad ' );
 
-    /**
-     * Get all passed option names from the db.
-     * 
-     * Returns false if ANY option is empty.
-     */
-    private static function get_options_from_database( $option_names ) {
-
-        if ( is_string( $option_names ) ) {
-
-            $settings[ $option_names ] = get_option( $option_names );
-            //if it's an empty string or not a boolean
-            if ( $settings[ $option_names ] === null || !is_bool( $settings[ $option_names ] ) ) {
-                //the option has no valid value
-                error_log( 'HB_Contact_Form\Get_Settings::get_options_from_database - bad option value: ' . $option_names );
-                return false;
-            }
-
-        } elseif ( is_array( $option_names ) ) {
-
-            // get options from db.
-            foreach ( $option_names as $option ) {
-                $settings[ $option ] = get_option( $option );
-                if ( is_null( $settings[ $option ] ) || !is_bool( $settings[ $option_names ] ) ) {
-                    error_log( 'HB_Contact_Form\Get_Settings::get_options_from_database - bad option value: ' . $option );
-                    return false;
-                }
-            }
-
-        } else {
-
-            error_log( 'HB_Contact_Form\Get_Settings::get_options_from_database $option_names should be string or array' );
-            return false;
-
-        }
-        return $settings;
-    }
+foreach ($smtp_settings as $key => $value) {
+error_log('Get_Settings: ' . $key . ': ' . $value );
+}
+		return false;
 
 
-    /**
-     * Validate settings
-     * 
-     * Returns false if ANY option is invalid.
-     * This only validates settings and should not manipulate values.
-     */
-    private function validate_settings( $settings ) {
-
-        $valid = true;
-        foreach ( $settings as $name => $value ){
+	}
 
 
+	/**
+	 * Get all passed option names from the db.
+	 * 
+	 * Returns false if ANY option is empty.
+	 */
+	private static function get_options_from_database( $option_names ) {
 
-            switch ( $name ) {
+		if ( is_array( $option_names ) ) {
+			foreach ( $option_names as $option ) {
+				$settings[ $option ] = get_option( $option );
 
-                case 'username':
-                    $valid = ( is_string( $value ) );
+error_log( 'Jefferson\HB_Contact_Form\get_options_from_database - ' . $option . ': ' . get_option( $option ) );
 
-                case 'password':
-                    $valid = ( is_string( $value ) );
+			}
 
-                case 'host':
-                    $valid = ( is_string( $value ) );
+		} elseif ( is_string( $option_names ) ) {
+			$settings[ $option_names ] = get_option( $option_names );
 
-                case 'port':
-                    $valid = ( 1 <= (int)$value );
+		} else {
+			error_log( 'Jefferson\HB_Contact_Form\Get_Settings::get_options_from_database - $option_names must be string or array' );
+			return false;
 
-                case 'auth':
-                    $valid = ( is_bool( $value ) );
-                    //are values stored as bool?
-
-
-                case 'from_email':
-                    $valid = ( PHPMailer::validateAddress( $value ) );             
-
-                case 'to_email':
-                    $valid = ( PHPMailer::validateAddress( $value ) );
-
-
-            }
+		}
+		return $settings;
+	}
 
 
-            if ( !$valid ) {
-                return false;
-                error_log( 'HB_Contact_Form\Get_Settings->validate_settings - settings failed validation' );
-            } else {
-                    //settings failed validation.
-                    $this->respond( 'settings_invalid' );
-                    return;
-            }
+	/**
+	 * Validate settings
+	 * 
+	 * Returns false if ANY option is invalid.
+	 * This only validates settings and should not manipulate values.
+	 */
+	private static function validate_settings( $settings ) {
 
+		// check for null values
+		if ( array_search( null, $settings, true) ) {
+			error_log( 'Jefferson\HB_Contact_Form\Get_Settings::get_options_from_database - null value disallowed' );
+			return false;
+		};
 
-        }
-    }
+		foreach ( $settings as $name => $value ) {
+			$valid = true;
+			switch ( $name ) {
+
+				case 'username':
+					$valid = ( is_string( $value ) ) ? true : false;
+
+				case 'password':
+					$valid = ( is_string( $value ) ) ? true : false;
+
+				case 'host':
+					if ( is_string( $value ) ) {
+						$ip = gethostbyname( $value );
+						$valid = ( !filter_var( $ip, FILTER_VALIDATE_IP ) ) ? true : false;
+					}
+
+				case 'port':
+					$port_range = array(
+						'options' => array(
+							'min_range' => 1,
+							'max_range' => 65535,
+						)
+					);
+					$valid = ( filter_var( $value, FILTER_VALIDATE_INT, $port_range ) === FALSE) ? true : false;
+
+				case 'auth':
+					$valid = ( is_bool( $value ) );
+
+				case 'from_email':
+					$valid = ( PHPMailer::validateAddress( $value ) ) ? true : false;             
+
+				case 'to_email':
+					$valid = ( PHPMailer::validateAddress( $value ) ) ? true : false;
+			}
+
+error_log( 'validation: ' . $valid . ' ' . $name . ' ' . $value );
+
+			if ( $valid === false ) {
+				//settings failed validation.
+				return false;
+				error_log( 'Jefferson\HB_Contact_Form\Get_Settings::validate_settings - settings failed validation' );
+			}
+
+		}
+		return true;
+	}
 
 
 }//Class end

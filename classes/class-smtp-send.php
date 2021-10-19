@@ -22,8 +22,6 @@ use PHPMailer\PHPMailer\Exception;
 
 // WordPress Dependencies
 use function get_bloginfo;
-use function get_option;
-use function is_email;
 use function wp_strip_all_tags;
 use function wp_kses;
 use function plugin_dir_path;
@@ -33,26 +31,6 @@ require plugin_dir_path( __DIR__ ) . 'vendor/autoload.php';
 
 
 class SMTP_Send {
-
-
-    /**
-     * Holds submitted form values passed by Form_Receiver.
-     */
-    private $form_values;
-
-
-    /**
-     * Holds contact form databse options.
-     */
-    private $options = array(
-        'username' => '',
-        'password' => '',
-        'host' => '',
-        'port' => '',
-        'auth' => '',
-        'from_email' => '',
-        'to_email' => '',
-    );
 
 
     /**
@@ -96,66 +74,45 @@ class SMTP_Send {
     /**
      * Init the class by grabbing the saved options.
      * 
-     * Performs initial validation to ensure no values are empty.
+     * Prepares SMTP settings and form data to pass to compose_email.
+     * Form data is passed by handler.
      */
     public function __construct( $form_values ) {
         
-error_log( '__construct' );
-
-        // form data passed by handler.
-        $this->form_values = $form_values;
+error_log( 'Jefferson\HB_Contact_Form\SMTP_Send\__construct' );
 
         $smtp_settings = Get_Settings::smtp();
 
         if ( $smtp_settings ) {
-            
-            //send email
+            $this->compose_email( $smtp_settings, $form_values );
 
         } else {
+            error_log( 'Jefferson\HB_Contact_Form\SMTP_Send->__construct - smtp account settings invalid' );
 
-            //smtp settings are bad
+            echo $smtp_settings ? 'true' : 'false';
+error_log( is_array($smtp_settings) ? 'true' : 'false' );
             return;
         }
     }
 
 
-    private function validate_options( $options ) {
-
-        extract( $this->options );
-
-        $valid = ( is_string( $username )
-                && is_string( $password )
-                && is_string( $host )
-                && ( 1 <= (int)$port )
-                && PHPMailer::validateAddress( $from_email )
-                && PHPMailer::validateAddress( $to_email ) );
-
-        if ( $valid ) {
-            $this->compose_email( $options );
-
-        } else {
-                //settings failed validation.
-                $this->respond( 'settings_invalid' );
-                return;
-        }
-    }
 
 
-    private function compose_email( $options ) {
+    private function compose_email( $smtp_settings, $form_values ) {
 
-error_log( 'compose_email' );
+error_log( 'Jefferson\HB_Contact_Form\SMTP_Send\compose_email' . $smtp_settings . $form_values);
 
         $mail = new PHPMailer( true );
 
-        extract( $this->options );
-        extract( $this->form_values );
+        extract( $smtp_settings );
+        extract( $form_values );
 
         // clean name
         $submitted_name = substr( strip_tags( $submitted_name ), 0, 255 );
 
         // Make sure address is valid
         if ( !PHPMailer::validateAddress( $submitted_email ) ) {
-            respond( 'email_invalid' );
+            $this->respond( 'email_invalid' );
             return;
         }
 
@@ -180,7 +137,7 @@ error_log( 'compose_email' );
         $html .= "<td><b>Message: </b><br><br>{$submitted_message}</td>";
         $html .= "</tr></table>";
 
-        $html_cleaned = wp_kses( $html, $allowed_html_tags, [ 'http', 'https', 'ftp', 'ftps', 'mailto', 'tel', 'webcal' ] );
+        $html_cleaned = wp_kses( $html, $this->allowed_html_tags, [ 'http', 'https', 'ftp', 'ftps', 'mailto', 'tel', 'webcal' ] );
         $html_encoded = htmlentities( $html_cleaned, ENT_QUOTES | ENT_IGNORE, "UTF-8" );
 
         try {
@@ -210,21 +167,20 @@ error_log( 'compose_email' );
             $mail->AltBody = $plaintext_cleaned;
         
             $mail->send();
-            respond( 'success' );
+            $this->respond( 'success' );
 
         } catch (Exception $e) {
 
-            echo "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
+            $this->respond( $mail->ErrorInfo );
         }
     }
 
 
-    private function respond( $response ) {
+    private function respond( $result ) {
 
-error_log( 'respond' );
-error_log( $response );
+error_log( 'Jefferson\HB_Contact_Form\SMTP_Send\respond: ' . $result );
 
-        switch ( $response ) {
+        switch ( $result ) {
 
             case 'success':
                 $response = array( "result" => "success" );
@@ -245,6 +201,11 @@ error_log( $response );
                 $response = array( "result" => "email_invalid" );
                 echo json_encode( $response );
                 break;
+
+            default:
+                //send raw data as result
+                $response = array( "result" => $result );
+                echo json_encode( $response );
         }
     }
 
