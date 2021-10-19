@@ -9,29 +9,26 @@
  * @copyright Copyright (c) 2021, Jefferson Real
  * @license GPL2+
  * 
+ * wp_localize_hb_contact_form_vars (declared in html body)
+ * .rest_url;
+ * .rest_nonce;
+ * .ajax_url;
+ * .admin_email;
+ * .nonce;
+ * .action;
+ * 
  */
-
-
 (function form_sender() {
 
-
-    // grab wp_localize_script variables
-    let wp_ajax_url = wp_localize_form_vars.wp_ajax_url;
-    let wp_admin_email = wp_localize_form_vars.wp_admin_email;
-    let wp_nonce = wp_localize_form_vars.wp_nonce;
-    let wp_action = wp_localize_form_vars.wp_action;
-
+    // grab wp localize vars
+    wp = wp_localize_hb_contact_form_vars;
 
     /**
      * Hold the form DOM node that was submitted so the same
      * form can be updated with response data.
      * 
-     * This also helps avoid the use of element IDs so this
-     * form can exist multiple times in a page.
-     * 
      */
     let current_form;
-
 
     /**
      * Prepare the form ready for input.
@@ -44,12 +41,8 @@
         honeypot.forEach( input => { input.style.display = "none" } )
 
         // Attach submit listener callback to the form(s)
-        document.querySelectorAll( '.ajaxFormHandler' ).forEach( ( form ) => {
-            form.addEventListener( 'submit', ( event ) => {
-                // Prevent normal form submit action
-                event.preventDefault();
-                form_submit( form );
-            } );
+        document.querySelectorAll( '.jsFormSubmit' ).forEach( form => {
+            form.addEventListener( 'submit', handle_form_submit );
         } );
     };
 
@@ -57,57 +50,90 @@
     /**
      * Handle the submitted form.
      * 
-     * @param {object} form: The submitted form data.
+     * @param {SubmitEvent} event
      * 
      */
-    function form_submit( form ) {
+    async function handle_form_submit( event ) {
 
-        // Block further activity if honeypot has a value ( bye bye bot )
+        // prevent normal submit action
+        event.preventDefault();
+
+        // get the element the event handler was attached to.
+        const form = event.currentTarget
+
+        // if honeypot has a value ( bye bye bot )
         if ( '' != form.querySelector( '[name="required_field"]' ).value ) {
             document.documentElement.remove();
             window.location.replace("https://en.wikipedia.org/wiki/Robot");
         }
 
-        // Remember which form was used
-        current_form = form;
-
         // Update button
-//        form.querySelector( '.jsButtonSubmit' ).disabled = true;
+        form.querySelector( '.jsButtonSubmit' ).disabled = true;
         form.querySelector( '.jsButtonSubmit > *:first-child' ).textContent = 'One mo...';
 
-        fetch( wp_ajax_url, {
-            method: 'POST',
-            credentials: 'same-origin',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'Cache-Control': 'no-cache',
-            },
-            body: new URLSearchParams( {
-                action:     wp_action,
-                nonce:      wp_nonce,
-                name:       form.querySelector( '[name="HB__form_name"]' ).value,
-                email:      form.querySelector( '[name="HB__form_email"]' ).value,
-                message:    form.querySelector( '[name="HB__form_message"]' ).value
-            } )
-        } )
-            .then( ( response ) => {
-                if ( !response.ok ) {
-                    throw new Error( "HTTP error, status = " + response.status );
-                }
-                return response.json();
-            } )                                               
-            .then( ( json ) => {
-                if ( json ) {
-                    console.log(json);
-                    server_response( json );
-                }
-            } )
-            .catch( ( error ) => {
-                console.error( error );
-                http_error( error );
-            } );
+        try {
 
-    } //func end
+            // Capture form fields from a `FormData` instance.
+            const form_data = new FormData( form );
+
+            // Add nonce and action properties to the form data
+            form_data.set( 'nonce', wp.wp_nonce );
+            form_data.set( 'action', wp.wp_action );
+
+            // scrap honeypot
+            form_data.delete( 'required_field' );
+
+            // Call and await `post_form_data_as_json()` with the FormData instance
+            const response_data = await post_form_data_as_json( form_data );
+
+            // Handle the response
+            console.log( { response_data } );
+
+        } catch ( error ) {
+            console.error( error );
+        }
+    }
+
+
+    /**
+     * POST data as JSON with fetch.
+     *
+     * @param {string}  url       - URL to POST data to
+     * @param {data}    form_data - FormData instance
+     * @return {Object}           - Response body from URL that was POSTed to
+     * 
+     */
+    async function post_form_data_as_json( form_data ) {
+
+        // transform the form data key-value pairs into an object
+        const plain_obj_data = Object.fromEntries( form_data.entries() );
+        // transform that object into a json string
+        const json_string_data = JSON.stringify( plain_obj_data );
+
+console.log(json_string_data);
+
+        const fetch_options = {
+            method: "POST",
+            headers: {
+                "X-WP-Nonce"    : wp.rest_nonce,
+                "Content-Type"  : "application/json",
+                "Accept"        : "application/json"
+            },
+            body: json_string_data,
+        };
+
+        // wp ajax api url
+        const url = wp.rest_url + 'Jefferson/HB_Contact_Form/post';
+
+        const response = await fetch( url, fetch_options );
+
+        if ( !response.ok ) {
+            const error_message = await response.text();
+            throw new Error( error_message );
+        }
+        //return to caller handle_form_submit
+        return response.json();
+    }
 
 
     /**
@@ -157,7 +183,7 @@ console.log(data);
 */
         // re-enable button
         button.disabled = false;
-    }
+    }//server_response end
 
 
     /**
@@ -168,11 +194,13 @@ console.log(data);
      */
     function http_error( error ) {
 
-        form = current_form;
+        let form = current_form;
+
+        let email = wp.wp_admin_email;
 
         let message = '<p class="alert">Error: ' + error.message + '</p>';
         let fallback  = '<p>Sincere apologies, something went wrong.</p>';
-            fallback += '<p>Please <a href="mailto:' + wp_admin_email + '">click ';
+            fallback += '<p>Please <a href="mailto:' + email + '">click ';
             fallback += 'here</a> to send a message using the email app on your device.</p>';
 
         let output = form.querySelector( '.jsOutput' );
@@ -190,7 +218,7 @@ console.log(data);
         }
         // re-enable button
         button.disabled = false;
-    }
+    }//http_error end
 
 
     /**

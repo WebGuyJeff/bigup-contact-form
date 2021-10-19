@@ -14,11 +14,28 @@ namespace Jefferson\HB_Contact_Form;
  */
 
 // WordPress Dependencies
-use function plugin_dir_path;
 use function wp_verify_nonce;
 
 
 class Form_Receiver {
+
+
+    public static function hb_contact_form_rest_api_callback() {
+
+        $form_values = array(
+            'submitted_email'     => $_REQUEST[ 'email' ],
+            'submitted_name'      => $_REQUEST[ 'name' ],
+            'submitted_message'   => $_REQUEST[ 'message' ]
+        );
+
+        $response = array( "response" => "Processing..." );
+        echo json_encode( $response );
+        $smtp_mailer = new SMTP_Send( $form_values );
+
+        exit; //request handlers should exit() when done
+
+    }
+
 
 
     /**
