@@ -15,8 +15,7 @@ namespace Jefferson\HB_Contact_Form;
 
 // WordPress Dependencies
 use function wp_verify_nonce;
-use function get_json_params;
-
+use WP_REST_Request;
 class Form_Receiver {
 
 
@@ -25,30 +24,56 @@ class Form_Receiver {
      * callback.
      * 
      */
-    public static function hb_contact_form_rest_api_callback( $request ) {
+    public static function hb_contact_form_rest_api_callback( WP_REST_Request $request ) {
 
-        $form_data = $request->get_json_params( $request );
-        extract( $form_data );
+        // Let user know we're doing something.
+        $response = array( 
+            'status'  => 200,
+            'message' => 'Processing...'
+        );
+        echo json_encode( $response );
 
-        if ( isset( $email ) || isset( $name ) || isset( $message ) ) {
+        // if content-type header is json
+        if ( $request->get_header( 'Content-Type' ) === 'application/json'){
 
-            $form_values = array(
-                'submitted_email'   => $email,
-                'submitted_name'    => $name,
-                'submitted_message' => $message
-            );
+            // parse json from request.body
+            $form_data = $request->get_json_params( $request );
+            // make form data available as vars
+            extract( $form_data );
 
-            $response = array( "response" => "Processing..." );
-            echo json_encode( $response );
-            $smtp_mailer = new SMTP_Send( $form_values );
+            // if field vars are populated.
+            if ( isset( $email ) && isset( $name ) && isset( $message ) ) {
+
+                // required fields are populated.
+
+                // send form data to smtp handler
+                $form_values = array(
+                    'submitted_email'   => $email,
+                    'submitted_name'    => $name,
+                    'submitted_message' => $message
+                );
+                $smtp_mailer = new SMTP_Send( $form_values );
+
+            } else {
+                // ERROR: One or more fields was empty.
+                $response = array( 
+                    'status'  => 400, 
+                    'message' => 'Name, email and message are required fields.'
+                );
+                echo json_encode( $response );
+            }
 
         } else {
-            $response = array( "response" => "Error: One or more submitted fields did not contain a value." );
+            // ERROR: content-type header is wrong.
+            $response = array(
+                'status'  => 400,
+                'message' => 'Server received data in a format different than expected.'
+            );
             echo json_encode( $response );
         }
-
         exit; //request handlers should exit() when done
     }
+
 
 
     /**

@@ -53,7 +53,7 @@
      * @param {SubmitEvent} event
      * 
      */
-    async function handle_form_submit( event ) {
+    function handle_form_submit( event ) {
 
         // prevent normal submit action
         event.preventDefault();
@@ -67,73 +67,72 @@
             window.location.replace("https://en.wikipedia.org/wiki/Robot");
         }
 
-        // Update button
+        // Set initial 'pending' state
         form.querySelector( '.jsButtonSubmit' ).disabled = true;
-        form.querySelector( '.jsButtonSubmit > *:first-child' ).textContent = 'One mo...';
+        form.querySelector( '.jsButtonSubmit > *:first-child' ).textContent = '[busy]';
+        form.querySelector( '.jsOutput' ).append( '<p>Connecting...</p>' );
 
         try {
 
-            // Capture form fields from a `FormData` instance.
+            // Create `FormData` instance, then convert => plain obj => json string.
             const form_data = new FormData( form );
+            const plain_obj_data = Object.fromEntries( form_data.entries() );
+            const json_string_data = JSON.stringify( plain_obj_data );
 
-            // Add nonce and action properties to the form data
-            form_data.set( 'nonce', wp.wp_nonce );
-            form_data.set( 'action', wp.wp_action );
+            // Create fetch options object
+            const fetch_options = {
+                method: "POST",
+                headers: {
+                    "X-WP-Nonce"    : wp.rest_nonce,
+                    "Content-Type"  : "application/json",
+                    "Accept"        : "application/json"
+                },
+                body: json_string_data,
+            };
 
-            // scrap honeypot
-            form_data.delete( 'required_field' );
+            // Get rest endpoint url
+            const url = wp.rest_url;
 
-            // Call and await `post_form_data_as_json()` with the FormData instance
-            const response_data = await post_form_data_as_json( form_data );
 
-            // Handle the response
-            console.log( { response_data } );
+            /**
+             * Perform http request.
+             * 
+             * fetch    initiate http request using fetch api.
+             * .then    parse json to js object.
+             * .then    process response to user output.
+             * .catch   process errors that came down chain.
+             * 
+             */
+            fetch( url, fetch_options )
+            .then( response => {
+                if ( !response.ok ) {
+                    throw new Error( response.status + ': ' + response.statusText );
+                }
+            } )
+            .then( response => response.json() )
+            .then( response => {
+
+                console.log( response.headers.get( 'Content-Type' ) )
+
+                console.log( response.status )
+                console.log( response.message )
+
+                if ( !response.ok ) {
+                    throw new Error( response.status + ': ' + response.statusText );
+
+                } else {
+                    console.log( 'Success: ' + response.status + ': ' + response.statusText  );
+                }
+            } )
+            .catch( ( error ) => {
+              console.error( error );
+            } );
 
         } catch ( error ) {
             console.error( error );
         }
     }
 
-
-    /**
-     * POST data as JSON with fetch.
-     *
-     * @param {string}  url       - URL to POST data to
-     * @param {data}    form_data - FormData instance
-     * @return {Object}           - Response body from URL that was POSTed to
-     * 
-     */
-    async function post_form_data_as_json( form_data ) {
-
-        // transform the form data key-value pairs into an object
-        const plain_obj_data = Object.fromEntries( form_data.entries() );
-        // transform that object into a json string
-        const json_string_data = JSON.stringify( plain_obj_data );
-
-console.log(json_string_data);
-
-        const fetch_options = {
-            method: "POST",
-            headers: {
-                "X-WP-Nonce"    : wp.rest_nonce,
-                "Content-Type"  : "application/json",
-                "Accept"        : "application/json"
-            },
-            body: json_string_data,
-        };
-
-        // wp ajax api url
-        const url = wp.rest_url + 'Jefferson/HB_Contact_Form/submit/';
-
-        const response = await fetch( url, fetch_options );
-
-        if ( !response.ok ) {
-            const error_message = await response.text();
-            throw new Error( error_message );
-        }
-        //return to caller handle_form_submit
-        return response.json();
-    }
 
 
     /**

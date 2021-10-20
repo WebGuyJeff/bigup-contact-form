@@ -14,11 +14,12 @@ namespace Jefferson\HB_Contact_Form;
  */
 
 // WordPress dependencies.
-use get_bloginfo;
-use wp_localize_script;
-use wp_create_nonce;
-use add_action;
-use add_shortcode;
+use function get_bloginfo;
+use function wp_localize_script;
+use function wp_create_nonce;
+use function add_action;
+use function add_shortcode;
+use function register_rest_route;
 
 
 class Init {
@@ -26,13 +27,12 @@ class Init {
 
     /**
      * Use this function to initialise all dependencies for the plugin.
+     * 
      */
     public function __construct() {
 
         /**
-         * Add hook to register rest api endpoints.
-         * 
-         * @link https://developer.wordpress.org/reference/functions/register_rest_route/
+         * Register REST api endpoints.
          */
         add_action( 'rest_api_init', [ $this, 'register_rest_api_routes' ] );
 
@@ -42,12 +42,12 @@ class Init {
         add_action( 'wp_enqueue_scripts', [ $this, 'register_scripts_and_styles' ] );
 
         /**
-         * Register a shortcode to allow placement of form anywhere.
+         * Register shortcode.
          */
         add_shortcode( 'hb_contact_form', [ new Shortcode, 'display_shortcode' ] );
 
         /**
-         * Register and load the contact form widget.
+         * Register widget.
          */
         add_action( 'widgets_init', [ new Widget, '__construct' ] );
         
@@ -63,6 +63,7 @@ class Init {
      * 
      * WARNING - extensionless php may break form submission
      * if api endpoint url is not adjusted to match.
+     * 
      */
     public function register_scripts_and_styles() {
 
@@ -72,7 +73,7 @@ class Init {
             'hb_contact_form_js',
             'wp_localize_hb_contact_form_vars',
             array(
-                'rest_url'    => rest_url(),
+                'rest_url'    => get_rest_url( null, 'jefferson/hb-contact-form/v1/submit' ),
                 'rest_nonce'  => wp_create_nonce( 'wp_rest' ),
                 'admin_email' => get_bloginfo( 'admin_email' )
             )
@@ -83,12 +84,18 @@ class Init {
     /**
      * Register rest api routes.
      * 
+     * @link https://developer.wordpress.org/reference/functions/register_rest_route/
+     * 
      */
     public function register_rest_api_routes() {
 
-        register_rest_route( 'Jefferson/HB_Contact_Form', '/submit', array(
-            'methods'  => 'POST',
-            'callback' => [ new Form_Receiver, 'hb_contact_form_rest_api_callback' ],
+        /**
+         * Define POST endpoint.
+         */
+        register_rest_route( 'jefferson/hb-contact-form/v1', '/submit', array(
+            'methods'               => 'POST',
+            'callback'              => [ new Form_Receiver, 'hb_contact_form_rest_api_callback' ],
+            'permission_callback'   => '__return_true',
         ) );
     }
 
