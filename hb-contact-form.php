@@ -28,6 +28,15 @@ namespace Jefferson\HB_Contact_Form;
 */
 
 
+
+
+//delete me
+error_log('========[ hb-contact-form ]==============================================');
+
+
+
+
+
 /**
  * Load PHP autoloader.
  */

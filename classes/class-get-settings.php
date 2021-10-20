@@ -44,22 +44,12 @@ class Get_Settings {
 		$smtp_settings = Self::get_options_from_database( $option_names );
 
 		if ( Self::validate_settings( $smtp_settings ) ) {
-
-error_log( 'Jefferson\HB_Contact_Form\Get_Settings\smtp - good ' );
-
 			// settings are good
 			return $smtp_settings;
 		}
 		// settings are bad
-
-error_log( 'Jefferson\HB_Contact_Form\Get_Settings\smtp - bad ' );
-
-foreach ($smtp_settings as $key => $value) {
-error_log('Get_Settings: ' . $key . ': ' . $value );
-}
+		error_log( 'Jefferson\HB_Contact_Form\Get_Settings::smtp() - SMTP settings invalid.' );
 		return false;
-
-
 	}
 
 
@@ -73,9 +63,6 @@ error_log('Get_Settings: ' . $key . ': ' . $value );
 		if ( is_array( $option_names ) ) {
 			foreach ( $option_names as $option ) {
 				$settings[ $option ] = get_option( $option );
-
-error_log( 'Jefferson\HB_Contact_Form\get_options_from_database - ' . $option . ': ' . get_option( $option ) );
-
 			}
 
 		} elseif ( is_string( $option_names ) ) {
@@ -84,7 +71,6 @@ error_log( 'Jefferson\HB_Contact_Form\get_options_from_database - ' . $option . 
 		} else {
 			error_log( 'Jefferson\HB_Contact_Form\Get_Settings::get_options_from_database - $option_names must be string or array' );
 			return false;
-
 		}
 		return $settings;
 	}
@@ -137,6 +123,7 @@ error_log( 'Jefferson\HB_Contact_Form\get_options_from_database - ' . $option . 
 
 				case 'to_email':
 					$valid = ( PHPMailer::validateAddress( $value ) ) ? true : false;
+					
 			}
 
 error_log( 'validation: ' . $valid . ' ' . $name . ' ' . $value );
@@ -144,7 +131,7 @@ error_log( 'validation: ' . $valid . ' ' . $name . ' ' . $value );
 			if ( $valid === false ) {
 				//settings failed validation.
 				return false;
-				error_log( 'Jefferson\HB_Contact_Form\Get_Settings::validate_settings - settings failed validation' );
+				error_log( 'HB_Contact_Form: validate_settings - settings failed validation' );
 			}
 
 		}

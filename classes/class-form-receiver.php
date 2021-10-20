@@ -15,82 +15,35 @@ namespace Jefferson\HB_Contact_Form;
 
 // WordPress Dependencies
 use function wp_verify_nonce;
-
+use function get_json_params;
 
 class Form_Receiver {
 
 
-    public static function hb_contact_form_rest_api_callback() {
-
-        $form_values = array(
-            'submitted_email'     => $_REQUEST[ 'email' ],
-            'submitted_name'      => $_REQUEST[ 'name' ],
-            'submitted_message'   => $_REQUEST[ 'message' ]
-        );
-
-        $response = array( "response" => "Processing..." );
-        echo json_encode( $response );
-        $smtp_mailer = new SMTP_Send( $form_values );
-
-        exit; //request handlers should exit() when done
-
-    }
-
-
-
     /**
-     * Handle form submission for LOGGED IN USERS ONLY.
+     * Rest api handles nonces without needing to involve the submit
+     * callback.
+     * 
      */
-    public static function catch_form_submission_logged_in() {
+    public static function hb_contact_form_rest_api_callback( $request ) {
 
-        status_header(200);
+        $form_data = $request->get_json_params( $request );
+        extract( $form_data );
 
-        $form_values = array(
-            'nonce'               => $_REQUEST[ 'nonce' ],
-            'action'              => $_REQUEST[ 'action' ],
-            'submitted_email'     => $_REQUEST[ 'email' ],
-            'submitted_name'      => $_REQUEST[ 'name' ],
-            'submitted_message'   => $_REQUEST[ 'message' ]
-        );
+        if ( isset( $email ) || isset( $name ) || isset( $message ) ) {
 
-        if ( self::is_nonce_valid( $form_values[ 'nonce' ], $form_values[ 'action' ] ) ) {
-            // Good nonce
+            $form_values = array(
+                'submitted_email'   => $email,
+                'submitted_name'    => $name,
+                'submitted_message' => $message
+            );
+
             $response = array( "response" => "Processing..." );
             echo json_encode( $response );
             $smtp_mailer = new SMTP_Send( $form_values );
+
         } else {
-            // Bad nonce
-            $response = array( "result" => "insecure_failed_nonce" );
-            echo json_encode( $response );
-        }
-
-        exit; //request handlers should exit() when done
-    }
-
-
-    /**
-     * Handle form submission for ALL USERS.
-     */
-    public static function catch_form_submission_all_users() {
-
-        status_header(200);
-
-        $form_values = array(
-            'nonce'               => $_REQUEST[ 'nonce' ],
-            'action'              => $_REQUEST[ 'action' ],
-            'submitted_email'     => $_REQUEST[ 'email' ],
-            'submitted_name'      => $_REQUEST[ 'name' ],
-            'submitted_message'   => $_REQUEST[ 'message' ]
-        );
-
-        if ( self::is_nonce_valid( $form_values[ 'nonce' ], $form_values[ 'action' ] ) ) {
-            // Good nonce
-            $response = array( "response" => "Processing..." );
-            echo json_encode( $response );
-            $smtp_mailer = new SMTP_Send( $form_values );
-        } else {
-            // Bad nonce
-            $response = array( "result" => "insecure_failed_nonce" );
+            $response = array( "response" => "Error: One or more submitted fields did not contain a value." );
             echo json_encode( $response );
         }
 
@@ -100,6 +53,9 @@ class Form_Receiver {
 
     /**
      * Validate WordPress nonces.
+     * 
+     * Only required for manual nonce validation when using wp_admin.php.
+     * 
      */
     private static function is_nonce_valid( $nonce_to_check, $action ) {
 

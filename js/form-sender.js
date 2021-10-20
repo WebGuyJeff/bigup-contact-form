@@ -123,7 +123,7 @@ console.log(json_string_data);
         };
 
         // wp ajax api url
-        const url = wp.rest_url + 'Jefferson/HB_Contact_Form/post';
+        const url = wp.rest_url + 'Jefferson/HB_Contact_Form/submit/';
 
         const response = await fetch( url, fetch_options );
 
