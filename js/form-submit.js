@@ -50,6 +50,12 @@
     /**
      * Handle the submitted form.
      * 
+     * Process:
+     *      fetch    initiate http request using fetch api.
+     *      .then    parse json to js object.
+     *      .then    process response to user output.
+     *      .catch   process errors that came down chain.
+     * 
      * @param {SubmitEvent} event
      * 
      */
@@ -67,10 +73,16 @@
             window.location.replace("https://en.wikipedia.org/wiki/Robot");
         }
 
+        // Get form elements
+        let button = form.querySelector( '.jsButtonSubmit' );
+        let button_label = form.querySelector( '.jsButtonSubmit > *:first-child' );
+        let output = form.querySelector( '.jsOutput' );
+        let form_hide = form.querySelector( '.jsHideForm' );
+
         // Set initial 'pending' state
-        form.querySelector( '.jsButtonSubmit' ).disabled = true;
-        form.querySelector( '.jsButtonSubmit > *:first-child' ).textContent = '[busy]';
-        form.querySelector( '.jsOutput' ).append( '<p>Connecting...</p>' );
+        button.disabled = true;
+        button_label.textContent = '[busy]';
+        output.append( '<p>Connecting...</p>' );
 
         // Create `FormData` instance, then convert => plain obj => json string.
         const form_data = new FormData( form );
@@ -91,18 +103,12 @@
         // Get rest endpoint url
         const url = wp.rest_url;
 
-
         /**
          * Perform http request.
-         * 
-         * fetch    initiate http request using fetch api.
-         * .then    parse json to js object.
-         * .then    process response to user output.
-         * .catch   process errors that came down chain.
-         * 
          */
         fetch( url, fetch_options )
         .then( response => {
+            output.append( '<p>' + response.status + ': ' + response.statusText + '</p>' );
             if ( !response.ok ) {
                 throw new Error( response.status + ': ' + response.statusText );
             }
@@ -110,10 +116,7 @@
         .then( response => response.json() )
         .then( response => {
 
-            console.log( response.headers.get( 'Content-Type' ) )
-
-            console.log( response.status )
-            console.log( response.message )
+            console.log( response.body )
 
             if ( !response.ok ) {
                 throw new Error( response.status + ': ' + response.statusText );

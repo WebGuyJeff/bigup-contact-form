@@ -79,7 +79,7 @@ class Form_Controller {
     public function hb_contact_form_rest_api_callback( WP_REST_Request $request ) {
 
         // Let user know we're doing something.
-        $this->send_json_response( 200, 'Processing...' );
+        $this->send_json_response( [ 200, 'Processing...' ] );
 
         // if content-type header is json
         if ( $request->get_header( 'Content-Type' ) === 'application/json'){
@@ -101,7 +101,11 @@ class Form_Controller {
              * 
              * In this instance, sanitisation is treated as a validation check. Any
              * sanitisation required, is passed back to the user for human correction
-             * as not to pass unexpected values to the mailer.
+             * as not to pass unexpected values to the mailer. The returned array WILL
+             * have it's values modified.
+             * 
+             * @param array $clean_values: The sanitised array.
+             * @param array $clean_valid_values: The sanitised AND validated array.
              * 
              */
             $clean_values = $this->sanitise_user_input( $form_values );
@@ -126,7 +130,6 @@ class Form_Controller {
             }
 
             if ( $form_values_ok ) {
-
                 /**
                  * Send checked form values to mailer.
                  * 
@@ -159,10 +162,15 @@ class Form_Controller {
     /**
      * Sanitises user input.
      * 
-     * Returns the cleaned values and error messages indicating invalid
-     * input.
-     * Note: Does not validate values and may return empty array keys.
-     * @return {array} $form_data['modified']: Contains
+     * Returns the array with cleaned values and data indicating invalid
+     * input. Does not validate values and will return empty array keys in
+     * cases where all characters are invalid. The array will be returned
+     * with a sub-array bearing key 'modified_by_sanitise' containing error
+     * messages and the before/after values for use on the front end.
+     * 
+     * @param array $raw_form_data: Associative array of form input data.
+     * @return array $form_data: Contains cleaned values and sanitisation info.
+     * 
      */
     public function sanitise_user_input( $raw_form_data ) {
 
@@ -215,6 +223,9 @@ class Form_Controller {
      * Should be performed AFTER any sanitisation as a final pre-flight check.
      * Returns true on success, otherwise false.
      * Note: Never modifies or returns values.
+     * 
+     * @param array $form_values: An associative array of form field values. 
+     * 
      */
     public function validate_user_input( $form_values ) {
 
@@ -263,37 +274,44 @@ class Form_Controller {
     }
 
 
-
+    /**
+     * Send JSON response to client.
+     * 
+     * Sets the response header to the passed http status code and a
+     * response body containing an array of status code, status text
+     * and human-readable description of the status or error.
+     *  
+     * @param array $info: [ int(http-code), str(human readable message) ].
+     * 
+     */
     private function send_json_response( $info ) {
 
+error_log( '|||LOG||| send_json_response: ' . $info[0] );
+error_log( '|||LOG||| send_json_response: ' . $info[1] );
 
-error_log($info);
+        if ( is_array( $info ) ) {
 
-foreach ($info as $barlgh) {
-    error_log($barlgh);
-}
+            $codes = [
+                200 => 'OK',
+                400 => 'Bad request',
+                405 => 'Method not allowed',
+                500 => 'Internal server error',
+            ];
+            $response_body = [
+                'status'     => $info[0],
+                'statusText' => $codes[ $info[0] ],
+                'message'    => $info[1],
+            ];
+            if ( ! headers_sent() ) {
+                header( 'Content-Type: application/json' );
+                status_header( $response_body[ 'status' ] );
+            }
+            echo json_encode( $response_body );
 
-
-        error_log( 'HB_Contact_Form\send_json_response: ' . $info[0] );
-        error_log( 'HB_Contact_Form\send_json_response: ' . $info[1] );
-
-        $codes = [
-            200 => 'OK',
-            400 => 'Bad request',
-            405 => 'Method not allowed',
-            500 => 'Internal Server Error',
-        ];
-        $response_body = array( 
-            'status'     => $info[0],
-            'statusText' => $codes[ $info[0] ],
-            'message'    => $info[1],
-        );
-        if ( ! headers_sent() ) {
-            header( 'Content-Type: application/json' );
-            status_header( $response_body[ 'status' ] );
-        }
-        echo json_encode( $response_body );
+        } else {
+            error_log( 'Form_Controller\send_json_response expects array but ' . gettype( $info ) . ' received.' );
+        }   
     }
-        
+
 
 }//Class end
