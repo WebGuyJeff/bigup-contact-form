@@ -34,44 +34,6 @@ class SMTP_Send {
 
 
     /**
-     * A list of allowed html elements used to sanitize email content.
-     */
-    private $allowed_html_tags = array(
-        'a'         => array(
-            'href'      => true,
-        ),
-        'b'         => array(),
-        'br'        => array(),
-        'code'      => array(),
-        'h1'        => array(),
-        'h2'        => array(),
-        'h3'        => array(),
-        'h4'        => array(),
-        'h5'        => array(),
-        'h6'        => array(),
-        'i'         => array(),
-        'img'       => array(
-            'alt'       => true,
-            'align'     => true,
-            'border'    => true,
-            'height'    => true,
-            'src'       => true,
-            'width'     => true,
-        ),
-        'li'        => array(),
-        'p'         => array(),
-        'pre'       => array(),
-        'q'         => array(),
-        'span'      => array(),
-        'small'     => array(),
-        'strong'    => array(),
-        'u'         => array(),
-        'ul'        => array(),
-        'ol'        => array(),
-    );
-
-
-    /**
      * Init the class by grabbing the saved options.
      * 
      * Prepares SMTP settings and form data to pass to compose_email.
@@ -79,15 +41,13 @@ class SMTP_Send {
      */
     public function __construct( $form_values ) {
         
-error_log( 'Jefferson\HB_Contact_Form\SMTP_Send\__construct' );
-
         $smtp_settings = Get_Settings::smtp();
 
         if ( $smtp_settings ) {
             $this->compose_email( $smtp_settings, $form_values );
 
         } else {
-            error_log( 'Jefferson\HB_Contact_Form\SMTP_Send->__construct - smtp account settings invalid' );
+            error_log( 'HB_Contact_Form\SMTP_Send - smtp account settings invalid.' );
 
             echo $smtp_settings ? 'true' : 'false';
 error_log( is_array($smtp_settings) ? 'true' : 'false' );

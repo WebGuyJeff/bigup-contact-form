@@ -14,22 +14,66 @@ namespace Jefferson\HB_Contact_Form;
  */
 
 // WordPress Dependencies
-use function wp_verify_nonce;
 use WP_REST_Request;
+
+
 class Form_Receiver {
 
 
     /**
-     * Rest api handles nonces without needing to involve the submit
-     * callback.
+     * A list of allowed html elements used to sanitize email content.
+     */
+    private $allowed_html_tags = array(
+        'a'         => array(
+            'href'      => true,
+        ),
+        'b'         => array(),
+        'br'        => array(),
+        'code'      => array(),
+        'h1'        => array(),
+        'h2'        => array(),
+        'h3'        => array(),
+        'h4'        => array(),
+        'h5'        => array(),
+        'h6'        => array(),
+        'i'         => array(),
+        'img'       => array(
+            'alt'       => true,
+            'align'     => true,
+            'border'    => true,
+            'height'    => true,
+            'src'       => true,
+            'width'     => true,
+        ),
+        'li'        => array(),
+        'p'         => array(),
+        'pre'       => array(),
+        'q'         => array(),
+        'span'      => array(),
+        'small'     => array(),
+        'strong'    => array(),
+        'u'         => array(),
+        'ul'        => array(),
+        'ol'        => array(),
+    );
+
+
+    /**
+     * Receive form submissions.
+     *
+     * Handle backend form data validation, sanitization and response
+     * messaging before passing to SMTP handler.
+     * 
+     * Note: Rest api handles nonces automatically.
      * 
      */
     public static function hb_contact_form_rest_api_callback( WP_REST_Request $request ) {
 
         // Let user know we're doing something.
         $response = array( 
-            'status'  => 200,
-            'message' => 'Processing...'
+            'status'     => 200,
+            'statusText' => 'OK',
+            'message'    => 'Processing...',
         );
         echo json_encode( $response );
 
@@ -57,8 +101,9 @@ class Form_Receiver {
             } else {
                 // ERROR: One or more fields was empty.
                 $response = array( 
-                    'status'  => 400, 
-                    'message' => 'Name, email and message are required fields.'
+                    'status'     => 400,
+                    'statusText' => 'Bad Request',
+                    'message'    => 'Name, email and message are required fields.'
                 );
                 echo json_encode( $response );
             }
@@ -66,8 +111,9 @@ class Form_Receiver {
         } else {
             // ERROR: content-type header is wrong.
             $response = array(
-                'status'  => 400,
-                'message' => 'Server received data in a format different than expected.'
+                'status'      => 405,
+                'statusText'  => 'Method not allowed',
+                'description' => 'Server received disallowed data type',
             );
             echo json_encode( $response );
         }
@@ -76,35 +122,45 @@ class Form_Receiver {
 
 
 
-    /**
-     * Validate WordPress nonces.
-     * 
-     * Only required for manual nonce validation when using wp_admin.php.
-     * 
-     */
-    private static function is_nonce_valid( $nonce_to_check, $action ) {
 
-        $nonce_ok = true;
 
-        if ( is_string( $nonce_to_check ) && !wp_verify_nonce( $nonce_to_check, $action ) ) {
-            // Bad nonce
-            $nonce_ok = false;
+    private function respond( $result ) {
 
-        } else if ( is_array( $nonce_to_check ) ) {
-            foreach ( $nonce_to_check as $nonce ) {
-                if ( !wp_verify_nonce( $nonce, $action ) ) {
-                    // Bad nonce
-                    $nonce_ok = false;
+        error_log( 'Jefferson\HB_Contact_Form\SMTP_Send\respond: ' . $result );
+        
+                switch ( $result ) {
+        
+                    case 'success':
+                        $response = array( "result" => "success" );
+                        echo json_encode( $response );
+                        break;
+        
+                    case 'settings_missing':
+                        $response = array( "result" => "settings_missing" );
+                        echo json_encode( $response );
+                        break;
+        
+                    case 'settings_invalid':
+                        $response = array( "result" => "settings_invalid" );
+                        echo json_encode( $response );
+                        break;
+        
+                    case 'email_invalid':
+                        $response = array( "result" => "email_invalid" );
+                        echo json_encode( $response );
+                        break;
+        
+                    default:
+                        //send raw data as result
+                        $response = array( "result" => $result );
+                        echo json_encode( $response );
                 }
             }
-        }
+        
 
-        if ( $nonce_ok ) {
-            return true;
-        } else {
-            return false;
-        }
-    }
+
+
+
 
 
 }//Class end
