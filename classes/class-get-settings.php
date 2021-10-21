@@ -96,15 +96,18 @@ class Get_Settings {
 
 				case 'username':
 					$valid = ( is_string( $value ) ) ? true : false;
+					break;
 
 				case 'password':
 					$valid = ( is_string( $value ) ) ? true : false;
+					break;
 
 				case 'host':
 					if ( is_string( $value ) ) {
 						$ip = gethostbyname( $value );
 						$valid = ( !filter_var( $ip, FILTER_VALIDATE_IP ) ) ? true : false;
 					}
+					break;
 
 				case 'port':
 					$port_range = array(
@@ -114,15 +117,19 @@ class Get_Settings {
 						)
 					);
 					$valid = ( filter_var( $value, FILTER_VALIDATE_INT, $port_range ) === FALSE) ? true : false;
+					break;
 
 				case 'auth':
 					$valid = ( is_bool( $value ) );
+					break;
 
 				case 'from_email':
-					$valid = ( PHPMailer::validateAddress( $value ) ) ? true : false;             
+					$valid = ( PHPMailer::validateAddress( $value ) ) ? true : false;
+					break;            
 
 				case 'to_email':
 					$valid = ( PHPMailer::validateAddress( $value ) ) ? true : false;
+					break;
 					
 			}
 

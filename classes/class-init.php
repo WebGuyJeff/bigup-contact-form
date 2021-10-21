@@ -68,7 +68,7 @@ class Init {
     public function register_scripts_and_styles() {
 
         wp_register_style( 'hb_contact_form_css', plugins_url ( 'css/hb-contact-form.css', __DIR__ ), array(), '0.1', 'all' );
-        wp_register_script ( 'hb_contact_form_js', plugins_url ( 'js/form-sender.js', __DIR__ ), array(), '0.5', false );
+        wp_register_script ( 'hb_contact_form_js', plugins_url ( 'js/form-submit.js', __DIR__ ), array(), '0.5', false );
         wp_localize_script(
             'hb_contact_form_js',
             'wp_localize_hb_contact_form_vars',
@@ -94,7 +94,7 @@ class Init {
          */
         register_rest_route( 'jefferson/hb-contact-form/v1', '/submit', array(
             'methods'               => 'POST',
-            'callback'              => [ new Form_Receiver, 'hb_contact_form_rest_api_callback' ],
+            'callback'              => [ new Form_Controller, 'hb_contact_form_rest_api_callback' ],
             'permission_callback'   => '__return_true',
         ) );
     }

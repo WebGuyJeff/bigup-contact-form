@@ -72,65 +72,60 @@
         form.querySelector( '.jsButtonSubmit > *:first-child' ).textContent = '[busy]';
         form.querySelector( '.jsOutput' ).append( '<p>Connecting...</p>' );
 
-        try {
+        // Create `FormData` instance, then convert => plain obj => json string.
+        const form_data = new FormData( form );
+        const plain_obj_data = Object.fromEntries( form_data.entries() );
+        const json_string_data = JSON.stringify( plain_obj_data );
 
-            // Create `FormData` instance, then convert => plain obj => json string.
-            const form_data = new FormData( form );
-            const plain_obj_data = Object.fromEntries( form_data.entries() );
-            const json_string_data = JSON.stringify( plain_obj_data );
+        // Create fetch options object
+        const fetch_options = {
+            method: "POST",
+            headers: {
+                "X-WP-Nonce"    : wp.rest_nonce,
+                "Content-Type"  : "application/json",
+                "Accept"        : "application/json"
+            },
+            body: json_string_data,
+        };
 
-            // Create fetch options object
-            const fetch_options = {
-                method: "POST",
-                headers: {
-                    "X-WP-Nonce"    : wp.rest_nonce,
-                    "Content-Type"  : "application/json",
-                    "Accept"        : "application/json"
-                },
-                body: json_string_data,
-            };
-
-            // Get rest endpoint url
-            const url = wp.rest_url;
+        // Get rest endpoint url
+        const url = wp.rest_url;
 
 
-            /**
-             * Perform http request.
-             * 
-             * fetch    initiate http request using fetch api.
-             * .then    parse json to js object.
-             * .then    process response to user output.
-             * .catch   process errors that came down chain.
-             * 
-             */
-            fetch( url, fetch_options )
-            .then( response => {
-                if ( !response.ok ) {
-                    throw new Error( response.status + ': ' + response.statusText );
-                }
-            } )
-            .then( response => response.json() )
-            .then( response => {
+        /**
+         * Perform http request.
+         * 
+         * fetch    initiate http request using fetch api.
+         * .then    parse json to js object.
+         * .then    process response to user output.
+         * .catch   process errors that came down chain.
+         * 
+         */
+        fetch( url, fetch_options )
+        .then( response => {
+            if ( !response.ok ) {
+                throw new Error( response.status + ': ' + response.statusText );
+            }
+        } )
+        .then( response => response.json() )
+        .then( response => {
 
-                console.log( response.headers.get( 'Content-Type' ) )
+            console.log( response.headers.get( 'Content-Type' ) )
 
-                console.log( response.status )
-                console.log( response.message )
+            console.log( response.status )
+            console.log( response.message )
 
-                if ( !response.ok ) {
-                    throw new Error( response.status + ': ' + response.statusText );
+            if ( !response.ok ) {
+                throw new Error( response.status + ': ' + response.statusText );
 
-                } else {
-                    console.log( 'Success: ' + response.status + ': ' + response.statusText  );
-                }
-            } )
-            .catch( ( error ) => {
-              console.error( error );
-            } );
-
-        } catch ( error ) {
+            } else {
+                console.log( 'Success: ' + response.status + ': ' + response.statusText  );
+            }
+        } )
+        .catch( ( error ) => {
             console.error( error );
-        }
+        } );
+
     }
 
 
