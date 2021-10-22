@@ -160,7 +160,7 @@ class Form_Controller {
 
 
     /**
-     * Sanitises user input.
+     * Sanitise user input.
      * 
      * Returns the array with cleaned values and data indicating invalid
      * input. Does not validate values and will return empty array keys in
@@ -242,7 +242,7 @@ class Form_Controller {
                     if ( ! $ok ) {
                         $fail_message = 'Name should be 2-50 characters.';
                     }
-                    continue 2;
+                    continue 2; // returns parsing to the loop.
 
                 case 'email':
                     $ok = PHPMailer::validateAddress( $value );

@@ -1,27 +1,29 @@
 /**
- * Herringbone Contact Form js.
+ * Herringbone Contact Form Client Controller.
  *
- * This js handles the front end form submission using ajax.
- *
+ * Control client form submission performed with fetch and the
+ * WP REST api. All data transmitted in JSON for adabtability.
+ * 
  * @package Herringbone
  * @subpackage HB_Contact_Form
  * @author Jefferson Real <me@jeffersonreal.com>
  * @copyright Copyright (c) 2021, Jefferson Real
  * @license GPL2+
  * 
- * wp_localize_hb_contact_form_vars (declared in html body)
- * .rest_url;
- * .rest_nonce;
- * .ajax_url;
- * .admin_email;
- * .nonce;
- * .action;
- * 
  */
 (function form_sender() {
 
-    // grab wp localize vars
+
+    /**
+     * Grab WP localize vars.
+     * 
+     * wp_localize_hb_contact_form_vars.*
+     * .rest_url;
+     * .rest_nonce;
+     * .admin_email;
+     */
     wp = wp_localize_hb_contact_form_vars;
+
 
     /**
      * Hold the form DOM node that was submitted so the same
@@ -29,6 +31,7 @@
      * 
      */
     let current_form;
+
 
     /**
      * Prepare the form ready for input.
@@ -70,7 +73,7 @@
         // if honeypot has a value ( bye bye bot )
         if ( '' != form.querySelector( '[name="required_field"]' ).value ) {
             document.documentElement.remove();
-            window.location.replace("https://en.wikipedia.org/wiki/Robot");
+            window.location.replace( "https://en.wikipedia.org/wiki/Robot" );
         }
 
         // Get form elements
@@ -83,6 +86,7 @@
         button.disabled = true;
         button_label.textContent = '[busy]';
         output.append( '<p>Connecting...</p>' );
+        output.style.display = 'block';
 
         // Create `FormData` instance, then convert => plain obj => json string.
         const form_data = new FormData( form );
@@ -108,21 +112,18 @@
          */
         fetch( url, fetch_options )
         .then( response => {
-            output.append( '<p>' + response.status + ': ' + response.statusText + '</p>' );
             if ( !response.ok ) {
-                throw new Error( response.status + ': ' + response.statusText );
+                throw new Error( '1st response = ' + response.status + ': ' + response.statusText );
             }
         } )
         .then( response => response.json() )
         .then( response => {
 
-            console.log( response.body )
+            output.append( '<p>' + response.status + ': ' + response.statusText + ' ' + response.message + '</p>' );
 
             if ( !response.ok ) {
-                throw new Error( response.status + ': ' + response.statusText );
+                throw new Error( '2nd response = ' + response.status + ': ' + response.statusText );
 
-            } else {
-                console.log( 'Success: ' + response.status + ': ' + response.statusText  );
             }
         } )
         .catch( ( error ) => {
@@ -130,6 +131,10 @@
         } );
 
     }
+
+
+
+
 
 
 
