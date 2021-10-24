@@ -62,7 +62,7 @@
      * @param {SubmitEvent} event
      * 
      */
-    function handle_form_submit( event ) {
+    async function handle_form_submit( event ) {
 
         // prevent normal submit action
         event.preventDefault();
@@ -110,7 +110,7 @@
         /**
          * Perform http request.
          */
-        fetch( url, fetch_options )
+        let response = await fetch( url, fetch_options )
         .then( response => {
             console.log( response ); 
             if ( !response.ok ) {
@@ -119,7 +119,7 @@
         } )
         .then( response => response.json() )
         .then( response => {
-
+            console.log(data);
             output.append( '<p>' + response.status + ': ' + response.statusText + ' ' + response.message + '</p>' );
             console.log( '2nd response' ); 
             if ( !response.ok ) {
