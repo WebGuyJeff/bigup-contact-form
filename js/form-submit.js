@@ -112,17 +112,18 @@
          */
         fetch( url, fetch_options )
         .then( response => {
+            console.log( response ); 
             if ( !response.ok ) {
-                throw new Error( '1st response = ' + response.status + ': ' + response.statusText );
+                //throw new Error( '1st error = ' + response.status + ': ' + response.statusText );
             }
         } )
         .then( response => response.json() )
         .then( response => {
 
             output.append( '<p>' + response.status + ': ' + response.statusText + ' ' + response.message + '</p>' );
-
+            console.log( '2nd response' ); 
             if ( !response.ok ) {
-                throw new Error( '2nd response = ' + response.status + ': ' + response.statusText );
+                throw new Error( '2nd error = ' + response.status + ': ' + response.statusText );
 
             }
         } )
