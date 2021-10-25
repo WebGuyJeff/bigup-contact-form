@@ -78,9 +78,6 @@ class Form_Controller {
      */
     public function hb_contact_form_rest_api_callback( WP_REST_Request $request ) {
 
-        // Let user know we're doing something.
-        $this->send_json_response( [ 200, 'Processing...' ] );
-
         // if content-type header is json
         if ( $request->get_header( 'Content-Type' ) === 'application/json'){
 
@@ -112,19 +109,19 @@ class Form_Controller {
             $clean_valid_values = $this->validate_user_input( $clean_values );
 
             $form_values_ok = true;
-            $feedback = "";
+            $feedback = [];
 
             // attach sanitise errors to feedback
             if ( $clean_valid_values[ 'modified_by_sanitise' ] ) {
                 foreach ( $clean_valid_values[ 'modified_by_sanitise' ] as $field ) {
-                    $feedback .= "<p>{$field[ 'error' ]}</p>";
+                    $feedback[ $field ] = $field[ 'error' ];
                 }
                 $form_values_ok = false;
             // attach validation errors to feedback
             } elseif ( ! $clean_valid_values[ 'validation_results' ][ 'ok' ] ) {
                 foreach ( $clean_valid_values[ 'validation_results' ] as $field ) {
                     if ( ! $field[ 'ok' ] )
-                    $feedback .= "<p>{$field[ 'fail_message' ]}</p>";
+                    $feedback[ $field ] = $field[ 'fail_message' ];
                 }
                 $form_values_ok = false;
             }

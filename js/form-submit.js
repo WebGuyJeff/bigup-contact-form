@@ -21,6 +21,7 @@
      * .rest_url;
      * .rest_nonce;
      * .admin_email;
+     * 
      */
     wp = wp_localize_hb_contact_form_vars;
 
@@ -32,6 +33,18 @@
      */
     let current_form;
 
+    /**
+     * Form element vars.
+     * 
+     * These element vars will be assigned as the form submission
+     * is handled and used to provide feedback to the user. They are
+     * declared here to provide top-level scope.
+     * 
+     */
+     let button;
+     let button_label;
+     let output;
+     let form_hide;
 
     /**
      * Prepare the form ready for input.
@@ -68,7 +81,7 @@
         event.preventDefault();
 
         // get the element the event handler was attached to.
-        const form = event.currentTarget
+        const form = event.currentTarget;
 
         // if honeypot has a value ( bye bye bot )
         if ( '' != form.querySelector( '[name="required_field"]' ).value ) {
@@ -76,16 +89,18 @@
             window.location.replace( "https://en.wikipedia.org/wiki/Robot" );
         }
 
-        // Get form elements
-        let button = form.querySelector( '.jsButtonSubmit' );
-        let button_label = form.querySelector( '.jsButtonSubmit > *:first-child' );
-        let output = form.querySelector( '.jsOutput' );
-        let form_hide = form.querySelector( '.jsHideForm' );
+        // Get submitted form elements.
+        button = form.querySelector( '.jsButtonSubmit' );
+        button_label = form.querySelector( '.jsButtonSubmit > *:first-child' );
+        output = form.querySelector( '.jsOutput' );
+        form_hide = form.querySelector( '.jsHideForm' );
 
-        // Set initial 'pending' state
+        // Display 'pending' state to user
         button.disabled = true;
         button_label.textContent = '[busy]';
-        output.append( '<p>Connecting...</p>' );
+        let p_connect = document.createElement("p");
+        output.innerHTML = '';
+        output.append( "Connecting...", p_connect );
         output.style.display = 'block';
 
         // Create `FormData` instance, then convert => plain obj => json string.
@@ -107,36 +122,55 @@
         // Get rest endpoint url
         const url = wp.rest_url;
 
-        /**
-         * Perform http request.
-         */
-        let response = await fetch( url, fetch_options )
-        .then( response => {
-            console.log( response ); 
-            if ( !response.ok ) {
-                //throw new Error( '1st error = ' + response.status + ': ' + response.statusText );
-            }
-        } )
-        .then( response => response.json() )
-        .then( response => {
-            console.log(data);
-            output.append( '<p>' + response.status + ': ' + response.statusText + ' ' + response.message + '</p>' );
-            console.log( '2nd response' ); 
-            if ( !response.ok ) {
-                throw new Error( '2nd error = ' + response.status + ': ' + response.statusText );
 
+
+
+
+        /**
+         * Perform a http request with json response.
+         */
+        async function http_request( url, options ) {
+            const response = await fetch( url, options )
+            if ( !response.ok ) {
+                const message = 'Error ' + response.status + ': ' + response.statusText;
+                throw new Error( message );
             }
-        } )
-        .catch( ( error ) => {
-            console.error( error );
+            const json = await response.json();
+            return json;
+        }
+
+        /**
+         * Send form data and handle response.
+         */
+        http_request( url, fetch_options ).then( json => {
+
+            console.log( json );
+
+
+            if ( typeof json.message === 'string' ) {
+                let p_status = document.createElement("p");
+                output.append( json.status + ': ' + json.statusText, p_status );
+
+            } else if ( typeof json.message === 'array' ) {
+
+                json.message.forEach( form_field => {
+                    let h6 = document.createElement("h6");
+                    output.append( form_field, h6 );
+
+                    form_field.forEach( error => {
+                        let p = document.createElement("p");
+                        output.append( error, p );
+                    } );
+                } );
+            }
+
+        } ).catch( error => {
+            // fetch request failed
+            output.innerHTML = error.message;
         } );
 
+
     }
-
-
-
-
-
 
 
     /**
