@@ -109,22 +109,37 @@ class Form_Controller {
             $clean_valid_values = $this->validate_user_input( $clean_values );
 
             $form_values_ok = true;
-            $feedback = [];
+            $errors = [];
 
             // attach sanitise errors to feedback
             if ( $clean_valid_values[ 'modified_by_sanitise' ] ) {
                 foreach ( $clean_valid_values[ 'modified_by_sanitise' ] as $field ) {
-                    $feedback[ $field ] = $field[ 'error' ];
-                }
-                $form_values_ok = false;
-            // attach validation errors to feedback
-            } elseif ( ! $clean_valid_values[ 'validation_results' ][ 'ok' ] ) {
-                foreach ( $clean_valid_values[ 'validation_results' ] as $field ) {
-                    if ( ! $field[ 'ok' ] )
-                    $feedback[ $field ] = $field[ 'fail_message' ];
+                    $errors[] = $field[ 'error' ];
                 }
                 $form_values_ok = false;
             }
+
+            // attach validation errors to feedback
+            if ( ! $clean_valid_values[ 'validation_results' ][ 'ok' ] ) {
+                foreach ( $clean_valid_values[ 'validation_results' ] as $field ) {
+                    if ( ! $field[ 'ok' ] ) {
+                        $errors[] = $field[ 'fail_message' ];
+                    }
+                }
+                $form_values_ok = false;
+            }
+
+            foreach ( $errors as $error ) {
+                error_log( $error );
+            }
+
+           // $form_values[ 'modified_by_sanitise' ][ $field ][ 'error' ]
+           // $form_values[ 'validation_results' ][ $field ][ 'fail_message' ]
+           // $form_values[ 'validation_results' ][ $field ][ 'ok' ] = $ok;
+
+
+
+
 
             if ( $form_values_ok ) {
                 /**
@@ -145,7 +160,7 @@ class Form_Controller {
 
             } else {
                 // BAD: validation fail
-                $this->send_json_response( [ 400, $feedback ] );
+                $this->send_json_response( [ 400, $errors ] );
             }
 
         } else {
@@ -263,6 +278,8 @@ class Form_Controller {
                 // ok flag for all fields
                 $results[ 'ok' ] = false;
                 $results[ $field ][ 'fail_message' ] = $fail_message;
+            } else {
+                $results[ 'ok' ] = true;
             }
         }
 
@@ -282,10 +299,7 @@ class Form_Controller {
      * 
      */
     private function send_json_response( $info ) {
-
-error_log( '|||LOG||| send_json_response: ' . $info[0] );
-error_log( '|||LOG||| send_json_response: ' . $info[1] );
-
+        
         if ( is_array( $info ) ) {
 
             $codes = [

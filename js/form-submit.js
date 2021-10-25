@@ -54,7 +54,7 @@
 
         // Hide the honeypot input field(s)
         let honeypot = document.querySelectorAll( '.jsSaveTheBees' );
-        honeypot.forEach( input => { input.style.display = "none" } )
+        honeypot.forEach( input => { input.style.display = "none" } );
 
         // Attach submit listener callback to the form(s)
         document.querySelectorAll( '.jsFormSubmit' ).forEach( form => {
@@ -123,14 +123,11 @@
         const url = wp.rest_url;
 
 
-
-
-
         /**
          * Perform a http request with json response.
          */
         async function http_request( url, options ) {
-            const response = await fetch( url, options )
+            const response = await fetch( url, options );
             if ( !response.ok ) {
                 const message = 'Error ' + response.status + ': ' + response.statusText;
                 throw new Error( message );
@@ -139,6 +136,7 @@
             return json;
         }
 
+
         /**
          * Send form data and handle response.
          */
@@ -146,27 +144,21 @@
 
             console.log( json );
 
-
             if ( typeof json.message === 'string' ) {
-                let p_status = document.createElement("p");
-                output.append( json.status + ': ' + json.statusText, p_status );
+                let p = document.createElement("p");
+                output.append( json.status + ': ' + json.statusText, p );
 
             } else if ( typeof json.message === 'array' ) {
-
-                json.message.forEach( form_field => {
-                    let h6 = document.createElement("h6");
-                    output.append( form_field, h6 );
-
-                    form_field.forEach( error => {
-                        let p = document.createElement("p");
-                        output.append( error, p );
-                    } );
+                json.message.forEach( error => {
+                    let p = document.createElement("p");
+                    output.append( error, p );
                 } );
             }
 
         } ).catch( error => {
             // fetch request failed
-            output.innerHTML = error.message;
+            let p = document.createElement("p");
+            output.append( error.message, p );
         } );
 
 
