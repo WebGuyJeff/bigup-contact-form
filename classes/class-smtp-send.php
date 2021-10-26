@@ -48,7 +48,7 @@ class SMTP_Send {
      * Prepares SMTP settings and form data to pass to compose_email.
      * Form data is passed by handler.
      */
-    private function __construct() {
+    public function __construct() {
         
         $this->smtp_settings = Get_Settings::smtp();
 
@@ -76,18 +76,18 @@ error_log( 'SMTP_Send\compose_email CALLED.');
         // Build plaintext email body
         $n = "\n";
         $plaintext  = "This message was sent via the contact form at {$site_url}";
-        $plaintext .= "{$n}{$n}From: {$submitted_name}";
-        $plaintext .= "{$n}E-mail: {$submitted_email}";
-        $plaintext .= "{$n}{$n}{$submitted_message}";
+        $plaintext .= "{$n}{$n}From: {$name}";
+        $plaintext .= "{$n}E-mail: {$email}";
+        $plaintext .= "{$n}{$n}{$message}";
 
         $plaintext_cleaned = wp_strip_all_tags( $plaintext );
 
         // Build html email body
         $html  = "<h3>This message was sent via the contact form at {$site_url}</h3>";
         $html .= "<table><tr>";
-        $html .= "<td><b>From: </b>{$submitted_name}</td>";
-        $html .= "<td><b>E-mail: </b>{$submitted_email}</td>";
-        $html .= "<td><b>Message: </b><br><br>{$submitted_message}</td>";
+        $html .= "<td><b>From: </b>{$name}</td>";
+        $html .= "<td><b>E-mail: </b>{$email}</td>";
+        $html .= "<td><b>Message: </b><br><br>{$message}</td>";
         $html .= "</tr></table>";
 
         $html_encoded = htmlentities( $html, ENT_QUOTES | ENT_IGNORE, "UTF-8" );
@@ -106,11 +106,11 @@ error_log( 'SMTP_Send\compose_email CALLED.');
             //Recipients
             $mail->setFrom( $from_email, 'Mailer');
             $mail->addAddress( $to_email, );
-            $mail->addReplyTo( $submitted_email, $submitted_name );
+            $mail->addReplyTo( $email, $name );
 
             //Content
             $mail->isHTML(true);
-            $mail->Subject = 'Message from: ' . $submitted_name . ' via ' . $site_url;
+            $mail->Subject = 'Message from: ' . $name . ' via ' . $site_url;
             $mail->Body    = $html_encoded;
             $mail->AltBody = $plaintext_cleaned;
         

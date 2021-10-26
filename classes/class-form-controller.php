@@ -13,9 +13,10 @@ namespace Jefferson\HB_Contact_Form;
  * @license GPL2+
  */
 
-// Import PHPMailer classes into the global namespace
+// Load Composer's autoloader
+require plugin_dir_path( __DIR__ ) . 'vendor/autoload.php';
 
-use Error;
+// Import PHPMailer classes into the global namespace
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
@@ -24,7 +25,6 @@ use PHPMailer\PHPMailer\Exception;
 use function sanitize_email;
 use function wp_kses;
 use WP_REST_Request;
-
 
 class Form_Controller {
 
@@ -87,11 +87,11 @@ class Form_Controller {
             // object to vars
             extract( $form_data );
             // vars to array
-            $form_values = array(
-                'submitted_email'   => $email,
-                'submitted_name'    => $name,
-                'submitted_message' => $message
-            );
+            $data[ 'fields' ] = [
+                'email'   => $email,
+                'name'    => $name,
+                'message' => $message
+            ];
 
             /**
              * Sanitise and validate.
@@ -101,58 +101,44 @@ class Form_Controller {
              * as not to pass unexpected values to the mailer. The returned array WILL
              * have it's values modified.
              * 
-             * @param array $clean_values: The sanitised array.
-             * @param array $clean_valid_values: The sanitised AND validated array.
+             * @param array $data_clean: The sanitised array.
+             * @param array $data_clean_valid: The sanitised AND validated array.
              * 
              */
-            $clean_values = $this->sanitise_user_input( $form_values );
-            $clean_valid_values = $this->validate_user_input( $clean_values );
+            $data_clean = $this->sanitise_user_input( $data );
+            $data_clean_valid = $this->validate_user_input( $data_clean );
 
             $form_values_ok = true;
             $errors = [];
 
-            // attach sanitise errors to feedback
-            if ( $clean_valid_values[ 'modified_by_sanitise' ] ) {
-                foreach ( $clean_valid_values[ 'modified_by_sanitise' ] as $field ) {
+            // Collect sanitise errors.
+            if ( $data_clean_valid[ 'modified_by_sanitise' ] ) {
+                foreach ( $data_clean_valid[ 'modified_by_sanitise' ] as $field ) {
                     $errors[] = $field[ 'error' ];
                 }
                 $form_values_ok = false;
             }
 
-            // attach validation errors to feedback
-            if ( ! $clean_valid_values[ 'validation_results' ][ 'ok' ] ) {
-                foreach ( $clean_valid_values[ 'validation_results' ] as $field ) {
-                    if ( ! $field[ 'ok' ] ) {
-                        $errors[] = $field[ 'fail_message' ];
-                    }
+            // Collect validation errors.
+            if ( $data_clean_valid[ 'validation_errors' ] ) {
+                foreach ( $data_clean_valid[ 'validation_errors' ] as $error ) {
+                    $errors[] = $error;
                 }
                 $form_values_ok = false;
             }
-
-            foreach ( $errors as $error ) {
-                error_log( $error );
-            }
-
-           // $form_values[ 'modified_by_sanitise' ][ $field ][ 'error' ]
-           // $form_values[ 'validation_results' ][ $field ][ 'fail_message' ]
-           // $form_values[ 'validation_results' ][ $field ][ 'ok' ] = $ok;
-
-
-
-
 
             if ( $form_values_ok ) {
                 /**
                  * Send checked form values to mailer.
                  * 
-                 * Form values have now passed all checks, so the original array $form_values
-                 * is passed to the mailer as the validation data in $clean_valid_values is
+                 * Form values have now passed all checks, so the original array $data[ 'fields' ]
+                 * is passed to the mailer as the validation data in $data_clean_valid is
                  * now surplus.
                  * 
                  */
                 $smtp_handler = new SMTP_Send();
                 if ( $smtp_handler->settings_ok ) {
-                    $send_result = $smtp_handler->compose_and_send_smtp_email( $form_values );
+                    $send_result = $smtp_handler->compose_and_send_smtp_email( $data[ 'fields' ] );
                     $this->send_json_response( $send_result );
                 } else {
                     $this->send_json_response( [ 500, 'Bad SMTP configuration. Please alert site admin.' ] );
@@ -184,13 +170,13 @@ class Form_Controller {
      * @return array $form_data: Contains cleaned values and sanitisation info.
      * 
      */
-    public function sanitise_user_input( $raw_form_data ) {
+    public function sanitise_user_input( $form_data_array ) {
 
         $modified = [];
 
-        foreach ( $raw_form_data as $field => $value ) {
+        foreach ( $form_data_array[ 'fields' ] as $field => $value ) {
 
-            $old = $raw_form_data[ $field ];
+            $old = $form_data_array[ 'fields' ][ $field ];
             $new = '';
             
             switch ( $field ) {
@@ -220,12 +206,12 @@ class Form_Controller {
         }
 
         if ( $modified ) {
-            $form_values[ 'modified_by_sanitise' ] = $modified;
+            $form_data_array[ 'modified_by_sanitise' ] = $modified;
         } else {
-            $form_values[ 'modified_by_sanitise' ] = false;
+            $form_data_array[ 'modified_by_sanitise' ] = false;
         }
 
-        return $form_values;
+        return $form_data_array;
     }
 
 
@@ -239,52 +225,36 @@ class Form_Controller {
      * @param array $form_values: An associative array of form field values. 
      * 
      */
-    public function validate_user_input( $form_values ) {
+    public function validate_user_input( $form_data_array ) {
 
-        $results = [];
-
-        foreach ( $form_values as $field => $value ) {   
-            
-            $ok = true;
-            $fail_message = '';
+        foreach ( $form_data_array[ 'fields' ] as $field => $value ) {   
             
             switch ( $field ) {
                 case 'name':
-                    $ok = ( strlen( $value ) >= 2 && strlen( $value ) <= 50 );
-                    if ( ! $ok ) {
-                        $fail_message = 'Name should be 2-50 characters.';
+                    if ( strlen( $value ) < 2 || strlen( $value ) > 50 ) {
+                        $results[] = 'Name should be 2-50 characters.';
                     }
                     continue 2; // returns parsing to the loop.
 
                 case 'email':
-                    $ok = PHPMailer::validateAddress( $value );
-                    if ( ! $ok ) {
-                        $fail_message = 'Email address is invalid.';
+                    if ( ! PHPMailer::validateAddress( $value ) ) {
+                        $results[] = 'Email address is invalid.';
                     }
                     continue 2;
 
                 case 'message':
-                    $ok = ( strlen( $value ) > 10 && strlen( $value ) <= 3000 );
-                    if ( ! $ok ) {
-                        $fail_message = 'Message body should be 10-3000 characters.';
+                    if ( strlen( $value ) < 10 || strlen( $value ) > 3000 ) {
+                        $results[] = 'Message body should be 10-3000 characters.';
                     }
                     continue 2;
             }
-
-            // ok flag for field
-            $results[ $field ][ 'ok' ] = $ok;
-            // if validation failed, attach the result.
-            if ( ! $ok ) {
-                // ok flag for all fields
-                $results[ 'ok' ] = false;
-                $results[ $field ][ 'fail_message' ] = $fail_message;
-            } else {
-                $results[ 'ok' ] = true;
-            }
         }
-
-        $form_values[ 'validation_results' ] = $results;
-        return $form_values;
+        if ( isset( $results[ 0 ] ) ) {
+            $form_data_array[ 'validation_errors' ] = $results;
+        } else {
+            $form_data_array[ 'validation_errors' ] = false;
+        }
+        return $form_data_array;
     }
 
 
@@ -304,20 +274,25 @@ class Form_Controller {
 
             $codes = [
                 200 => 'OK',
-                400 => 'Bad request',
-                405 => 'Method not allowed',
-                500 => 'Internal server error',
-            ];
-            $response_body = [
-                'status'     => $info[0],
-                'statusText' => $codes[ $info[0] ],
-                'message'    => $info[1],
+                400 => 'Bad Request',
+                405 => 'Method Not Allowed',
+                500 => 'Internal Server Error',
             ];
             if ( ! headers_sent() ) {
                 header( 'Content-Type: application/json' );
-                status_header( $response_body[ 'status' ] );
+                status_header( $info[ 0 ], $codes[ $info[ 0 ] ] );
             }
-            echo json_encode( $response_body );
+
+            if ( $info[ 0 ] < 300 ) {
+                $payload[ 'ok' ] = true;
+                $payload[ 'message' ] = $info[ 1 ];
+
+            } else {
+                $payload[ 'ok' ] = false;
+                $payload[ 'errors' ] = $info[ 1 ];
+            }
+
+            echo json_encode( $payload );
 
         } else {
             error_log( 'Form_Controller\send_json_response expects array but ' . gettype( $info ) . ' received.' );

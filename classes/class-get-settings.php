@@ -85,7 +85,7 @@ class Get_Settings {
 	private static function validate_settings( $settings ) {
 
 		// check for null values
-		if ( array_search( null, $settings, true) ) {
+		if ( array_search( null, $settings, true ) ) {
 			error_log( 'Jefferson\HB_Contact_Form\Get_Settings::get_options_from_database - null value disallowed' );
 			return false;
 		};
@@ -96,18 +96,18 @@ class Get_Settings {
 
 				case 'username':
 					$valid = ( is_string( $value ) ) ? true : false;
-					break;
+					continue 2;
 
 				case 'password':
 					$valid = ( is_string( $value ) ) ? true : false;
-					break;
+					continue 2;
 
 				case 'host':
 					if ( is_string( $value ) ) {
 						$ip = gethostbyname( $value );
 						$valid = ( !filter_var( $ip, FILTER_VALIDATE_IP ) ) ? true : false;
 					}
-					break;
+					continue 2;
 
 				case 'port':
 					$port_range = array(
@@ -117,23 +117,23 @@ class Get_Settings {
 						)
 					);
 					$valid = ( filter_var( $value, FILTER_VALIDATE_INT, $port_range ) === FALSE) ? true : false;
-					break;
+					continue 2;
 
 				case 'auth':
 					$valid = ( is_bool( $value ) );
-					break;
+					continue 2;
 
 				case 'from_email':
 					$valid = ( PHPMailer::validateAddress( $value ) ) ? true : false;
-					break;            
+					continue 2;            
 
 				case 'to_email':
 					$valid = ( PHPMailer::validateAddress( $value ) ) ? true : false;
-					break;
+					continue 2;
 					
 			}
 
-error_log( 'validation: ' . $valid . ' ' . $name . ' ' . $value );
+error_log( 'setting validation fail: ' . $valid . ' ' . $name . ' ' . $value );
 
 			if ( $valid === false ) {
 				//settings failed validation.

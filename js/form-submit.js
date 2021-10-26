@@ -64,6 +64,21 @@
 
 
     /**
+     * Perform a Fetch request with json response.
+     * 
+     */
+    async function http_request( url, options ) {
+        const fetch_response = await fetch( url, options );
+        const json = await fetch_response.json();
+        json.ok = fetch_response.ok;
+        if ( ! json.ok ) {
+            json.fetch_error = 'Error ' + fetch_response.status + ': ' + fetch_response.statusText;
+        }
+        return json;
+    }
+
+
+    /**
      * Handle the submitted form.
      * 
      * Process:
@@ -89,26 +104,30 @@
             window.location.replace( "https://en.wikipedia.org/wiki/Robot" );
         }
 
-        // Get submitted form elements.
+        // Get elements of submitted form.
         button = form.querySelector( '.jsButtonSubmit' );
         button_label = form.querySelector( '.jsButtonSubmit > *:first-child' );
         output = form.querySelector( '.jsOutput' );
         form_hide = form.querySelector( '.jsHideForm' );
 
-        // Display 'pending' state to user
+        // Display pending state to user.
         button.disabled = true;
+        let button_label_normal = button_label.textContent;
         button_label.textContent = '[busy]';
-        let p_connect = document.createElement("p");
-        output.innerHTML = '';
-        output.append( "Connecting...", p_connect );
+        let p = document.createElement( "p" );
+        p.innerHTML = "Connecting...";
+        remove_all_child_nodes( output );
+        output.appendChild( p );
+
+
         output.style.display = 'block';
 
-        // Create `FormData` instance, then convert => plain obj => json string.
+        // Grab `FormData` then convert to plain obj, then to json string.
         const form_data = new FormData( form );
         const plain_obj_data = Object.fromEntries( form_data.entries() );
         const json_string_data = JSON.stringify( plain_obj_data );
 
-        // Create fetch options object
+        // Fetch options object
         const fetch_options = {
             method: "POST",
             headers: {
@@ -119,59 +138,68 @@
             body: json_string_data,
         };
 
-        // Get rest endpoint url
+        // Rest endpoint url
         const url = wp.rest_url;
 
+        // Send form data and handle response.
+        http_request( url, fetch_options ).then( response => {
 
-        /**
-         * Perform a http request with json response.
-         */
-        async function http_request( url, options ) {
-            const response = await fetch( url, options );
-            if ( !response.ok ) {
-                const message = 'Error ' + response.status + ': ' + response.statusText;
-                throw new Error( message );
-            }
-            const json = await response.json();
-            return json;
-        }
+            if ( response.ok === true ) {
+                // appendChild for efficient browser render.
+                let p = document.createElement( 'p' );
+                p.innerHTML = response.message;
+                p.classList.add( 'alert' );
+                p.classList.add( 'alert-success' );
+                remove_all_child_nodes( output );
+                output.appendChild( p );
 
-
-        /**
-         * Send form data and handle response.
-         */
-        http_request( url, fetch_options ).then( json => {
-
-            console.log( json );
-
-            const p = document.createElement( "p" );
-
-            if ( typeof json.message === 'string' ) {
-                output.append( json.status + ': ' + json.statusText, p );
-
-
-            } else if ( typeof json.message === 'array' ) {
-                json.message.forEach( item => {
-
-                    console.log( item );
-                    output.append( item, p );
+            } else if ( response.errors ) {
+                // object to array.
+                errors = Object.values( response.errors );
+                let div = document.createElement( 'div' );
+                errors.forEach( error => {
+                    let p = document.createElement( 'p' );
+                    p.innerHTML = error;
+                    p.classList.add( 'alert' );
+                    p.classList.add( 'alert-danger' );
+                    div.appendChild( p );
                 } );
-            }
+                remove_all_child_nodes( output );
+                // Only append one elem to save re-renders.
+                output.appendChild( div );
 
-        } ).catch( error => {
-            // fetch request failed
-            const p = document.createElement( "p" );6
-            output.append( error.message, p );
+            } else if ( response.fetch_error ) {
+                let p = document.createElement( 'p' );
+                p.innerHTML = response.fetch_error;
+                p.classList.add( 'alert' );
+                p.classList.add( 'alert-danger' );
+                remove_all_child_nodes( output );
+                output.appendChild( p );
+
+            } else {
+                let p = document.createElement( 'p' );
+                p.innerHTML = "An unknown error has ocurred. Your message may not have been sent.";
+                p.classList.add( 'alert' );
+                p.classList.add( 'alert-danger' );
+                remove_all_child_nodes( output );
+                output.appendChild( p );
+            }
         } );
+
+        button_label.textContent = button_label_normal;
+        button.disabled = false;
     }
 
 
-    /**
-     * Do this on successful ajax response.
-     * 
-     * @param {json} data The json response sent by the server.
-     * 
-     */
+    function remove_all_child_nodes( parent ) {
+        while ( parent.firstChild ) {
+            parent.removeChild( parent.firstChild );
+        }
+    }
+
+
+
+/*
     function server_response( data ) {
 
         form = current_form;
@@ -184,7 +212,7 @@
 console.log(data);
 
         // Check json ajax response
-/*        if ( data.result == 'success' ) {
+       if ( data.result == 'success' ) {
 
             // Output message
 
@@ -210,18 +238,11 @@ console.log(data);
             output.style.display = 'block';
             button.textContent = 'Error';
         }
-*/
+
         // re-enable button
         button.disabled = false;
     }//server_response end
 
-
-    /**
-     * Do this on server connection failure
-     * 
-     * @param {object} error An error object return by fetch.
-     * 
-     */
     function http_error( error ) {
 
         let form = current_form;
@@ -249,6 +270,8 @@ console.log(data);
         // re-enable button
         button.disabled = false;
     }//http_error end
+*/
+
 
 
     /**
