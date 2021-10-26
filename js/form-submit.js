@@ -144,24 +144,25 @@
 
             console.log( json );
 
+            const p = document.createElement( "p" );
+
             if ( typeof json.message === 'string' ) {
-                let p = document.createElement("p");
                 output.append( json.status + ': ' + json.statusText, p );
 
+
             } else if ( typeof json.message === 'array' ) {
-                json.message.forEach( error => {
-                    let p = document.createElement("p");
-                    output.append( error, p );
+                json.message.forEach( item => {
+
+                    console.log( item );
+                    output.append( item, p );
                 } );
             }
 
         } ).catch( error => {
             // fetch request failed
-            let p = document.createElement("p");
+            const p = document.createElement( "p" );6
             output.append( error.message, p );
         } );
-
-
     }
 
 
