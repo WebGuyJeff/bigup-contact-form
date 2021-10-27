@@ -61,14 +61,22 @@ class SMTP_Send {
     /**
      * Compose and send an SMTP email.
      */
-    public function compose_and_send_smtp_email( $form_values ) {
+    public function compose_and_send_smtp_email( $email_values ) {
 
 error_log( 'SMTP_Send\compose_email CALLED.');
 
         $mail = new PHPMailer( true );
 
         extract( $this->smtp_settings );
-        extract( $form_values );
+        extract( $email_values );
+
+foreach( $this->smtp_settings as $setting ) {
+    error_log( 'sendebug: ' . $setting );
+}
+foreach( $email_values as $value ) {
+    error_log( 'sendebug: ' . $value );
+}
+
 
         // Meta variables
         $site_url = get_bloginfo( 'url' );

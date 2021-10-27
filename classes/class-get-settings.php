@@ -44,11 +44,11 @@ class Get_Settings {
 		$smtp_settings = Self::get_options_from_database( $option_names );
 
 		if ( Self::validate_settings( $smtp_settings ) ) {
-			// settings are good
+			// settings ok
 			return $smtp_settings;
 		}
-		// settings are bad
-		error_log( 'Jefferson\HB_Contact_Form\Get_Settings::smtp() - SMTP settings invalid.' );
+		// settings bad
+		error_log( 'HB_Contact_Form - SMTP settings invalid.' );
 		return false;
 	}
 
@@ -69,7 +69,7 @@ class Get_Settings {
 			$settings[ $option_names ] = get_option( $option_names );
 
 		} else {
-			error_log( 'Jefferson\HB_Contact_Form\Get_Settings::get_options_from_database - $option_names must be string or array' );
+			error_log( 'HB_Contact_Form get_options_from_database expects string or array but ' . gettype( $option_names ) . ' received.' );
 			return false;
 		}
 		return $settings;
@@ -85,8 +85,8 @@ class Get_Settings {
 	private static function validate_settings( $settings ) {
 
 		// check for null values
-		if ( array_search( null, $settings, true ) ) {
-			error_log( 'Jefferson\HB_Contact_Form\Get_Settings::get_options_from_database - null value disallowed' );
+		if ( in_array( null, $settings, true ) || in_array( '', $settings, true ) ) {
+			error_log( 'HB_Contact_Form validate_settings one or more values are null.' );
 			return false;
 		};
 
@@ -106,6 +106,8 @@ class Get_Settings {
 					if ( is_string( $value ) ) {
 						$ip = gethostbyname( $value );
 						$valid = ( !filter_var( $ip, FILTER_VALIDATE_IP ) ) ? true : false;
+					} else {
+						$valid = false;
 					}
 					continue 2;
 
@@ -133,15 +135,12 @@ class Get_Settings {
 					
 			}
 
-error_log( 'setting validation fail: ' . $valid . ' ' . $name . ' ' . $value );
-
 			if ( $valid === false ) {
-				//settings failed validation.
+				//settings bad
 				return false;
-				error_log( 'HB_Contact_Form: validate_settings - settings failed validation' );
 			}
-
 		}
+		//settings ok
 		return true;
 	}
 

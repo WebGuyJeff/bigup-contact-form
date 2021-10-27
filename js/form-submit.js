@@ -111,8 +111,6 @@
         p.innerHTML = "Connecting...";
         remove_all_child_nodes( output );
         output.appendChild( p );
-
-
         output.style.display = 'block';
 
         // Grab `FormData` then convert to plain obj, then to json string.
@@ -138,11 +136,13 @@
         http_request( url, fetch_options ).then( response => {
 
             let alert_class = ( response.ok ) ? 'success' : 'danger';
-            let info = ( response.ok ) ? response.message : Object.values( response.errors );
+            let info = ( response.ok ) ? response.message : response.errors;
+
+console.log(info);
 
             let div = document.createElement( 'div' );
 
-            if ( Array.isArray( info ) ) {
+            if ( typeof info === 'array' ) {
                 info.forEach( message => {
                     let p = document.createElement( 'p' );
                     p.innerHTML = message;
@@ -153,7 +153,7 @@
 
             } else if ( typeof info === 'string' ) {
                 let p = document.createElement( 'p' );
-                p.innerHTML = ( message ) ? message : "An unknown error has ocurred. Your message may not have been sent.";
+                p.innerHTML = ( message ) ? message : 'An unknown error has ocurred. Your message may not have been sent.';
                 p.classList.add( 'alert' );
                 p.classList.add( 'alert-' + alert_class );
                 div.appendChild( p );
@@ -161,10 +161,12 @@
 
             remove_all_child_nodes( output );
             output.appendChild( div );
-
-        button_label.textContent = button_label_normal;
-        button.disabled = false;
-    } );
+            button_label.textContent = button_label_normal;
+            button.disabled = false;
+        }).catch( error => {
+            console.log( error );
+        });
+    };
 
 
     function remove_all_child_nodes( parent ) {
@@ -172,82 +174,6 @@
             parent.removeChild( parent.firstChild );
         }
     }
-
-
-
-/*
-    function server_response( data ) {
-
-        form = current_form;
-
-        // Get the elems of the form that was used
-        let output = form.querySelector( '.jsOutput' );
-        let hidden_form = form.querySelector( '.jsHideForm' );
-        let button = form.querySelector( '.jsButtonSubmit > *:first-child' );
-
-console.log(data);
-
-        // Check json ajax response
-       if ( data.result == 'success' ) {
-
-            // Output message
-
-            output.append( '<p>Message Delivered!</p>' );
-            output.style.display = 'block';
-            button.textContent = '👍';
-
-        } else if ( data.result == 'settings_missing' ) {
-
-            output.append( '<p>SMTP settings are incomplete. Please alert website admin.</p>' );
-            output.style.display = 'block';
-            button.textContent = 'Error';
-
-        } else if ( data.result == 'settings_invalid' ) {
-
-            output.append( '<p>SMTP settings are invalid. Please alert website admin.</p>' );
-            output.style.display = 'block';
-            button.textContent = 'Error';
-
-        } else {
-
-            data.errors.forEach( (error, message) => output.append( '<p>' + error + ': ' + message + '</p>' ) );
-            output.style.display = 'block';
-            button.textContent = 'Error';
-        }
-
-        // re-enable button
-        button.disabled = false;
-    }//server_response end
-
-    function http_error( error ) {
-
-        let form = current_form;
-
-        let email = wp.wp_admin_email;
-
-        let message = '<p class="alert">Error: ' + error.message + '</p>';
-        let fallback  = '<p>Sincere apologies, something went wrong.</p>';
-            fallback += '<p>Please <a href="mailto:' + email + '">click ';
-            fallback += 'here</a> to send a message using the email app on your device.</p>';
-
-        let output = form.querySelector( '.jsOutput' );
-        output.innerHTML = message;
-        output.innerHTML += fallback;
-        output.style.display = 'block';
-
-        let button = form.querySelector( '.jsButtonSubmit > *:first-child' );
-        button.textContent = 'Error';
-
-        // If logged in, dump to console
-        if ( document.body.classList.contains( 'logged-in' ) ) {
-            console.log( 'Form input error! Error message will follow if captured...' );
-            console.log( error.message );
-        }
-        // re-enable button
-        button.disabled = false;
-    }//http_error end
-*/
-
 
 
     /**
