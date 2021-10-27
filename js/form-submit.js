@@ -27,13 +27,6 @@
 
 
     /**
-     * Hold the form DOM node that was submitted so the same
-     * form can be updated with response data.
-     * 
-     */
-    let current_form;
-
-    /**
      * Form element vars.
      * 
      * These element vars will be assigned as the form submission
@@ -72,7 +65,7 @@
         const json = await fetch_response.json();
         json.ok = fetch_response.ok;
         if ( ! json.ok ) {
-            json.fetch_error = 'Error ' + fetch_response.status + ': ' + fetch_response.statusText;
+            json.errors = 'Error ' + fetch_response.status + ': ' + fetch_response.statusText;
         }
         return json;
     }
@@ -144,51 +137,34 @@
         // Send form data and handle response.
         http_request( url, fetch_options ).then( response => {
 
-            if ( response.ok === true ) {
-                // appendChild for efficient browser render.
-                let p = document.createElement( 'p' );
-                p.innerHTML = response.message;
-                p.classList.add( 'alert' );
-                p.classList.add( 'alert-success' );
-                remove_all_child_nodes( output );
-                output.appendChild( p );
+            let alert_class = ( response.ok ) ? 'success' : 'danger';
+            let info = ( response.ok ) ? response.message : Object.values( response.errors );
 
-            } else if ( response.errors ) {
-                // object to array.
-                errors = Object.values( response.errors );
-                let div = document.createElement( 'div' );
-                errors.forEach( error => {
+            let div = document.createElement( 'div' );
+
+            if ( Array.isArray( info ) ) {
+                info.forEach( message => {
                     let p = document.createElement( 'p' );
-                    p.innerHTML = error;
+                    p.innerHTML = message;
                     p.classList.add( 'alert' );
-                    p.classList.add( 'alert-danger' );
+                    p.classList.add( 'alert-' + alert_class );
                     div.appendChild( p );
                 } );
-                remove_all_child_nodes( output );
-                // Only append one elem to save re-renders.
-                output.appendChild( div );
 
-            } else if ( response.fetch_error ) {
+            } else if ( typeof info === 'string' ) {
                 let p = document.createElement( 'p' );
-                p.innerHTML = response.fetch_error;
+                p.innerHTML = ( message ) ? message : "An unknown error has ocurred. Your message may not have been sent.";
                 p.classList.add( 'alert' );
-                p.classList.add( 'alert-danger' );
-                remove_all_child_nodes( output );
-                output.appendChild( p );
-
-            } else {
-                let p = document.createElement( 'p' );
-                p.innerHTML = "An unknown error has ocurred. Your message may not have been sent.";
-                p.classList.add( 'alert' );
-                p.classList.add( 'alert-danger' );
-                remove_all_child_nodes( output );
-                output.appendChild( p );
+                p.classList.add( 'alert-' + alert_class );
+                div.appendChild( p );
             }
-        } );
+
+            remove_all_child_nodes( output );
+            output.appendChild( div );
 
         button_label.textContent = button_label_normal;
         button.disabled = false;
-    }
+    } );
 
 
     function remove_all_child_nodes( parent ) {
