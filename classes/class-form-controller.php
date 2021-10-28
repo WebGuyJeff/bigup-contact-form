@@ -151,7 +151,7 @@ class Form_Controller {
 
         } else {
             // BAD: wrong type header
-            $this->send_json_response( [ 405, 'Server received disallowed data type' ] );
+            $this->send_json_response( [ 405, 'Server rejected disallowed request headers' ] );
         }
         exit; //request handlers should exit() when done
     }
@@ -268,35 +268,29 @@ class Form_Controller {
      * @param array $info: [ int(http-code), str(human readable message) ].
      * 
      */
-    private function send_json_response( $info ) {
+    private function send_json_response( $public_status ) {
         
-        if ( is_array( $info ) ) {
+        if ( ! is_array( $public_status ) ) {
+            error_log( 'HB_Contact_Form: send_json_response expects array but ' . gettype( $public_status ) . ' received.' );
+            $public_status = null;
+            $public_status[ 0 ] = 500;
+            $public_status[ 1 ] = 'There was an unknown error and your message may not have been sent.';
+        }
 
-            $codes = [
-                200 => 'OK',
-                400 => 'Bad Request',
-                405 => 'Method Not Allowed',
-                500 => 'Internal Server Error',
-            ];
-            if ( ! headers_sent() ) {
-                header( 'Content-Type: application/json' );
-                status_header( $info[ 0 ], $codes[ $info[ 0 ] ] );
-            }
+        // Ensure response headers haven't already sent to browser.
+        if ( ! headers_sent() ) {
+            header( 'Content-Type: application/json' );
+            status_header( $public_status[ 0 ] );
+        }
 
-            if ( $info[ 0 ] < 300 ) {
-                $payload[ 'ok' ] = true;
-                $payload[ 'message' ] = $info[ 1 ];
+        $public_output[ 'ok' ] = ( $public_status[ 0 ] < 300 ) ? true : false;
+        $public_output[ 'output' ] = $public_status[ 1 ];
 
-            } else {
-                $payload[ 'ok' ] = false;
-                $payload[ 'errors' ] = $info[ 1 ];
-            }
-
-            echo json_encode( $payload );
-
-        } else {
-            error_log( 'Form_Controller\send_json_response expects array but ' . gettype( $info ) . ' received.' );
-        }   
+        // PHPMailer debug ($mail->SMTPDebug) gets dumped to output buffer
+        // and breaks JSON response. Using ob_clean() before output prevents this.
+        ob_clean();
+        echo json_encode( $public_output );
+   
     }
 
 

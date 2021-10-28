@@ -154,21 +154,21 @@ console.log(info);
 
             } else if ( typeof info === 'string' ) {
                 let p = document.createElement( 'p' );
-                p.innerHTML = ( message ) ? message : 'An unknown error has ocurred. Your message may not have been sent.';
+                p.innerHTML = ( info ) ? info : 'An unknown error has ocurred. Your message may not have been sent.';
                 p.classList.add( 'alert' );
                 p.classList.add( 'alert-' + alert_class );
                 div.appendChild( p );
             }
 
+            remove_all_child_nodes( output );
+            output.appendChild( div );
+            button_label.textContent = button_label_normal;
+            button.disabled = false;
+
 
         } ).catch( error => {
             console.log( error );
         } );
-
-        remove_all_child_nodes( output );
-        output.appendChild( div );
-        button_label.textContent = button_label_normal;
-        button.disabled = false;
 
     };
 

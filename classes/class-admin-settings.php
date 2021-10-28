@@ -130,7 +130,7 @@ class Admin_Settings {
      * Output Form Fields - Message Header Settings
      */
     public function echo_intro_section_headers() {
-        echo '<p>These email addresses can be set to anything, however, be aware that setting <b>sent from</b> to an address that doesn&apos;t match the SMTP domain will likely cause mail to be spam-filtered.</p>';
+        echo '<p>These can be set to anything, however, setting <b>sent from</b> to an address that doesn&apos;t match the local domain will cause mail to fail SPF checks, not to mention being a form of forgery.</p>';
     }
 
     public function echo_field_to_email() {

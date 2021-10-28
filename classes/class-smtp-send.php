@@ -63,20 +63,12 @@ class SMTP_Send {
      */
     public function compose_and_send_smtp_email( $email_values ) {
 
-error_log( 'SMTP_Send\compose_email CALLED.');
+error_log( 'compose_and_send_smtp_email CALLED.');
 
         $mail = new PHPMailer( true );
 
         extract( $this->smtp_settings );
         extract( $email_values );
-
-foreach( $this->smtp_settings as $setting ) {
-    error_log( 'sendebug: ' . $setting );
-}
-foreach( $email_values as $value ) {
-    error_log( 'sendebug: ' . $value );
-}
-
 
         // Meta variables
         $site_url = get_bloginfo( 'url' );
@@ -102,17 +94,17 @@ foreach( $email_values as $value ) {
 
         try {
             //Server settings
-            $mail->SMTPDebug = SMTP::DEBUG_SERVER;              //Enable verbose debug output
-            $mail->isSMTP();                                    //Send using SMTP
-            $mail->Host       = $host;                          //Set the SMTP server to send through
-            $mail->SMTPAuth   = (bool)$auth;                    //Enable SMTP authentication
-            $mail->Username   = $username;                      //SMTP username
-            $mail->Password   = $password;                      //SMTP password
-            $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;    //Enable implicit TLS encryption
-            $mail->Port       = $port;                          //TCP port to connect to; use 587 if you have set `SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS`
+            $mail->SMTPDebug = SMTP::DEBUG_OFF;           //debug output level: DEBUG_[OFF/SERVER/CONNECTION]
+            $mail->isSMTP();                                 //Use SMTP
+            $mail->Host       = $host;                       //SMTP server to send through
+            $mail->SMTPAuth   = (bool)$auth;                 //Enable SMTP authentication
+            $mail->Username   = $username;                   //SMTP username
+            $mail->Password   = $password;                   //SMTP password
+            $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS; //Enable implicit TLS encryption
+            $mail->Port       = $port;                       //TCP port
         
             //Recipients
-            $mail->setFrom( $from_email, 'Mailer');
+            $mail->setFrom( $from_email, 'Mailer'); //Use fixed address in your domain to pass SPF checks.
             $mail->addAddress( $to_email, );
             $mail->addReplyTo( $email, $name );
 
@@ -122,12 +114,16 @@ foreach( $email_values as $value ) {
             $mail->Body    = $html_encoded;
             $mail->AltBody = $plaintext_cleaned;
         
+            //Gotime
             $mail->send();
-            return $result = [ 200, 'Message sent successfully.' ];
+            return [ 200, 'Message sent successfully.' ];
 
-        } catch (Exception $e) {
+        } catch ( Exception $e ) {
 
-            return $result = [ 500, 'Server failure. Your message may not have been sent' ];
+            //PHPMailer exceptions are not public-safe - Send to logs.
+            error_log( 'HB_Contact_Form: ' . $mail->ErrorInfo );
+            //Generic public error.
+            return [ 500, 'Something went wrong and your message could not be sent.' ];
         }
     }
 
