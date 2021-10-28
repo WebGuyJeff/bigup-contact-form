@@ -137,6 +137,7 @@
 
             let alert_class = ( response.ok ) ? 'success' : 'danger';
             let info = ( response.ok ) ? response.message : response.errors;
+            info = ( typeof info === 'object' ) ? Object.values( info ) : info;
 
 console.log(info);
 
@@ -159,13 +160,16 @@ console.log(info);
                 div.appendChild( p );
             }
 
-            remove_all_child_nodes( output );
-            output.appendChild( div );
-            button_label.textContent = button_label_normal;
-            button.disabled = false;
-        }).catch( error => {
+
+        } ).catch( error => {
             console.log( error );
-        });
+        } );
+
+        remove_all_child_nodes( output );
+        output.appendChild( div );
+        button_label.textContent = button_label_normal;
+        button.disabled = false;
+
     };
 
 
