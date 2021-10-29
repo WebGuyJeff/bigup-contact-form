@@ -135,10 +135,11 @@
         // Send form data and handle response.
         http_request( url, fetch_options ).then( response => {
 
+            let info = response.output;
             let alert_class = ( response.ok ) ? 'success' : 'danger';
-            let info = ( response.ok ) ? response.message : response.errors;
             info = ( typeof info === 'object' ) ? Object.values( info ) : info;
 
+console.log(response.ok);
 console.log(info);
 
             let div = document.createElement( 'div' );
@@ -185,7 +186,7 @@ console.log(info);
      * 
      */
     var interval = setInterval( function() {
-        if(document.readyState === 'complete') {
+        if ( document.readyState === 'complete' ) {
             clearInterval( interval );
             /* Start the reactor */
             form_init();

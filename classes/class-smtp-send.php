@@ -63,8 +63,6 @@ class SMTP_Send {
      */
     public function compose_and_send_smtp_email( $email_values ) {
 
-error_log( 'compose_and_send_smtp_email CALLED.');
-
         $mail = new PHPMailer( true );
 
         extract( $this->smtp_settings );
@@ -94,14 +92,15 @@ error_log( 'compose_and_send_smtp_email CALLED.');
 
         try {
             //Server settings
-            $mail->SMTPDebug = SMTP::DEBUG_OFF;           //debug output level: DEBUG_[OFF/SERVER/CONNECTION]
+            $mail->SMTPDebug    = SMTP::DEBUG_OFF;           //debug output level: DEBUG_[OFF/SERVER/CONNECTION]
+            $mail->Debugoutput  = 'error_log';
             $mail->isSMTP();                                 //Use SMTP
-            $mail->Host       = $host;                       //SMTP server to send through
-            $mail->SMTPAuth   = (bool)$auth;                 //Enable SMTP authentication
-            $mail->Username   = $username;                   //SMTP username
-            $mail->Password   = $password;                   //SMTP password
-            $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS; //Enable implicit TLS encryption
-            $mail->Port       = $port;                       //TCP port
+            $mail->Host         = $host;                       //SMTP server to send through
+            $mail->SMTPAuth     = (bool)$auth;                 //Enable SMTP authentication
+            $mail->Username     = $username;                   //SMTP username
+            $mail->Password     = $password;                   //SMTP password
+            $mail->SMTPSecure   = PHPMailer::ENCRYPTION_SMTPS; //Enable implicit TLS encryption
+            $mail->Port         = $port;                       //TCP port
         
             //Recipients
             $mail->setFrom( $from_email, 'Mailer'); //Use fixed address in your domain to pass SPF checks.
