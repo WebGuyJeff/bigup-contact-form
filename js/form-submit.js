@@ -137,27 +137,21 @@
 
             let info = response.output;
             let alert_class = ( response.ok ) ? 'success' : 'danger';
-            info = ( typeof info === 'object' ) ? Object.values( info ) : info;
+            //info = ( typeof info === 'object' ) ? Object.values( info ) : info;
 
 console.log(response.ok);
-console.log(info);
-console.log(( typeof info ));
-newinfo = Object.values( info );
-console.log(( typeof newinfo ));
-console.log(newinfo);
-
 
 
             let div = document.createElement( 'div' );
 
-            if ( typeof info === 'array' ) {
-                info.forEach( message => {
+            if ( typeof info === 'array' || typeof info === 'object' ) {
+                for ( const message in info ) {
                     let p = document.createElement( 'p' );
-                    p.innerHTML = message;
+                    p.innerHTML = info[ message ];
                     p.classList.add( 'alert' );
                     p.classList.add( 'alert-' + alert_class );
                     div.appendChild( p );
-                } );
+                }
 
             } else if ( typeof info === 'string' ) {
                 let p = document.createElement( 'p' );
