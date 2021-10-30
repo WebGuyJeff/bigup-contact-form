@@ -141,6 +141,12 @@
 
 console.log(response.ok);
 console.log(info);
+console.log(( typeof info ));
+newinfo = Object.values( info );
+console.log(( typeof newinfo ));
+console.log(newinfo);
+
+
 
             let div = document.createElement( 'div' );
 

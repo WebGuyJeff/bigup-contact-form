@@ -122,7 +122,7 @@ class SMTP_Send {
             //PHPMailer exceptions are not public-safe - Send to logs.
             error_log( 'HB_Contact_Form: ' . $mail->ErrorInfo );
             //Generic public error.
-            return [ 500, 'Something went wrong and your message could not be sent.' ];
+            return [ 500, 'Sending your message failed while connecting to the mail server.' ];
         }
     }
 

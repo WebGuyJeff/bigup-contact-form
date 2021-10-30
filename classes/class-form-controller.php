@@ -141,7 +141,7 @@ class Form_Controller {
                     $send_result = $smtp_handler->compose_and_send_smtp_email( $data[ 'fields' ] );
                     $this->send_json_response( $send_result );
                 } else {
-                    $this->send_json_response( [ 500, 'Bad SMTP configuration. Please alert site admin.' ] );
+                    $this->send_json_response( [ 500, 'Sending your message failed due to a bad local mailserver configuration.' ] );
                 }
 
             } else {
@@ -151,7 +151,7 @@ class Form_Controller {
 
         } else {
             // BAD: wrong type header
-            $this->send_json_response( [ 405, 'Server rejected disallowed request headers' ] );
+            $this->send_json_response( [ 405, 'Sending your message failed due to a malformed request from your browser' ] );
         }
         exit; //request handlers should exit() when done
     }
@@ -274,7 +274,7 @@ class Form_Controller {
             error_log( 'HB_Contact_Form: send_json_response expects array but ' . gettype( $public_status ) . ' received.' );
             $public_status = null;
             $public_status[ 0 ] = 500;
-            $public_status[ 1 ] = 'There was an unknown error and your message may not have been sent.';
+            $public_status[ 1 ] = 'Sending your message failed due to an unexpected error.';
         }
 
         // Ensure response headers haven't already sent to browser.
@@ -290,7 +290,6 @@ class Form_Controller {
         // and breaks JSON response. Using ob_clean() before output prevents this.
         ob_clean();
         echo json_encode( $public_output );
-   
     }
 
 
