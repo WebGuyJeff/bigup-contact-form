@@ -57,11 +57,22 @@
 
 
     /**
-     * Perform a Fetch request with json response.
+     * Perform a Fetch request with timeout and json response.
+     * 
+     * controller === abort controller to abort fetch request.
+     * timeoutId === abort wrapped in a timer.
+     * signal: controller.signal === attach timeout to fetch request.
+     * clearTimeout( timeoutId ) === cancel the timer on response.
      * 
      */
     async function http_request( url, options ) {
-        const fetch_response = await fetch( url, options );
+        const controller = new AbortController();
+        const timeoutId = setTimeout( () => controller.abort(), 8000 );
+        const fetch_response = await fetch( url, {
+            ...options,
+            signal: controller.signal
+        } );
+        clearTimeout( timeoutId );
         const json = await fetch_response.json();
         json.ok = fetch_response.ok;
         if ( ! json.ok ) {
@@ -98,14 +109,14 @@
         }
 
         // Get elements of submitted form.
-        button = form.querySelector( '.jsButtonSubmit' );
-        button_label = form.querySelector( '.jsButtonSubmit > *:first-child' );
-        output = form.querySelector( '.jsOutput' );
-        form_hide = form.querySelector( '.jsHideForm' );
+        let button = form.querySelector( '.jsButtonSubmit' );
+        let button_label = form.querySelector( '.jsButtonSubmit > *:first-child' );
+        let button_idle_text = button_label.textContent;
+        let output = form.querySelector( '.jsOutput' );
+        let form_hide = form.querySelector( '.jsHideForm' );
 
         // Display pending state to user.
         button.disabled = true;
-        let button_label_normal = button_label.textContent;
         button_label.textContent = '[busy]';
         let p = document.createElement( "p" );
         p.innerHTML = "Connecting...";
@@ -118,7 +129,6 @@
         const plain_obj_data = Object.fromEntries( form_data.entries() );
         const json_string_data = JSON.stringify( plain_obj_data );
 
-        // Fetch options object
         const fetch_options = {
             method: "POST",
             headers: {
@@ -129,49 +139,68 @@
             body: json_string_data,
         };
 
-        // Rest endpoint url
         const url = wp.rest_url;
 
         // Send form data and handle response.
-        http_request( url, fetch_options ).then( response => {
+        http_request( url, fetch_options ).then( ( response ) => {
 
-            let info = response.output;
+            let info = ( response.output ) ? response.output : response.errors;
             let alert_class = ( response.ok ) ? 'success' : 'danger';
-            //info = ( typeof info === 'object' ) ? Object.values( info ) : info;
+            return info;
 
-console.log(response.ok);
-
-
-            let div = document.createElement( 'div' );
-
-            if ( typeof info === 'array' || typeof info === 'object' ) {
-                for ( const message in info ) {
-                    let p = document.createElement( 'p' );
-                    p.innerHTML = info[ message ];
-                    p.classList.add( 'alert' );
-                    p.classList.add( 'alert-' + alert_class );
-                    div.appendChild( p );
+        } ).catch( ( error ) => {
+            let info;
+            if ( typeof error !== 'string' ) {
+                info = [];
+                for ( const message in error ) {
+                    info.push( message );
                 }
+            } else {
+                info = error;
+            }
+            console.log( info );
+            return info;
+        } );
 
-            } else if ( typeof info === 'string' ) {
+
+
+
+        let div = document.createElement( 'div' );
+
+        if ( typeof info === 'array' || typeof info === 'object' ) {
+            for ( const message in info ) {
                 let p = document.createElement( 'p' );
-                p.innerHTML = ( info ) ? info : 'An unknown error has ocurred. Your message may not have been sent.';
+                p.innerHTML = info[ message ];
                 p.classList.add( 'alert' );
                 p.classList.add( 'alert-' + alert_class );
                 div.appendChild( p );
             }
 
-            remove_all_child_nodes( output );
-            output.appendChild( div );
-            button_label.textContent = button_label_normal;
-            button.disabled = false;
+        } else if ( typeof info === 'string' ) {
+            let p = document.createElement( 'p' );
+            p.innerHTML = ( info ) ? info : 'An unknown error has ocurred. Your message may not have been sent.';
+            p.classList.add( 'alert' );
+            p.classList.add( 'alert-' + alert_class );
+            div.appendChild( p );
+        }
 
+        remove_all_child_nodes( output );
+        output.appendChild( div );
+        button_label.textContent = button_idle_text;
+        button.disabled = false;
 
-        } ).catch( error => {
-            console.log( error );
-        } );
 
     };
+
+
+
+
+
+
+
+
+
+
 
 
     function remove_all_child_nodes( parent ) {
