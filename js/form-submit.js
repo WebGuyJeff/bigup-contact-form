@@ -57,32 +57,6 @@
 
 
     /**
-     * Perform a Fetch request with timeout and json response.
-     * 
-     * controller === abort controller to abort fetch request.
-     * timeoutId === abort wrapped in a timer.
-     * signal: controller.signal === attach timeout to fetch request.
-     * clearTimeout( timeoutId ) === cancel the timer on response.
-     * 
-     */
-    async function http_request( url, options ) {
-        const controller = new AbortController();
-        const timeoutId = setTimeout( () => controller.abort(), 8000 );
-        const fetch_response = await fetch( url, {
-            ...options,
-            signal: controller.signal
-        } );
-        clearTimeout( timeoutId );
-        const json = await fetch_response.json();
-        json.ok = fetch_response.ok;
-        if ( ! json.ok ) {
-            json.errors = 'Error ' + fetch_response.status + ': ' + fetch_response.statusText;
-        }
-        return json;
-    }
-
-
-    /**
      * Handle the submitted form.
      * 
      * Process:
@@ -142,45 +116,30 @@
         const url = wp.rest_url;
 
         // Send form data and handle response.
-        http_request( url, fetch_options ).then( ( response ) => {
-
-            let info = ( response.output ) ? response.output : response.errors;
-            let alert_class = ( response.ok ) ? 'success' : 'danger';
-            return info;
-
-        } ).catch( ( error ) => {
-            let info;
-            if ( typeof error !== 'string' ) {
-                info = [];
-                for ( const message in error ) {
-                    info.push( message );
-                }
-            } else {
-                info = error;
-            }
-            console.log( info );
-            return info;
-        } );
+        let result = await fetch_http_request( url, fetch_options );
 
 
+// https://www.smashingmagazine.com/2020/11/comparison-async-await-versus-then-catch/
+
+        console.log( result );
 
 
         let div = document.createElement( 'div' );
 
-        if ( typeof info === 'array' || typeof info === 'object' ) {
-            for ( const message in info ) {
+        if ( typeof result === 'array' || typeof result === 'object' ) {
+            for ( const message in result ) {
                 let p = document.createElement( 'p' );
-                p.innerHTML = info[ message ];
+                p.innerHTML = result[ message ];
                 p.classList.add( 'alert' );
-                p.classList.add( 'alert-' + alert_class );
+                p.classList.add( 'alert-' + result['class'] );
                 div.appendChild( p );
             }
 
-        } else if ( typeof info === 'string' ) {
+        } else if ( typeof result === 'string' ) {
             let p = document.createElement( 'p' );
-            p.innerHTML = ( info ) ? info : 'An unknown error has ocurred. Your message may not have been sent.';
+            p.innerHTML = ( result ) ? result : 'An unknown error has ocurred. Your message may not have been sent.';
             p.classList.add( 'alert' );
-            p.classList.add( 'alert-' + alert_class );
+            p.classList.add( 'alert-' + result['class'] );
             div.appendChild( p );
         }
 
@@ -193,14 +152,63 @@
     };
 
 
+    /**
+     * Perform a Fetch request with timeout and json response.
+     * 
+     * controller === abort controller to abort fetch request.
+     * timeoutId === abort wrapped in a timer.
+     * signal: controller.signal === attach timeout to fetch request.
+     * clearTimeout( timeoutId ) === cancel the timer on response.
+     * 
+     * @param {string} url      The WP plugin REST endpoint url.
+     * @param {object} options  An object of fetch API options.
+     * @return {object}         An object of message strings and ok flag.
+     * 
+     */
+     async function fetch_http_request( url, options ) {
+        const controller = new AbortController();
+        const timeoutId = setTimeout( () => controller.abort(), 8000 );
+        const fetch_response = await fetch( url, {
+            ...options,
+            signal: controller.signal
+        } );
+        clearTimeout( timeoutId );
+        // parse response body as JSON.
+        const json = await fetch_response.json();
+        // attach response 'ok' flag to new object.
+        json.ok = fetch_response.ok;
+        // if output is empty, create error string from http status.
+        if ( ! json.output ) {
+            json.output = 'Error ' + fetch_response.status + ': ' + fetch_response.statusText;
+            json.ok = false;
+        }
+        return json;
 
+    }.then( ( response ) => {
 
+        if ( ! response.ok ) {
+            throw new Error( response.errors );
+        }
+        let info = [];
+        info['response'] = response.output;
+        info['class'] = 'success';
+        return info;
 
-
-
-
-
-
+    } ).catch( ( error ) => {
+        let info = [];
+        if ( typeof error !== 'string' ) {
+            for ( const message in error ) {
+                info.push( message );
+            }
+        } else if ( error === '' ) {
+            info = 'An error was thrown with no explanation.';
+        } else {
+            info = error;
+        }
+        info['class'] = 'danger';
+        console.log( info );
+        return info;
+    } );
 
 
     function remove_all_child_nodes( parent ) {
