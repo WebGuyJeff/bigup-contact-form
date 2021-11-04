@@ -116,12 +116,38 @@
         const url = wp.rest_url;
 
         // Send form data and handle response.
-        let result = await fetch_http_request( url, fetch_options );
+        try {
+            const result = await fetch_http_request( url, fetch_options );
+            if ( ! result.ok ) {
+                throw new Error( result.output );
+            }
+            let info = [];
+            info['response'] = response.output;
+            info['class'] = 'success';
+            return info;
+    
+            
+        } catch ( error ) {
+                let info = [];
+                if ( typeof error !== 'string' ) {
+                    for ( const message in error ) {
+                        info.push( message );
+                    }
+                } else if ( error === '' ) {
+                    info = 'An error was thrown with no explanation.';
+                } else {
+                    info = error;
+                }
+                info['class'] = 'danger';
+                console.log( info );
+                return info;
+        } finally {
 
 
-// https://www.smashingmagazine.com/2020/11/comparison-async-await-versus-then-catch/
+            console.log( result );
 
-        console.log( result );
+        }
+        
 
 
         let div = document.createElement( 'div' );
@@ -174,41 +200,16 @@
         } );
         clearTimeout( timeoutId );
         // parse response body as JSON.
-        const json = await fetch_response.json();
-        // attach response 'ok' flag to new object.
-        json.ok = fetch_response.ok;
-        // if output is empty, create error string from http status.
-        if ( ! json.output ) {
-            json.output = 'Error ' + fetch_response.status + ': ' + fetch_response.statusText;
-            json.ok = false;
+        const response_body = await fetch_response.json();
+        // copy response 'ok' flag to new object.
+        response_body.ok = fetch_response.ok;
+        // if output is empty, create output string from http status.
+        if ( ! response_body.output ) {
+            response_body.output = 'Error ' + fetch_response.status + ': ' + fetch_response.statusText;
+            response_body.ok = false;
         }
-        return json;
-
-    }.then( ( response ) => {
-
-        if ( ! response.ok ) {
-            throw new Error( response.errors );
-        }
-        let info = [];
-        info['response'] = response.output;
-        info['class'] = 'success';
-        return info;
-
-    } ).catch( ( error ) => {
-        let info = [];
-        if ( typeof error !== 'string' ) {
-            for ( const message in error ) {
-                info.push( message );
-            }
-        } else if ( error === '' ) {
-            info = 'An error was thrown with no explanation.';
-        } else {
-            info = error;
-        }
-        info['class'] = 'danger';
-        console.log( info );
-        return info;
-    } );
+        return response_body;
+    }
 
 
     function remove_all_child_nodes( parent ) {
