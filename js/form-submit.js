@@ -116,65 +116,40 @@
         const url = wp.rest_url;
 
         // Send form data and handle response.
+        let result = {};
         try {
-            const result = await fetch_http_request( url, fetch_options );
+            result = await fetch_http_request( url, fetch_options );
             if ( ! result.ok ) {
-                throw new Error( result.output );
+                throw result;
             }
-            let info = [];
-            info['response'] = response.output;
-            info['class'] = 'success';
-            return info;
+            result.class = 'success';
     
-            
         } catch ( error ) {
-                let info = [];
-                if ( typeof error !== 'string' ) {
-                    for ( const message in error ) {
-                        info.push( message );
-                    }
-                } else if ( error === '' ) {
-                    info = 'An error was thrown with no explanation.';
-                } else {
-                    info = error;
+            // if this error is not a server response.
+            if ( ! error.output ) {
+                result.output = [ 'Failed to establish a connection to the server.' ];
+            } else {
+                for ( const message in error.output ) {
+                    console.error( error.output[ message ] );
                 }
-                info['class'] = 'danger';
-                console.log( info );
-                return info;
+            }
+            result.class = 'danger';
+ 
         } finally {
-
-
-            console.log( result );
-
-        }
-        
-
-
-        let div = document.createElement( 'div' );
-
-        if ( typeof result === 'array' || typeof result === 'object' ) {
-            for ( const message in result ) {
+            // build result output and insert into dom.
+            let div = document.createElement( 'div' );
+            for ( const message in result.output ) {
                 let p = document.createElement( 'p' );
-                p.innerHTML = result[ message ];
+                p.innerHTML = result.output[ message ];
                 p.classList.add( 'alert' );
-                p.classList.add( 'alert-' + result['class'] );
+                p.classList.add( 'alert-' + result.class );
                 div.appendChild( p );
             }
-
-        } else if ( typeof result === 'string' ) {
-            let p = document.createElement( 'p' );
-            p.innerHTML = ( result ) ? result : 'An unknown error has ocurred. Your message may not have been sent.';
-            p.classList.add( 'alert' );
-            p.classList.add( 'alert-' + result['class'] );
-            div.appendChild( p );
+            remove_all_child_nodes( output );
+            output.appendChild( div );
+            button_label.textContent = button_idle_text;
+            button.disabled = false;
         }
-
-        remove_all_child_nodes( output );
-        output.appendChild( div );
-        button_label.textContent = button_idle_text;
-        button.disabled = false;
-
-
     };
 
 
@@ -203,15 +178,19 @@
         const response_body = await fetch_response.json();
         // copy response 'ok' flag to new object.
         response_body.ok = fetch_response.ok;
-        // if output is empty, create output string from http status.
+        // if output is empty, fallback to string from http status.
         if ( ! response_body.output ) {
-            response_body.output = 'Error ' + fetch_response.status + ': ' + fetch_response.statusText;
+            response_body.output = [ 'Error ' + fetch_response.status + ': ' + fetch_response.statusText ];
             response_body.ok = false;
         }
         return response_body;
     }
 
-
+    
+    /**
+     * Remove all child nodes from a dom node.
+     * 
+     */
     function remove_all_child_nodes( parent ) {
         while ( parent.firstChild ) {
             parent.removeChild( parent.firstChild );
