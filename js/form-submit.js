@@ -119,6 +119,7 @@
         let result = {};
         try {
             result = await fetch_http_request( url, fetch_options );
+            result.output = ( typeof result.output === 'string' ) ? [ result.output ] : result.output;
             if ( ! result.ok ) {
                 throw result;
             }
@@ -127,17 +128,22 @@
         } catch ( error ) {
             // if this error is not a server response.
             if ( ! error.output ) {
+                console.error( error );
                 result.output = [ 'Failed to establish a connection to the server.' ];
+
             } else {
                 for ( const message in error.output ) {
                     console.error( error.output[ message ] );
                 }
             }
             result.class = 'danger';
- 
+
         } finally {
             // build result output and insert into dom.
             let div = document.createElement( 'div' );
+
+console.log(result);
+
             for ( const message in result.output ) {
                 let p = document.createElement( 'p' );
                 p.innerHTML = result.output[ message ];
@@ -156,6 +162,11 @@
     /**
      * Perform a Fetch request with timeout and json response.
      * 
+     * Timeouts:
+     *     6s for webserver to SMTP server.
+     *     8s for SMTP send response to webserver.
+     *     14s for front end as fallback in lieu of server response.
+     * 
      * controller === abort controller to abort fetch request.
      * timeoutId === abort wrapped in a timer.
      * signal: controller.signal === attach timeout to fetch request.
@@ -166,9 +177,16 @@
      * @return {object}         An object of message strings and ok flag.
      * 
      */
-     async function fetch_http_request( url, options ) {
+    async function fetch_http_request( url, options ) {
+        // Server allows 6s for connection to SMTP server, then another
+        // 8s for SMTP send response. Here we will timeout and display
+        // an error to the user after 14s. In most cases the user will
+        // experience a timeout close to 8s, but the 6s will provide a
+        // buffer to allow for poor webserver -> SMTP connectivity.
         const controller = new AbortController();
-        const timeoutId = setTimeout( () => controller.abort(), 8000 );
+        const timeoutId = setTimeout( () => {
+                controller.abort();
+        }, 14000 );
         const fetch_response = await fetch( url, {
             ...options,
             signal: controller.signal
@@ -186,7 +204,7 @@
         return response_body;
     }
 
-    
+
     /**
      * Remove all child nodes from a dom node.
      * 
@@ -199,13 +217,12 @@
 
 
     /**
-     * Fire the init function on 'doc ready'.
+     * Fire form_init() on 'doc ready'.
      * 
      */
     var interval = setInterval( function() {
         if ( document.readyState === 'complete' ) {
             clearInterval( interval );
-            /* Start the reactor */
             form_init();
         }
     }, 100);

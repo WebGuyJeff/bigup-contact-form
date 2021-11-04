@@ -90,18 +90,23 @@ class SMTP_Send {
 
         $html_encoded = htmlentities( $html, ENT_QUOTES | ENT_IGNORE, "UTF-8" );
 
+        // Make sure PHP server script limit is higher than mailer timeout!
+        set_time_limit( 60 );
+
         try {
             //Server settings
-            $mail->SMTPDebug    = SMTP::DEBUG_OFF;           //debug output level: DEBUG_[OFF/SERVER/CONNECTION]
+            $mail->SMTPDebug    = SMTP::DEBUG_OFF;             // Debug level: DEBUG_[OFF/SERVER/CONNECTION]
             $mail->Debugoutput  = 'error_log';
-            $mail->isSMTP();                                 //Use SMTP
-            $mail->Host         = $host;                       //SMTP server to send through
-            $mail->SMTPAuth     = (bool)$auth;                 //Enable SMTP authentication
-            $mail->Username     = $username;                   //SMTP username
-            $mail->Password     = $password;                   //SMTP password
-            $mail->SMTPSecure   = PHPMailer::ENCRYPTION_SMTPS; //Enable implicit TLS encryption
-            $mail->Port         = $port;                       //TCP port
-        
+            $mail->isSMTP();                                   // Use SMTP
+            $mail->Host         = $host;                       // SMTP server to send through
+            $mail->SMTPAuth     = (bool)$auth;                 // Enable SMTP authentication
+            $mail->Username     = $username;                   // SMTP username
+            $mail->Password     = $password;                   // SMTP password
+            $mail->SMTPSecure   = PHPMailer::ENCRYPTION_SMTPS; // Enable implicit TLS encryption
+            $mail->Port         = $port;                       // TCP port
+            $mail->Timeout      = 6;                           // Connection timeout (secs)
+            $mail->getSMTPInstance()->Timelimit = 8;           // Time allowed for each SMTP command response
+
             //Recipients
             $mail->setFrom( $from_email, 'Mailer'); //Use fixed address in your domain to pass SPF checks.
             $mail->addAddress( $to_email, );
