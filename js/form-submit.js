@@ -133,7 +133,7 @@
 
             } else {
                 for ( const message in error.output ) {
-                    console.error( error.output[ message ] );
+                    console.error( remove_non_human_readable( error.output[ message ] ) );
                 }
             }
             result.class = 'danger';
@@ -142,11 +142,9 @@
             // build result output and insert into dom.
             let div = document.createElement( 'div' );
 
-console.log(result);
-
             for ( const message in result.output ) {
                 let p = document.createElement( 'p' );
-                p.innerHTML = result.output[ message ];
+                p.innerHTML = remove_non_human_readable( result.output[ message ] );
                 p.classList.add( 'alert' );
                 p.classList.add( 'alert-' + result.class );
                 div.appendChild( p );
@@ -213,6 +211,34 @@ console.log(result);
         while ( parent.firstChild ) {
             parent.removeChild( parent.firstChild );
         }
+    }
+
+
+    /**
+     * Remove all but basic special chars required for
+     * human readable output.
+     * 
+     * It works by comparing characters in upper and lower case.
+     * Where they match, they are non-alphabet chars in most UTF8
+     * languages (excl pictographic languages e.g. Chinese). This
+     * would need improving to be truly multilingual.
+     * Also remove tags <> with a basic regex replace.
+     * 
+     * @param {*} string The dirty string.
+     * @returns          The cleaned string.
+     */
+    function remove_non_human_readable( string ) {
+        let str = string.replace( /<([^>]*>)/g, '');
+        const regex = new RegExp( /[ '":;(),.!&-?@]/ );
+        let lower = str.toLowerCase();
+        let upper = str.toUpperCase();
+    
+        let clean_string = "";
+        for( let i=0; i<lower.length; ++i ) {
+            if( lower[i] != upper[i] || regex.test( str[i] ) )
+            clean_string += str[i];
+        }
+        return clean_string;
     }
 
 
