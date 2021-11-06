@@ -226,8 +226,8 @@ class Admin_Settings {
      */
     function sanitise_checkbox( $checkbox ) {
 
-        $checkbox = (bool)$checkbox;
-        return $checkbox;
+        $bool_checkbox = (bool)$checkbox;
+        return $bool_checkbox;
     }
 
 }// Class end

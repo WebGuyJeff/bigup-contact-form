@@ -154,6 +154,10 @@
             output.appendChild( div );
             button_label.textContent = button_idle_text;
             button.disabled = false;
+            // hide the message after timer runs out.
+            setTimeout( () => {
+                output.style.display = 'none';
+            }, 5000)
         }
     };
 
@@ -200,17 +204,6 @@
 
 
     /**
-     * Remove all child nodes from a dom node.
-     * 
-     */
-    function remove_all_child_nodes( parent ) {
-        while ( parent.firstChild ) {
-            parent.removeChild( parent.firstChild );
-        }
-    }
-
-
-    /**
      * Remove all but basic special chars required for
      * human readable output.
      * 
@@ -224,17 +217,28 @@
      * @returns          The cleaned string.
      */
     function remove_non_human_readable( string ) {
+        const allowed = new RegExp( /[ '":;(),.!&-?@]/ );
         let str = string.replace( /<([^>]*>)/g, '');
-        const regex = new RegExp( /[ '":;(),.!&-?@]/ );
         let lower = str.toLowerCase();
         let upper = str.toUpperCase();
     
         let clean_string = "";
         for( let i=0; i<lower.length; ++i ) {
-            if( lower[i] != upper[i] || regex.test( str[i] ) )
+            if( lower[i] != upper[i] || allowed.test( str[i] ) )
             clean_string += str[i];
         }
         return clean_string;
+    }
+
+
+    /**
+     * Remove all child nodes from a dom node.
+     * 
+     */
+     function remove_all_child_nodes( parent ) {
+        while ( parent.firstChild ) {
+            parent.removeChild( parent.firstChild );
+        }
     }
 
 

@@ -30,7 +30,7 @@ namespace Jefferson\HB_Contact_Form;
 
 
 //==========delete me
-error_log('======[ hb-contact-form ]======');
+error_log('===[ hb-contact-form ]===');
 //==========delete me
 
 

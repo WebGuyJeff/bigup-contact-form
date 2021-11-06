@@ -51,7 +51,6 @@ class SMTP_Send {
     public function __construct() {
         
         $this->smtp_settings = Get_Settings::smtp();
-
         if ( $this->smtp_settings ) {
             $this->settings_ok = true;
         }
@@ -90,23 +89,25 @@ $html = <<<BODY
 </table>
 BODY;
 
-
         // Make sure PHP server script limit is higher than mailer timeout!
         set_time_limit( 60 );
 
         try {
             //Server settings
-            $mail->SMTPDebug    = SMTP::DEBUG_OFF;             // Debug level: DEBUG_[OFF/SERVER/CONNECTION]
+            $mail->SMTPDebug    = SMTP::DEBUG_CONNECTION;             // Debug level: DEBUG_[OFF/SERVER/CONNECTION]
             $mail->Debugoutput  = 'error_log';
             $mail->isSMTP();                                   // Use SMTP
             $mail->Host         = $host;                       // SMTP server to send through
             $mail->SMTPAuth     = (bool)$auth;                 // Enable SMTP authentication
             $mail->Username     = $username;                   // SMTP username
             $mail->Password     = $password;                   // SMTP password
-            $mail->SMTPSecure   = PHPMailer::ENCRYPTION_SMTPS; // Enable implicit TLS encryption
+            $mail->SMTPSecure   = PHPMailer::ENCRYPTION_SMTPS; // TLS: Implicit/Explicit SMTPS/STARTTLS
             $mail->Port         = $port;                       // TCP port
             $mail->Timeout      = 6;                           // Connection timeout (secs)
             $mail->getSMTPInstance()->Timelimit = 8;           // Time allowed for each SMTP command response
+
+error_log($host);
+
 
             //Recipients
             $mail->setFrom( $from_email, 'Mailer'); //Use fixed address in your domain to pass SPF checks.

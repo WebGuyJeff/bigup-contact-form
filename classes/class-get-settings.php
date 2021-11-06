@@ -18,7 +18,7 @@ namespace Jefferson\HB_Contact_Form;
 // Import PHPMailer for use of the email validation method.
 use PHPMailer\PHPMailer\PHPMailer;
 
-// Load Composer's autoloader
+// Load Composer's autoloader (includes vendor/PHPMailer)
 require plugin_dir_path( __DIR__ ) . 'vendor/autoload.php';
 
 class Get_Settings {
@@ -48,7 +48,7 @@ class Get_Settings {
 			return $smtp_settings;
 		}
 		// settings bad
-		error_log( 'HB_Contact_Form - SMTP settings invalid.' );
+		error_log( 'HB_Contact_Form: SMTP settings invalid.' );
 		return false;
 	}
 
@@ -69,7 +69,7 @@ class Get_Settings {
 			$settings[ $option_names ] = get_option( $option_names );
 
 		} else {
-			error_log( 'HB_Contact_Form get_options_from_database expects string or array but ' . gettype( $option_names ) . ' received.' );
+			error_log( 'HB_Contact_Form: get_options_from_database expects string or array but ' . gettype( $option_names ) . ' received.' );
 			return false;
 		}
 		return $settings;
@@ -84,59 +84,58 @@ class Get_Settings {
 	 */
 	private static function validate_settings( $settings ) {
 
-		// check for null values
+		// Check for null values.
 		if ( in_array( null, $settings, true ) || in_array( '', $settings, true ) ) {
-			error_log( 'HB_Contact_Form validate_settings one or more values are null.' );
+			error_log( 'HB_Contact_Form: validate_settings found one or more null values.' );
 			return false;
 		};
 
+		// Tailored validation.
 		foreach ( $settings as $name => $value ) {
 			$valid = true;
 			switch ( $name ) {
-
 				case 'username':
 					$valid = ( is_string( $value ) ) ? true : false;
-					continue 2;
+					break;
 
 				case 'password':
 					$valid = ( is_string( $value ) ) ? true : false;
-					continue 2;
+					break;
 
 				case 'host':
 					if ( is_string( $value ) ) {
 						$ip = gethostbyname( $value );
-						$valid = ( !filter_var( $ip, FILTER_VALIDATE_IP ) ) ? true : false;
+						$valid = ( filter_var( $ip, FILTER_VALIDATE_IP ) ) ? true : false;
 					} else {
 						$valid = false;
 					}
-					continue 2;
+					break;
 
 				case 'port':
-					$port_range = array(
-						'options' => array(
+					$port_range = [
+						'options' => [
 							'min_range' => 1,
 							'max_range' => 65535,
-						)
-					);
-					$valid = ( filter_var( $value, FILTER_VALIDATE_INT, $port_range ) === FALSE) ? true : false;
-					continue 2;
+						]
+					];
+					$valid = ( filter_var( $value, FILTER_VALIDATE_INT, $port_range ) === FALSE ) ? false : true;
+					break;
 
 				case 'auth':
-					$valid = ( is_bool( $value ) );
-					continue 2;
+					$valid = ( is_bool( (bool)$value ) ) ? true : false;
+					break;
 
 				case 'from_email':
 					$valid = ( PHPMailer::validateAddress( $value ) ) ? true : false;
-					continue 2;            
+					break;            
 
 				case 'to_email':
 					$valid = ( PHPMailer::validateAddress( $value ) ) ? true : false;
-					continue 2;
-					
+					break;	
 			}
-
 			if ( $valid === false ) {
-				//settings bad
+				//settings bad - we're done here
+				error_log( 'HB_Contact_Form: Setting "' . $name . '" has failed validation.');
 				return false;
 			}
 		}
