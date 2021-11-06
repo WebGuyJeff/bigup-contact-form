@@ -126,12 +126,13 @@
             result.class = 'success';
     
         } catch ( error ) {
-            // if this error is not a server response.
             if ( ! error.output ) {
+                // error is not a server response.
                 console.error( error );
                 result.output = [ 'Failed to establish a connection to the server.' ];
 
             } else {
+                // error is thrown result and contains server message(s).
                 for ( const message in error.output ) {
                     console.error( remove_non_human_readable( error.output[ message ] ) );
                 }
@@ -176,11 +177,6 @@
      * 
      */
     async function fetch_http_request( url, options ) {
-        // Server allows 6s for connection to SMTP server, then another
-        // 8s for SMTP send response. Here we will timeout and display
-        // an error to the user after 14s. In most cases the user will
-        // experience a timeout close to 8s, but the 6s will provide a
-        // buffer to allow for poor webserver -> SMTP connectivity.
         const controller = new AbortController();
         const timeoutId = setTimeout( () => {
                 controller.abort();

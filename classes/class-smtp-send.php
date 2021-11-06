@@ -80,15 +80,16 @@ class SMTP_Send {
 
         $plaintext_cleaned = wp_strip_all_tags( $plaintext );
 
-        // Build html email body
-        $html  = "<h3>This message was sent via the contact form at {$site_url}</h3>";
-        $html .= "<table><tr>";
-        $html .= "<td><b>From: </b>{$name}</td>";
-        $html .= "<td><b>E-mail: </b>{$email}</td>";
-        $html .= "<td><b>Message: </b><br><br>{$message}</td>";
-        $html .= "</tr></table>";
+// Build html email body
+$html = <<<BODY
+<table>
+    <tr><td height="60px"><i>This message was sent via the contact form at $site_url</i></td></tr>
+    <tr><td><b>Name: </b>$name</td></tr>
+    <tr><td><b>Email: </b>$email</td></tr>
+    <tr><td><b>Message: </b><br><br>$message</td></tr>
+</table>
+BODY;
 
-        $html_encoded = htmlentities( $html, ENT_QUOTES | ENT_IGNORE, "UTF-8" );
 
         // Make sure PHP server script limit is higher than mailer timeout!
         set_time_limit( 60 );
@@ -115,7 +116,7 @@ class SMTP_Send {
             //Content
             $mail->isHTML(true);
             $mail->Subject = 'Message from: ' . $name . ' via ' . $site_url;
-            $mail->Body    = $html_encoded;
+            $mail->Body    = $html;
             $mail->AltBody = $plaintext_cleaned;
         
             //Gotime
