@@ -12,6 +12,7 @@
 
 
  .HB__form {
+    position: relative;
     padding: 1.1em;
     width: 100%;
     max-width: 34em;
@@ -87,6 +88,24 @@
                 @media (min-width: 48em) { .HB__form_inputWrap-short {
                     width: 60%;
                 }}
+                    .HB__form_output {
+                        position: absolute;
+                        top: 0;
+                        right: 0;
+                        bottom: 0;
+                        left: 0;
+                        flex-flow: column nowrap;
+                        align-items: center;
+                        justify-content: center;
+                    }
+
+
+
+
+
+
+
+
 
 /* Widget overrides */
 

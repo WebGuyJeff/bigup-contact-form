@@ -86,17 +86,18 @@
         let button = form.querySelector( '.jsButtonSubmit' );
         let button_label = form.querySelector( '.jsButtonSubmit > *:first-child' );
         let button_idle_text = button_label.textContent;
-        let output = form.querySelector( '.jsOutput' );
-        let form_hide = form.querySelector( '.jsHideForm' );
+        let output = form.querySelector( '.HB__form_output' );
 
         // Display pending state to user.
         button.disabled = true;
         button_label.textContent = '[busy]';
         let p = document.createElement( "p" );
+        p.classList.add( 'alert' );
+        p.classList.add( 'alert-hover' );
         p.innerHTML = "Connecting...";
         remove_all_child_nodes( output );
         output.appendChild( p );
-        output.style.display = 'block';
+        output.style.display = 'flex';
 
         // Grab `FormData` then convert to plain obj, then to json string.
         const form_data = new FormData( form );
@@ -147,6 +148,7 @@
                 let p = document.createElement( 'p' );
                 p.innerHTML = remove_non_human_readable( result.output[ message ] );
                 p.classList.add( 'alert' );
+                p.classList.add( 'alert-hover' );
                 p.classList.add( 'alert-' + result.class );
                 div.appendChild( p );
             }

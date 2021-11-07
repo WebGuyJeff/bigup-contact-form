@@ -61,13 +61,7 @@ $admin_email = get_bloginfo( 'admin_email' );
     </div>
 
     <footer class="HB__form_section">
-        <div class="jsOutput" style="display:none;">
-            <p>
-                Sincere apologies, something went wrong. Please refresh and try again, or
-                <a href="mailto:<?php echo $admin_email; ?>?subject=FormErr%20New%20Website%20Message">click here</a>
-                to send an email.
-            </p>
-        </div>
+        <div class="HB__form_output" style="display:none;"></div>
     </footer>
 
 </form>
