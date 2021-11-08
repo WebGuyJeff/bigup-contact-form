@@ -182,7 +182,22 @@ class Form_Controller {
             switch ( $field ) {
                 case 'name':
                     // should names be filtered?
-                    $new = filter_var( $old, FILTER_SANITIZE_STRING );
+                    $disallowed_regex = '/(<([^>]*>))|([\\\\\/\^\[\]\{\}()?\|$+*<>~#:;"!£%&*_=])/';
+                    $invalid_chars = '';
+                if ( preg_match_all( $disallowed_regex, $old, $matches ) ) {
+                    foreach ( $matches[0] as $match ) {
+                        $invalid_chars .= $match;
+                    }
+                    $new = preg_filter( $disallowed_regex, '', $old );
+                }
+//utf8_encode();
+error_log( $old );
+error_log( $new );
+
+// in ££/(<([^>]*>)\[\]{}()?|$+*<££
+// out ££/(<(>*>)()?+*<££
+// missing [\]{}|
+
                     break;
 
                 case 'email':
@@ -197,14 +212,6 @@ class Form_Controller {
 
             // if the value was modified, generate an error message indicating the disallowed chars.
             if ( $old !== $new ) {
-error_log($old);
-error_log($new);
-                // new string without dup' chars.
-                $chars = count_chars( $new, 3);
-error_log($chars);
-                // filter original string to leave invalid chars.
-                $invalid_chars = preg_replace( "/[{$chars}]/", '', $old );
-error_log($invalid_chars);
                 $modified[ $field ][ 'error' ] = "{$field} contains invalid characters ( {$invalid_chars} ).";
                 $modified[ $field ][ 'old' ] = $old;
                 $modified[ $field ][ 'new' ] = $new;
@@ -286,18 +293,30 @@ error_log($invalid_chars);
 
         // Ensure response headers haven't already sent to browser.
         if ( ! headers_sent() ) {
-            header( 'Content-Type: application/json' );
+            header( 'Content-Type: application/json; charset=utf-8' );
             status_header( $public_status[ 0 ] );
         }
 
+        /**
+         * Ensure output is encoded correctly
+         * 
+         * Regex functions such as preg_match were outputting non-utf-8 encoding
+         * in error logs and in strings printed to front end. I have no idea why
+         * encoding isn't consistantly utf-8 for all string functions when the
+         * server is configured to use utf-8 throughout. Anyway, using htmlentities
+         * to specify html encoding (with double enmcode flag set to false) seems
+         * to do the trick for now. I feel this problem has a root somewhere.
+         * 
+         */
         $public_output[ 'ok' ] = ( $public_status[ 0 ] < 300 ) ? true : false;
-        $public_output[ 'output' ] = $public_status[ 1 ];
+        foreach ( $public_status[ 1 ] as $string ) {
+            $public_output[ 'output' ] = htmlentities( $string, ENT_COMPAT, 'UTF-8', false );
+        }
 
         // PHPMailer debug ($mail->SMTPDebug) gets dumped to output buffer
         // and breaks JSON response. Using ob_clean() before output prevents this.
         ob_clean();
         echo json_encode( $public_output );
     }
-
 
 }//Class end

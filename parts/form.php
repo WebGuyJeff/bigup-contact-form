@@ -20,7 +20,7 @@ $admin_email = get_bloginfo( 'admin_email' );
 
 ?>
 
-<form class="HB__form jsFormSubmit" method="post" autocomplete="on">
+<form class="HB__form jsFormSubmit" method="post" accept-charset="utf-8" autocomplete="on">
 
     <header class="HB__form_section">
         <?php
