@@ -154,11 +154,11 @@
             }
             remove_all_child_nodes( output );
             output.appendChild( div );
-            button_label.textContent = button_idle_text;
-            button.disabled = false;
             // hide the message after timer runs out.
             setTimeout( () => {
                 output.style.display = 'none';
+                button_label.textContent = button_idle_text;
+                button.disabled = false;
             }, 5000)
         }
     };

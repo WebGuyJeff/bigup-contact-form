@@ -70,24 +70,32 @@ class SMTP_Send {
         // Meta variables
         $site_url = get_bloginfo( 'url' );
 
-        // Build plaintext email body
-        $n = "\n";
-        $plaintext  = "This message was sent via the contact form at {$site_url}";
-        $plaintext .= "{$n}{$n}From: {$name}";
-        $plaintext .= "{$n}E-mail: {$email}";
-        $plaintext .= "{$n}{$n}{$message}";
+// Build plaintext email body
+$plaintext = <<<PLAIN
+This message was sent via the contact form at $site_url.
 
-        $plaintext_cleaned = wp_strip_all_tags( $plaintext );
+From: $name
+E-mail: $email
+Message:
+
+$message
+
+You are viewing the plaintext version of this email because you have
+disallowed HTML content in your email client. To view this and any future
+messages from this sender in complete HTML formatting, try adding the sender
+domain to your spam filter whitelist.
+PLAIN;
+$plaintext_cleaned = wp_strip_all_tags( $plaintext );
 
 // Build html email body
-$html = <<<BODY
+$html = <<<HTML
 <table>
     <tr><td height="60px"><i>This message was sent via the contact form at $site_url</i></td></tr>
     <tr><td><b>Name: </b>$name</td></tr>
     <tr><td><b>Email: </b>$email</td></tr>
     <tr><td><b>Message: </b><br><br>$message</td></tr>
 </table>
-BODY;
+HTML;
 
         // Make sure PHP server script limit is higher than mailer timeout!
         set_time_limit( 60 );

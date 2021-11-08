@@ -183,21 +183,28 @@ class Form_Controller {
                 case 'name':
                     // should names be filtered?
                     $new = filter_var( $old, FILTER_SANITIZE_STRING );
-                    continue 2;
+                    break;
 
                 case 'email':
                     $old = strtolower( $old );
                     $new = sanitize_email( $old );
-                    continue 2;
+                    break;
 
                 case 'message':
                     $new = wp_kses( $value, $this->allowed_html_tags );
-                    continue 2;
+                    break;
             }
 
             // if the value was modified, generate an error message indicating the disallowed chars.
             if ( $old !== $new ) {
-                $invalid_chars = str_replace( str_split( strtolower( $new ) ), '', strtolower( $old ) );
+error_log($old);
+error_log($new);
+                // new string without dup' chars.
+                $chars = count_chars( $new, 3);
+error_log($chars);
+                // filter original string to leave invalid chars.
+                $invalid_chars = preg_replace( "/[{$chars}]/", '', $old );
+error_log($invalid_chars);
                 $modified[ $field ][ 'error' ] = "{$field} contains invalid characters ( {$invalid_chars} ).";
                 $modified[ $field ][ 'old' ] = $old;
                 $modified[ $field ][ 'new' ] = $new;
@@ -228,8 +235,8 @@ class Form_Controller {
     public function validate_user_input( $form_data_array ) {
 
         foreach ( $form_data_array[ 'fields' ] as $field => $value ) {   
-            
             switch ( $field ) {
+
                 case 'name':
                     if ( strlen( $value ) < 2 || strlen( $value ) > 50 ) {
                         $results[] = 'Name should be 2-50 characters.';
