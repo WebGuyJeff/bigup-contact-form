@@ -102,7 +102,7 @@ HTML;
 
         try {
             //Server settings
-            $mail->SMTPDebug    = SMTP::DEBUG_CONNECTION;             // Debug level: DEBUG_[OFF/SERVER/CONNECTION]
+            $mail->SMTPDebug    = SMTP::DEBUG_OFF;             // Debug level: DEBUG_[OFF/SERVER/CONNECTION]
             $mail->Debugoutput  = 'error_log';
             $mail->isSMTP();                                   // Use SMTP
             $mail->Host         = $host;                       // SMTP server to send through

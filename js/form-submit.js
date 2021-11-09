@@ -135,7 +135,7 @@
             } else {
                 // error is thrown result and contains server message(s).
                 for ( const message in error.output ) {
-                    console.error( remove_non_human_readable( error.output[ message ] ) );
+                    console.error( make_human_readable( error.output[ message ] ) );
                 }
             }
             result.class = 'danger';
@@ -146,7 +146,7 @@
 
             for ( const message in result.output ) {
                 let p = document.createElement( 'p' );
-                p.innerHTML = remove_non_human_readable( result.output[ message ] );
+                p.innerHTML = make_human_readable( result.output[ message ] );
                 p.classList.add( 'alert' );
                 p.classList.add( 'alert-hover' );
                 p.classList.add( 'alert-' + result.class );
@@ -213,13 +213,15 @@
      * Where they match, they are non-alphabet chars in most UTF8
      * languages (excl pictographic languages e.g. Chinese). This
      * would need improving to be truly multilingual.
-     * Also remove tags <> with a basic regex replace.
+     * 
+     * Remove tags <> with regex string.replace.
+     * Preserve any content inside ().
      * 
      * @param {*} string The dirty string.
      * @returns          The cleaned string.
      */
-    function remove_non_human_readable( string ) {
-        const allowed = new RegExp( /[ '":;(),.!&-?@]/ );
+    function make_human_readable( string ) {
+        const allowed = new RegExp( /(\(.*\))|[ '":;(),.!&-?@]/ );
         let str = string.replace( /<([^>]*>)/g, '');
         let lower = str.toLowerCase();
         let upper = str.toUpperCase();

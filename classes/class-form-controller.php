@@ -176,33 +176,38 @@ class Form_Controller {
 
         foreach ( $form_data_array[ 'fields' ] as $field => $value ) {
 
-            $old = $form_data_array[ 'fields' ][ $field ];
+            $old = addslashes( trim( $form_data_array[ 'fields' ][ $field ] ) );
             $new = '';
-            
+
+error_log( $old );
+
             switch ( $field ) {
                 case 'name':
-                    // should names be filtered?
-                    $pattern = preg_quote( "(<([^>]*>))|([a-zA-Z.-',])", '/' );
+                    // remove tags and anything other than a-zA-Z.-',
+                    $pattern = "/(<[^>]*>|[^a-zA-Z.,'-])/u";
                     $invalid_chars = '';
-                if ( preg_match_all( $pattern, $old, $matches ) ) {
-                    foreach ( $matches[0] as $match ) {
-error_log( $match );
-                        $invalid_chars .= $match;
+                    if ( preg_match_all( $pattern, $old, $matches ) ) {
+                        foreach ( $matches[0] as $match ) {
+                            $invalid_chars .= $match;
+                        }
+                        $new = preg_filter( $pattern, '', $old );
                     }
-                    $new = preg_filter( $pattern, '', $old );
-                }
-error_log( $old );
-error_log( $new );
-
-// in ££/(<([^>]*>)\[\]{}()?|$+*<££
-// out ££/(<(>*>)()?+*<££
-// missing [\]{}|
-
                     break;
 
                 case 'email':
                     $old = strtolower( $old );
-                    $new = sanitize_email( $old );
+                    // https://stackoverflow.com/questions/201323/how-can-i-validate-an-email-address-using-a-regular-expression
+                    $pattern = '<(?:[a-z0-9!#$%&\'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&\'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])>>u';
+                    $invalid_chars = '';
+                    if ( preg_match_all( $pattern, $old, $matches ) ) {
+                        foreach ( $matches[0] as $match ) {
+                            $invalid_chars .= $match;
+                        }
+                        $new = preg_filter( $pattern, '', $old );
+                    }
+
+                    //$old = strtolower( $old );
+                    //$new = sanitize_email( $old );
                     break;
 
                 case 'message':
@@ -212,7 +217,7 @@ error_log( $new );
 
             // if the value was modified, generate an error message indicating the disallowed chars.
             if ( $old !== $new ) {
-                $modified[ $field ][ 'error' ] = "{$field} contains invalid characters ( {$invalid_chars} ).";
+                $modified[ $field ][ 'error' ] = ucfirst( $field ) . ' contains &^£$<div> invalid input ' . $invalid_chars;
                 $modified[ $field ][ 'old' ] = $old;
                 $modified[ $field ][ 'new' ] = $new;
             }
