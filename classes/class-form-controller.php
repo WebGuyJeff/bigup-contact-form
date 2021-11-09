@@ -182,15 +182,15 @@ class Form_Controller {
             switch ( $field ) {
                 case 'name':
                     // should names be filtered?
-                    $disallowed_regex = '/(<([^>]*>))|([\\\\\/\^\[\]\{\}()?\|$+*<>~#:;"!£%&*_=])/';
+                    $pattern = preg_quote( "(<([^>]*>))|([a-zA-Z.-',])", '/' );
                     $invalid_chars = '';
-                if ( preg_match_all( $disallowed_regex, $old, $matches ) ) {
+                if ( preg_match_all( $pattern, $old, $matches ) ) {
                     foreach ( $matches[0] as $match ) {
+error_log( $match );
                         $invalid_chars .= $match;
                     }
-                    $new = preg_filter( $disallowed_regex, '', $old );
+                    $new = preg_filter( $pattern, '', $old );
                 }
-//utf8_encode();
 error_log( $old );
 error_log( $new );
 
