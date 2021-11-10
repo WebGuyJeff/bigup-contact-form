@@ -133,7 +133,7 @@
                 result.output = [ 'Failed to establish a connection to the server.' ];
 
             } else {
-                // error is thrown result and contains server message(s).
+                // error is the thrown result and contains server message(s).
                 for ( const message in error.output ) {
                     console.error( make_human_readable( error.output[ message ] ) );
                 }
@@ -206,32 +206,32 @@
 
 
     /**
-     * Remove all but basic special chars required for
-     * human readable output.
+     * Clean strings for human output
      * 
-     * It works by comparing characters in upper and lower case.
-     * Where they match, they are non-alphabet chars in most UTF8
-     * languages (excl pictographic languages e.g. Chinese). This
-     * would need improving to be truly multilingual.
+     * This function uses regex patterns to clean strings in 3 stages:
      * 
-     * Remove tags <> with regex string.replace.
-     * Preserve any content inside ().
+     * 1) Remove all html tags.
+     * 2) Remove anything that is not:
+     *      (\([^\)]*?\)) - content enclosed in ()
+     *      ' '   - spaces
+     *      \p{L} - letters
+     *      \p{N} - numbers
+     *      \p{M} - marks (accents etc)
+     *      \p{P} - punctuation
+     * 3) Trim and replace multiple spaces with a single space.
      * 
+     * @link https://www.regular-expressions.info/unicode.html#category
      * @param {*} string The dirty string.
      * @returns          The cleaned string.
      */
     function make_human_readable( string ) {
-        const allowed = new RegExp( /(\(.*\))|[ '":;(),.!&-?@]/ );
-        let str = string.replace( /<([^>]*>)/g, '');
-        let lower = str.toLowerCase();
-        let upper = str.toUpperCase();
-    
-        let clean_string = "";
-        for( let i=0; i<lower.length; ++i ) {
-            if( lower[i] != upper[i] || allowed.test( str[i] ) )
-            clean_string += str[i];
-        }
-        return clean_string;
+        const tags = /<[^>]*>/gm;
+        const human_readable = /(\([^\)]*?\))|[ \p{L}\p{N}\p{M}\p{P}]/ugm;
+        const bad_whitespaces = /^\s*|\s(?=\s)|\s*$/gm;
+        let notags = string.replace( tags, '' );
+        let notags_human = notags.match( human_readable ).join('');
+        let notags_human_clean = notags_human.replace( bad_whitespaces, '' );
+        return notags_human_clean;
     }
 
 

@@ -114,9 +114,6 @@ HTML;
             $mail->Timeout      = 6;                           // Connection timeout (secs)
             $mail->getSMTPInstance()->Timelimit = 8;           // Time allowed for each SMTP command response
 
-error_log($host);
-
-
             //Recipients
             $mail->setFrom( $from_email, 'Mailer'); //Use fixed address in your domain to pass SPF checks.
             $mail->addAddress( $to_email, );

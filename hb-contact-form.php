@@ -28,23 +28,15 @@ namespace Jefferson\HB_Contact_Form;
 */
 
 
-
-//==========delete me
-error_log('===[ hb-contact-form ]===');
-//==========delete me
-
-
 /**
  * Load PHP autoloader.
  */
 require_once( plugin_dir_path( __FILE__ ) . 'classes/autoload.php');
 
-
 /**
  * Init the plugin.
  */
 new Init();
-
 
 /**
  * Add the admin user interface.
