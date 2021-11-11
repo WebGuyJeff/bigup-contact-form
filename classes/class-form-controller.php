@@ -33,9 +33,7 @@ class Form_Controller {
      * A list of allowed html elements used to sanitize message body.
      */
     private $allowed_html_tags = array(
-        'a'         => array(
-            'href'      => true,
-        ),
+        'a'         => array(),
         'b'         => array(),
         'br'        => array(),
         'code'      => array(),
@@ -46,14 +44,7 @@ class Form_Controller {
         'h5'        => array(),
         'h6'        => array(),
         'i'         => array(),
-        'img'       => array(
-            'alt'       => true,
-            'align'     => true,
-            'border'    => true,
-            'height'    => true,
-            'src'       => true,
-            'width'     => true,
-        ),
+        'img'       => array(),
         'li'        => array(),
         'p'         => array(),
         'pre'       => array(),
@@ -105,27 +96,35 @@ class Form_Controller {
              * @param array $data_clean_valid: The sanitised AND validated array.
              * 
              */
-            $data_clean = $this->sanitise_user_input( $data );
-            $data_clean_valid = $this->validate_user_input( $data_clean );
+            $data_sanitised = $this->sanitise_user_input( $data );
+            $data_validated = $this->validate_user_input( $data );
 
             $form_values_ok = true;
             $errors = [];
 
             // Collect sanitise errors.
-            if ( $data_clean_valid[ 'modified_by_sanitise' ] ) {
-                foreach ( $data_clean_valid[ 'modified_by_sanitise' ] as $field ) {
+            if ( $data_sanitised[ 'modified_by_sanitise' ] ) {
+                foreach ( $data_sanitised[ 'modified_by_sanitise' ] as $field ) {
                     $errors[] = $field[ 'error' ];
                 }
                 $form_values_ok = false;
             }
 
+foreach ( $errors as $log ) {
+    error_log($log);
+}
+
             // Collect validation errors.
-            if ( $data_clean_valid[ 'validation_errors' ] ) {
-                foreach ( $data_clean_valid[ 'validation_errors' ] as $error ) {
+            if ( $data_validated[ 'validation_errors' ] ) {
+                foreach ( $data_validated[ 'validation_errors' ] as $error ) {
                     $errors[] = $error;
                 }
                 $form_values_ok = false;
             }
+
+foreach ( $errors as $log ) {
+    error_log($log);
+}
 
             if ( $form_values_ok ) {
                 /**
@@ -166,8 +165,8 @@ class Form_Controller {
      * with a sub-array bearing key 'modified_by_sanitise' containing error
      * messages and the before/after values for use on the front end.
      * 
-     * @param array $raw_form_data: Associative array of form input data.
-     * @return array $form_data: Contains cleaned values and sanitisation info.
+     * @param array $form_data_array: Associative array of form input data.
+     * @return array $form_data_array: Contains cleaned values and sanitisation info.
      * 
      */
     public function sanitise_user_input( $form_data_array ) {
@@ -181,9 +180,8 @@ class Form_Controller {
 
             switch ( $field ) {
                 case 'name':
-                    // remove tags and anything other than a-zA-Z.-',
-                    // do not use g modifier with preg_match_all ('all' is the g)
-                    $pattern = "/<[^>]*>|[^-.,' \p{L}\p{N}]/u";
+                    // remove tags and non-unicode language chars.
+                    $pattern = "/<[^>]*>|[^ \p{L}\p{N}\p{M}\p{P}]/u";
                     $invalid_chars = '';
                     if ( preg_match_all( $pattern, $old, $matches ) ) {
                         foreach ( $matches[0] as $match ) {
@@ -196,13 +194,15 @@ class Form_Controller {
                     break;
 
                 case 'email':
-                    // Sanitisation isn't worth the trouble of regex implications.
+                    // Email sanitisation is futile.
                     $new = $old;
                     break;
 
+                $sausage =  "<(a|b|br|code|h[1-6]|i|img|li|p|pre|q|span|small|strong|u|ul|ol)[^>]*>";
+
                 case 'message':
                     $new = wp_kses( $value, $this->allowed_html_tags );
-                    // No need to feedback to user for this field
+                    // No need to feedback to user for this field.
                     $old = $new;
                     break;
             }
@@ -294,17 +294,7 @@ class Form_Controller {
             status_header( $public_status[ 0 ] );
         }
 
-        /**
-         * Ensure output is encoded correctly
-         * 
-         * Regex functions such as preg_match were outputting non-utf-8 encoding
-         * in error logs and in strings printed to front end. I have no idea why
-         * encoding isn't consistantly utf-8 for all string functions when the
-         * server is configured to use utf-8 throughout. Anyway, using htmlentities
-         * to specify html encoding (with double enmcode flag set to false) seems
-         * to do the trick for now. I feel this problem has a root somewhere.
-         * 
-         */
+        // Create response body.
         $public_output[ 'ok' ] = ( $public_status[ 0 ] < 300 ) ? true : false;
         $public_output[ 'output' ] = $public_status[ 1 ];
 
