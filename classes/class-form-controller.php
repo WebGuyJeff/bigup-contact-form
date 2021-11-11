@@ -28,36 +28,7 @@ use WP_REST_Request;
 
 class Form_Controller {
 
-
-    /**
-     * A list of allowed html elements used to sanitize message body.
-     */
-    private $allowed_html_tags = array(
-        'a'         => array(),
-        'b'         => array(),
-        'br'        => array(),
-        'code'      => array(),
-        'h1'        => array(),
-        'h2'        => array(),
-        'h3'        => array(),
-        'h4'        => array(),
-        'h5'        => array(),
-        'h6'        => array(),
-        'i'         => array(),
-        'img'       => array(),
-        'li'        => array(),
-        'p'         => array(),
-        'pre'       => array(),
-        'q'         => array(),
-        'span'      => array(),
-        'small'     => array(),
-        'strong'    => array(),
-        'u'         => array(),
-        'ul'        => array(),
-        'ol'        => array(),
-    );
-
-
+    
     /**
      * Receive form submissions.
      *
@@ -180,7 +151,7 @@ foreach ( $errors as $log ) {
 
             switch ( $field ) {
                 case 'name':
-                    // remove tags and non-unicode language chars.
+                    // Remove tags and non-unicode language chars.
                     $pattern = "/<[^>]*>|[^ \p{L}\p{N}\p{M}\p{P}]/u";
                     $invalid_chars = '';
                     if ( preg_match_all( $pattern, $old, $matches ) ) {
@@ -198,12 +169,20 @@ foreach ( $errors as $log ) {
                     $new = $old;
                     break;
 
-                $sausage =  "<(a|b|br|code|h[1-6]|i|img|li|p|pre|q|span|small|strong|u|ul|ol)[^>]*>";
-
                 case 'message':
-                    $new = wp_kses( $value, $this->allowed_html_tags );
-                    // No need to feedback to user for this field.
-                    $old = $new;
+                    $pattern = "/(?:(?!(<(\/*)(a|b|br|code|div|h[1-6]|img|li|p|pre|q|span|small|strong|u|ul|ol)(>| [^>]*?>))))(<.*?>)/";
+                    $invalid_chars = '';
+                    if ( preg_match_all( $pattern, $old, $matches ) ) {
+                        foreach ( $matches[0] as $match ) {
+                            $invalid_chars .= $match;
+                        }
+                        $new = preg_filter( $pattern, '', $old );
+                    } else {
+                        $new = $old;
+                    }
+error_log($old);
+error_log($new);
+
                     break;
             }
 

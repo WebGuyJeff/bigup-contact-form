@@ -234,6 +234,8 @@
         return notags_human_clean;
     }
 
+//(?!(<[^>]*?>)((\(.*?\))))[ \n\p{L}\p{N}\p{M}\p{P}]*/gu
+
 
     /**
      * Remove all child nodes from a dom node.
