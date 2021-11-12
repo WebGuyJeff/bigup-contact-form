@@ -85,16 +85,16 @@
         // Get elements of submitted form.
         let button = form.querySelector( '.jsButtonSubmit' );
         let button_label = form.querySelector( '.jsButtonSubmit > *:first-child' );
-        let button_idle_text = button_label.textContent;
+        let button_idle_text = button_label.innerText;
         let output = form.querySelector( '.HB__form_output' );
 
         // Display pending state to user.
         button.disabled = true;
-        button_label.textContent = '[busy]';
+        button_label.innerText = '[busy]';
         let p = document.createElement( "p" );
         p.classList.add( 'alert' );
         p.classList.add( 'alert-hover' );
-        p.innerHTML = "Connecting...";
+        p.innerText = "Connecting...";
         remove_all_child_nodes( output );
         output.appendChild( p );
         output.style.display = 'flex';
@@ -146,7 +146,7 @@
 
             for ( const message in result.output ) {
                 let p = document.createElement( 'p' );
-                p.innerHTML = make_human_readable( result.output[ message ] );
+                p.innerText = make_human_readable( result.output[ message ] );
                 p.classList.add( 'alert' );
                 p.classList.add( 'alert-hover' );
                 p.classList.add( 'alert-' + result.class );
@@ -157,7 +157,7 @@
             // hide the message after timer runs out.
             setTimeout( () => {
                 output.style.display = 'none';
-                button_label.textContent = button_idle_text;
+                button_label.innerText = button_idle_text;
                 button.disabled = false;
             }, 5000)
         }
@@ -172,10 +172,10 @@
      *     8s for SMTP send response to webserver.
      *     14s for front end as fallback in lieu of server response.
      * 
-     * controller === abort controller to abort fetch request.
-     * timeoutId === abort wrapped in a timer.
-     * signal: controller.signal === attach timeout to fetch request.
-     * clearTimeout( timeoutId ) === cancel the timer on response.
+     * controller - abort controller to abort fetch request.
+     * timeoutId - abort wrapped in a timer.
+     * signal: controller.signal - attach timeout to fetch request.
+     * clearTimeout( timeoutId ) - cancel the timer on response.
      * 
      * @param {string} url      The WP plugin REST endpoint url.
      * @param {object} options  An object of fetch API options.
@@ -206,11 +206,13 @@
 
 
     /**
-     * Clean strings for human output
+     * Clean strings for human output.
      * 
      * This function uses regex patterns to clean strings in 3 stages:
      * 
-     * 1) Remove all html tags.
+     * 1) Remove all html tags not inside brackets ()
+     *      (?<!\([^)]*?) - do not match if preceeded by a '('
+     *      <[^>]*?> - match all <>
      * 2) Remove anything that is not:
      *      (\([^\)]*?\)) - content enclosed in ()
      *      ' '   - spaces
@@ -221,20 +223,18 @@
      * 3) Trim and replace multiple spaces with a single space.
      * 
      * @link https://www.regular-expressions.info/unicode.html#category
-     * @param {*} string The dirty string.
-     * @returns          The cleaned string.
+     * @param {string} string The dirty string.
+     * @returns The cleaned string.
      */
     function make_human_readable( string ) {
-        const tags = /<[^>]*>/gm;
-        const human_readable = /(\([^\)]*?\))|[ \p{L}\p{N}\p{M}\p{P}]/ugm;
-        const bad_whitespaces = /^\s*|\s(?=\s)|\s*$/gm;
+        const tags = /(?<!\([^)]*?)<[^>]*?>/g;
+        const human_readable = /(\([^\)]*?\))|[ \p{L}\p{N}\p{M}\p{P}]/ug;
+        const bad_whitespaces = /^\s*|\s(?=\s)|\s*$/g;
         let notags = string.replace( tags, '' );
         let notags_human = notags.match( human_readable ).join('');
         let notags_human_clean = notags_human.replace( bad_whitespaces, '' );
         return notags_human_clean;
     }
-
-//(?!(<[^>]*?>)((\(.*?\))))[ \n\p{L}\p{N}\p{M}\p{P}]*/gu
 
 
     /**

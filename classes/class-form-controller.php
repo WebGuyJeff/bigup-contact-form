@@ -22,8 +22,6 @@ use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
 
 // WordPress Dependencies
-use function sanitize_email;
-use function wp_kses;
 use WP_REST_Request;
 
 class Form_Controller {
@@ -81,10 +79,6 @@ class Form_Controller {
                 $form_values_ok = false;
             }
 
-foreach ( $errors as $log ) {
-    error_log($log);
-}
-
             // Collect validation errors.
             if ( $data_validated[ 'validation_errors' ] ) {
                 foreach ( $data_validated[ 'validation_errors' ] as $error ) {
@@ -93,19 +87,9 @@ foreach ( $errors as $log ) {
                 $form_values_ok = false;
             }
 
-foreach ( $errors as $log ) {
-    error_log($log);
-}
-
             if ( $form_values_ok ) {
-                /**
-                 * Send checked form values to mailer.
-                 * 
-                 * Form values have now passed all checks, so the original array $data[ 'fields' ]
-                 * is passed to the mailer as the validation data in $data_clean_valid is
-                 * now surplus.
-                 * 
-                 */
+                
+                // Send valid form values to mailer.
                 $smtp_handler = new SMTP_Send();
                 if ( $smtp_handler->settings_ok ) {
                     $send_result = $smtp_handler->compose_and_send_smtp_email( $data[ 'fields' ] );
@@ -170,6 +154,7 @@ foreach ( $errors as $log ) {
                     break;
 
                 case 'message':
+                    // Remove tags apart from these.
                     $pattern = "/(?:(?!(<(\/*)(a|b|br|code|div|h[1-6]|img|li|p|pre|q|span|small|strong|u|ul|ol)(>| [^>]*?>))))(<.*?>)/";
                     $invalid_chars = '';
                     if ( preg_match_all( $pattern, $old, $matches ) ) {
@@ -180,13 +165,10 @@ foreach ( $errors as $log ) {
                     } else {
                         $new = $old;
                     }
-error_log($old);
-error_log($new);
-
                     break;
             }
 
-            // if the value was modified, generate an error message indicating the disallowed chars.
+            // Store disallowed input errors.
             if ( $old !== $new ) {
                 $modified[ $field ][ 'error' ] = ucfirst( $field ) . ' contains invalid input (' . $invalid_chars . ')';
                 $modified[ $field ][ 'old' ] = $old;

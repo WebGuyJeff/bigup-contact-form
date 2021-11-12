@@ -70,6 +70,9 @@ class SMTP_Send {
         // Meta variables
         $site_url = get_bloginfo( 'url' );
 
+        $server_name = gethostname();
+        $from_name = ( $server_name ) ? $server_name : 'HB Contact Form';
+
 // Build plaintext email body
 $plaintext = <<<PLAIN
 This message was sent via the contact form at $site_url.
@@ -90,10 +93,29 @@ $plaintext_cleaned = wp_strip_all_tags( $plaintext );
 // Build html email body
 $html = <<<HTML
 <table>
-    <tr><td height="60px"><i>This message was sent via the contact form at $site_url</i></td></tr>
-    <tr><td><b>Name: </b>$name</td></tr>
-    <tr><td><b>Email: </b>$email</td></tr>
-    <tr><td><b>Message: </b><br><br>$message</td></tr>
+    <tr>
+        <td height="60px">
+            <i>This message was sent via the contact form at $site_url</i>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <b>Name: </b>$name
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <b>Email: </b>$email
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <br>
+            <b>Message: </b>
+            <br>
+            <br>$message
+        </td>
+    </tr>
 </table>
 HTML;
 
@@ -115,7 +137,7 @@ HTML;
             $mail->getSMTPInstance()->Timelimit = 8;           // Time allowed for each SMTP command response
 
             //Recipients
-            $mail->setFrom( $from_email, 'Mailer'); //Use fixed address in your domain to pass SPF checks.
+            $mail->setFrom( $from_email, $from_name); // Use fixed and owned SMTP account address to pass SPF checks.
             $mail->addAddress( $to_email, );
             $mail->addReplyTo( $email, $name );
 

@@ -29,23 +29,27 @@ class Admin_Settings {
 
     /**
      * Settings group name called by settings_fields().
+     * 
      */
     public $group_name = 'group_contact_form_settings';
 
 
     /**
      * Settings page slug to add with add_submenu_page().
+     * 
      */
     public $page_slug = 'contact-form-settings';
 
     /**
      * base64 uri svg icon used next to page title.
+     * 
      */
     public $icon = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMzIgMTMyIj48cGF0aCBkPSJNMCAwdjEzYzAgNSAwIDEwIDggMTNsNTggMjcgNTgtMjdjOC0zIDgtOCA4LTEzVjBMNzQgMjZjLTggNC04IDktOCAxNCAwLTUgMC0xMC04LTE0em0wIDQwdjEzYzAgNCAwIDEwIDggMTNsNTggMjcgNTgtMjdjOC0zIDgtOSA4LTEzVjQwTDc0IDY2Yy04IDQtOCA5LTggMTMgMC00IDAtOS04LTEzem0wIDM5djE0YzAgNCAwIDkgOCAxM2w1OCAyNiA1OC0yNmM4LTQgOC05IDgtMTNWNzlsLTU4IDI3Yy04IDMtOCA5LTggMTMgMC00IDAtMTAtOC0xM3oiLz48L3N2Zz4=';
 
 
     /**
      * Init the class by hooking into the admin interface.
+     * 
      */
     public function __construct() {
         add_action( 'admin_menu', [ &$this, 'register_sub_menu' ], 99 );
@@ -55,6 +59,7 @@ class Admin_Settings {
 
     /**
      * Add Herringbone admin menu option to sidebar
+     * 
      */
     public function register_sub_menu() {
         add_submenu_page(
@@ -71,15 +76,14 @@ class Admin_Settings {
 
     /**
      * Create Contact Form Settings Page
+     * 
      */
     public function create_settings_page() {
     ?>
 
         <h1>
             <span>
-                <img style="max-height: 1em;margin-right: 0.5em;vertical-align: middle;" src="
-                    <?php echo $this->icon ?>"
-                />
+                <img style="max-height: 1em;margin-right: 0.5em;vertical-align: middle;" src="<?php echo $this->icon ?>"/>
             </span>
             Herringbone Contact Form Settings
         </h1>
@@ -107,6 +111,7 @@ class Admin_Settings {
 
     /**
      * Output Form Fields - SMTP Account Settings
+     * 
      */
     public function echo_field_username() {
         echo '<input type="text" name="username" id="username" value="' . get_option('username') . '" required>';
@@ -147,6 +152,7 @@ class Admin_Settings {
      * add_settings_section( $id, $title, $callback, $page )
      * add_settings_field( $id, $title, $callback, $page, $section, $args )
      * register_setting( $option_group, $option_name, $sanitize_callback )
+     * 
      */
     public function register_settings() {
 
@@ -155,15 +161,16 @@ class Admin_Settings {
 
         /**
          * Register section and fields - SMTP Account Settings
+         * 
          */
         $section = 'section_smtp';
         add_settings_section( $section, 'SMTP Account', null, $page );
 
             add_settings_field( 'username', 'Username', [ &$this, 'echo_field_username' ], $page, $section );
-            register_setting( $group, 'username', 'sanitize_text_field' );
+            register_setting( $group, 'username', [ &$this, 'validate_text' ] );
 
             add_settings_field( 'password', 'Password', [ &$this, 'echo_field_password' ], $page, $section );
-            register_setting( $group, 'password', 'sanitize_text_field' );
+            register_setting( $group, 'password', [ &$this, 'validate_text' ] );
 
             add_settings_field( 'host', 'Host', [ &$this, 'echo_field_host' ], $page, $section );
             register_setting( $group, 'host', [ &$this, 'validate_domain' ] );
@@ -176,6 +183,7 @@ class Admin_Settings {
 
         /**
          * Register section and fields - Message Header Settings
+         * 
          */
         $section = 'section_headers';
         add_settings_section( $section, 'Message Headers', [ &$this, 'echo_intro_section_headers' ], $page );
@@ -189,7 +197,18 @@ class Admin_Settings {
     }
 
     /**
+     * Validate a text field.
+     * 
+     */
+    function validate_text( $text ) {
+ 
+        $clean_text = sanitize_text_field( $text );
+        return $clean_text;
+    }
+
+    /**
      * Validate a domain name.
+     * 
      */
     function validate_domain( $domain ) {
  
@@ -207,6 +226,7 @@ class Admin_Settings {
 
     /**
      * Validate a port number.
+     * 
      */
     function validate_port( $port ) {
 
@@ -223,6 +243,7 @@ class Admin_Settings {
 
     /**
      * Validate a checkbox.
+     * 
      */
     function sanitise_checkbox( $checkbox ) {
 
