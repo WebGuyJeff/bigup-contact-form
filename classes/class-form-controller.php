@@ -180,9 +180,6 @@ foreach ( $errors as $log ) {
                     } else {
                         $new = $old;
                     }
-error_log($old);
-error_log($new);
-
                     break;
             }
 
