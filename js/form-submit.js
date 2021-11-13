@@ -98,6 +98,7 @@
         remove_all_child_nodes( output );
         output.appendChild( p );
         output.style.display = 'flex';
+        transition_to_promise( output, 'opacity', '1' );
 
         // Grab `FormData` then convert to plain obj, then to json string.
         const form_data = new FormData( form );
@@ -152,10 +153,15 @@
                 p.classList.add( 'alert-' + result.class );
                 div.appendChild( p );
             }
+
             remove_all_child_nodes( output );
             output.appendChild( div );
+            output.style.display = 'flex';
+            await transition_to_promise( output, 'opacity', '1' );
+            alert('Transition done');
             // hide the message after timer runs out.
             setTimeout( () => {
+                await transition_to_promise( output, 'opacity', '0' );
                 output.style.display = 'none';
                 button_label.innerText = button_idle_text;
                 button.disabled = false;
@@ -241,7 +247,7 @@
      * Remove all child nodes from a dom node.
      * 
      */
-     function remove_all_child_nodes( parent ) {
+    function remove_all_child_nodes( parent ) {
         while ( parent.firstChild ) {
             parent.removeChild( parent.firstChild );
         }
@@ -249,10 +255,29 @@
 
 
     /**
+     * Perform a CSS transition with a callback on completion.
+     * 
+     * @link https://gist.github.com/davej/44e3bbec414ed4665220
+     * 
+     */
+    function transition_to_promise( element, property, value ) {
+        new Promise( resolve => {
+            element.style[ property ] = value;
+            const resolve_and_cleanup = e => {
+                if (e.propertyName !== property) return;
+                this.removeEventListener( 'transitionend', transitionEnded );
+                resolve();
+            }
+            element.addEventListener( 'transitionend', resolve_and_cleanup );
+        } );
+    }
+
+
+    /**
      * Fire form_init() on 'doc ready'.
      * 
      */
-    var interval = setInterval( function() {
+    let interval = setInterval( function() {
         if ( document.readyState === 'complete' ) {
             clearInterval( interval );
             form_init();

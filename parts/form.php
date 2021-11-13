@@ -44,7 +44,6 @@ $admin_email = get_bloginfo( 'admin_email' );
                 maxlength="100"
                 title="Name"
                 required aria-label="Name"
-                autofocus
             >
 
             <span class="HB__form_hoverFlag">Tap</span>
@@ -90,7 +89,7 @@ $admin_email = get_bloginfo( 'admin_email' );
     </div>
 
     <footer class="HB__form_section">
-        <div class="HB__form_output" style="display:none;"></div>
+        <div class="HB__form_output" style="display:none; opacity:0;"></div>
     </footer>
 
 </form>

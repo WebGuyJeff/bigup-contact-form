@@ -97,6 +97,8 @@
                         flex-flow: column nowrap;
                         align-items: center;
                         justify-content: center;
+                        transition: opacity 0.8s ease-in-out;
+                        backdrop-filter: blur(2px);
                     }
 
 
