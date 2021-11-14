@@ -98,7 +98,7 @@
         remove_all_child_nodes( output );
         output.appendChild( p );
         output.style.display = 'flex';
-        transition_to_promise( output, 'opacity', '1' );
+        css_transition( output, 'opacity', '1' );
 
         // Grab `FormData` then convert to plain obj, then to json string.
         const form_data = new FormData( form );
@@ -117,56 +117,34 @@
 
         const url = wp.rest_url;
 
-        // Send form data and handle response.
-        let result = {};
-        try {
-            result = await fetch_http_request( url, fetch_options );
-            result.output = ( typeof result.output === 'string' ) ? [ result.output ] : result.output;
-            if ( ! result.ok ) {
-                throw result;
-            }
-            result.class = 'success';
-    
-        } catch ( error ) {
-            if ( ! error.output ) {
-                // error is not a server response.
-                console.error( error );
-                result.output = [ 'Failed to establish a connection to the server.' ];
+        result = await fetch_http_request( url, fetch_options );
+        result.class = ( result.ok ) ? 'success' : 'danger';
 
-            } else {
-                // error is the thrown result and contains server message(s).
-                for ( const message in error.output ) {
-                    console.error( make_human_readable( error.output[ message ] ) );
-                }
-            }
-            result.class = 'danger';
+        // build result output and insert into dom.
+        let div = document.createElement( 'div' );
 
-        } finally {
-            // build result output and insert into dom.
-            let div = document.createElement( 'div' );
-
-            for ( const message in result.output ) {
-                let p = document.createElement( 'p' );
-                p.innerText = make_human_readable( result.output[ message ] );
-                p.classList.add( 'alert' );
-                p.classList.add( 'alert-hover' );
-                p.classList.add( 'alert-' + result.class );
-                div.appendChild( p );
-            }
-
-            remove_all_child_nodes( output );
-            output.appendChild( div );
-            output.style.display = 'flex';
-            await transition_to_promise( output, 'opacity', '1' );
-            alert('Transition done');
-            // hide the message after timer runs out.
-            setTimeout( () => {
-                await transition_to_promise( output, 'opacity', '0' );
-                output.style.display = 'none';
-                button_label.innerText = button_idle_text;
-                button.disabled = false;
-            }, 5000)
+        for ( const message in result.output ) {
+            let p = document.createElement( 'p' );
+            p.innerText = make_human_readable( result.output[ message ] );
+            p.classList.add( 'alert' );
+            p.classList.add( 'alert-hover' );
+            p.classList.add( 'alert-' + result.class );
+            div.appendChild( p );
         }
+
+        remove_all_child_nodes( output );
+        output.appendChild( div );
+        output.style.display = 'flex';
+        css_transition( output, 'opacity', '1' );
+        // hide the message after timer runs out.
+        setTimeout( () => {
+            let response = css_transition( output, 'opacity', '0' );
+            alert( response );
+
+            output.style.display = 'none';
+            button_label.innerText = button_idle_text;
+            button.disabled = false;
+        }, 5000)
     };
 
 
@@ -189,25 +167,49 @@
      * 
      */
     async function fetch_http_request( url, options ) {
+
         const controller = new AbortController();
         const timeoutId = setTimeout( () => {
                 controller.abort();
         }, 14000 );
-        const fetch_response = await fetch( url, {
-            ...options,
-            signal: controller.signal
-        } );
-        clearTimeout( timeoutId );
-        // parse response body as JSON.
-        const response_body = await fetch_response.json();
-        // copy response 'ok' flag to new object.
-        response_body.ok = fetch_response.ok;
-        // if output is empty, fallback to string from http status.
-        if ( ! response_body.output ) {
-            response_body.output = [ 'Error ' + fetch_response.status + ': ' + fetch_response.statusText ];
-            response_body.ok = false;
+
+        try {
+            // start the fetch request.
+            const fetch_response = await fetch( url, {
+                ...options,
+                signal: controller.signal
+            } );
+            clearTimeout( timeoutId );
+            // parse response body as JSON.
+            const result = await fetch_response.json();
+            // copy response 'ok' flag to new object.
+            result.ok = fetch_response.ok;
+            // if output is empty, fallback to string from http status.
+            if ( ! result.output ) {
+                result.output = [ 'Error ' + fetch_response.status + ': ' + fetch_response.statusText ];
+                result.ok = false;
+            }
+            result.output = ( typeof result.output === 'string' ) ? [ result.output ] : result.output;
+            if ( ! result.ok ) {
+                throw result;
+            }
+            return result;
+
+        } catch ( error ) {
+            if ( ! error.output ) {
+                // error is not a server response.
+                console.error( error );
+                result.output = [ 'Failed to establish a connection to the server.' ];
+
+            } else {
+                // error is the thrown result and contains server message(s).
+                for ( const message in error.output ) {
+                    console.error( make_human_readable( error.output[ message ] ) );
+                }
+                result = error;
+            }
+            return result;
         }
-        return response_body;
     }
 
 
@@ -260,8 +262,8 @@
      * @link https://gist.github.com/davej/44e3bbec414ed4665220
      * 
      */
-    function transition_to_promise( element, property, value ) {
-        new Promise( resolve => {
+    async function css_transition( element, property, value ) {
+        let response = await new Promise( resolve => {
             element.style[ property ] = value;
             const resolve_and_cleanup = e => {
                 if (e.propertyName !== property) return;
@@ -270,6 +272,7 @@
             }
             element.addEventListener( 'transitionend', resolve_and_cleanup );
         } );
+        return response;
     }
 
 
