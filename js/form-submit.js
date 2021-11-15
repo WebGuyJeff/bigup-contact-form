@@ -105,6 +105,8 @@
         const plain_obj_data = Object.fromEntries( form_data.entries() );
         const json_string_data = JSON.stringify( plain_obj_data );
 
+        // Fetch params.
+        const url = wp.rest_url;
         const fetch_options = {
             method: "POST",
             headers: {
@@ -115,12 +117,11 @@
             body: json_string_data,
         };
 
-        const url = wp.rest_url;
-
+        // Do fetch request.
         result = await fetch_http_request( url, fetch_options );
         result.class = ( result.ok ) ? 'success' : 'danger';
 
-        // build result output and insert into dom.
+        // Build result output and insert into dom.
         let div = document.createElement( 'div' );
 
         for ( const message in result.output ) {
@@ -135,11 +136,13 @@
         remove_all_child_nodes( output );
         output.appendChild( div );
         output.style.display = 'flex';
-        css_transition( output, 'opacity', '1' );
-        // hide the message after timer runs out.
+
+        await css_transition( output, 'opacity', '1' );
+
+        // hide message after timer expires.
         setTimeout( () => {
-            let response = css_transition( output, 'opacity', '0' );
-            alert( response );
+            let response = await css_transition( output, 'opacity', '0' );
+            console.log( response );
 
             output.style.display = 'none';
             button_label.innerText = button_idle_text;
@@ -157,7 +160,7 @@
      *     14s for front end as fallback in lieu of server response.
      * 
      * controller - abort controller to abort fetch request.
-     * timeoutId - abort wrapped in a timer.
+     * abort - abort wrapped in a timer.
      * signal: controller.signal - attach timeout to fetch request.
      * clearTimeout( timeoutId ) - cancel the timer on response.
      * 
@@ -169,46 +172,33 @@
     async function fetch_http_request( url, options ) {
 
         const controller = new AbortController();
-        const timeoutId = setTimeout( () => {
-                controller.abort();
-        }, 14000 );
+        const abort = setTimeout( () => controller.abort(), 14000 );
 
         try {
-            // start the fetch request.
-            const fetch_response = await fetch( url, {
+            const response = await fetch( url, {
                 ...options,
                 signal: controller.signal
             } );
-            clearTimeout( timeoutId );
+            clearTimeout( abort );
+
             // parse response body as JSON.
-            const result = await fetch_response.json();
-            // copy response 'ok' flag to new object.
-            result.ok = fetch_response.ok;
-            // if output is empty, fallback to string from http status.
-            if ( ! result.output ) {
-                result.output = [ 'Error ' + fetch_response.status + ': ' + fetch_response.statusText ];
-                result.ok = false;
-            }
-            result.output = ( typeof result.output === 'string' ) ? [ result.output ] : result.output;
-            if ( ! result.ok ) {
-                throw result;
-            }
+            const result = await response.json();
+            result.ok = response.ok;
+            if ( typeof result.output === 'string' ) result.output = [ result.output ];
+            if ( ! result.ok ) throw result;
             return result;
 
         } catch ( error ) {
             if ( ! error.output ) {
-                // error is not a server response.
-                console.error( error );
-                result.output = [ 'Failed to establish a connection to the server.' ];
 
-            } else {
-                // error is the thrown result and contains server message(s).
-                for ( const message in error.output ) {
-                    console.error( make_human_readable( error.output[ message ] ) );
-                }
-                result = error;
+                // error is not a server response.
+                error.output = [ 'Failed to establish a connection to the server.' ];
+                error.ok = false;
             }
-            return result;
+            for ( const message in error.output ) {
+                console.error( make_human_readable( error.output[ message ] ) );
+            }
+            return error;
         }
     }
 
@@ -263,16 +253,15 @@
      * 
      */
     async function css_transition( element, property, value ) {
-        let response = await new Promise( resolve => {
+        return new Promise( resolve => {
             element.style[ property ] = value;
             const resolve_and_cleanup = e => {
-                if (e.propertyName !== property) return;
-                this.removeEventListener( 'transitionend', transitionEnded );
+                if ( e.propertyName !== property ) return;
+                this.removeEventListener( 'transitionend', resolve_and_cleanup );
                 resolve();
             }
             element.addEventListener( 'transitionend', resolve_and_cleanup );
         } );
-        return response;
     }
 
 
