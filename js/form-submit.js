@@ -135,19 +135,12 @@
 
         remove_all_child_nodes( output );
         output.appendChild( div );
-        output.style.display = 'flex';
 
-        await css_transition( output, 'opacity', '1' );
+        await popout_alert( output, 'flex', 5000 );
 
-        // hide message after timer expires.
-        setTimeout( () => {
-            let response = await css_transition( output, 'opacity', '0' );
-            console.log( response );
+        button_label.innerText = button_idle_text;
+        button.disabled = false;
 
-            output.style.display = 'none';
-            button_label.innerText = button_idle_text;
-            button.disabled = false;
-        }, 5000)
     };
 
 
@@ -189,8 +182,8 @@
             return result;
 
         } catch ( error ) {
-            if ( ! error.output ) {
 
+            if ( ! error.output ) {
                 // error is not a server response.
                 error.output = [ 'Failed to establish a connection to the server.' ];
                 error.ok = false;
@@ -252,16 +245,53 @@
      * @link https://gist.github.com/davej/44e3bbec414ed4665220
      * 
      */
-    async function css_transition( element, property, value ) {
-        return new Promise( resolve => {
+    function css_transition( element, property, value ) {
+        new Promise( resolve => {
             element.style[ property ] = value;
             const resolve_and_cleanup = e => {
                 if ( e.propertyName !== property ) return;
-                this.removeEventListener( 'transitionend', resolve_and_cleanup );
+                element.removeEventListener( 'transitionend', resolve_and_cleanup );
                 resolve();
             }
             element.addEventListener( 'transitionend', resolve_and_cleanup );
         } );
+    }
+
+
+    /**
+     * Helper function to async pause.
+     */
+    function pause( ms ) { 
+        return new Promise( resolve => { 
+            setTimeout( () => {
+                resolve();
+            }, ms )
+        } );
+    }
+
+
+    /**
+     * Popout an alert element for a set time.
+     * 
+     * This 'popout' requires no human interaction unlike a popup.
+     * Assumes the element has the following css properties:
+     * 
+     * display: none;
+     * opacity: 0;
+     * transition: opacity {n}s ...;
+     * 
+     */
+    async function popout_alert( element, display_property, ms ) {
+        //element.style.display = display_property;
+
+        await css_transition( element, 'display', display_property );
+        alert( 'transition started' );
+        await css_transition( element, 'opacity', '1' );
+        alert( 'transition finished' );
+        await pause( ms );
+        await css_transition( element, 'opacity', '0' );
+        element.style.display = 'none';
+        return;
     }
 
 
@@ -275,6 +305,5 @@
             form_init();
         }
     }, 100);
-
 
 })();
