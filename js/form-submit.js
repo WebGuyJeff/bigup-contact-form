@@ -83,29 +83,12 @@
         }
 
         // Get elements of submitted form.
-        let button = form.querySelector( '.jsButtonSubmit' );
-        let button_label = form.querySelector( '.jsButtonSubmit > *:first-child' );
-        let button_idle_text = button_label.innerText;
-        let output = form.querySelector( '.HB__form_output' );
+        const button = form.querySelector( '.jsButtonSubmit' );
+        const button_label = form.querySelector( '.jsButtonSubmit > *:first-child' );
+        const output = form.querySelector( '.HB__form_output' );
 
-        // Display pending state to user.
-        button.disabled = true;
-        button_label.innerText = '[busy]';
-        let p = document.createElement( "p" );
-        p.classList.add( 'alert' );
-        p.classList.add( 'HB__form-popout' );
-        p.innerText = "Connecting...";
-        output.appendChild( p );
-        output.style.display = 'flex';
-
-
-
-
-        css_transition( output, 'opacity', '1' );
-        css_transition( p, 'opacity', '1' );
-
-
-
+        let classes = [ 'HB__form-popout', 'alert' ];
+        const pending_text = "Connecting...";
 
         // Grab `FormData` then convert to plain obj, then to json string.
         const form_data = new FormData( form );
@@ -124,47 +107,34 @@
             body: json_string_data,
         };
 
-        // Do fetch request.
-        result = await fetch_http_request( url, fetch_options );
+        output.style.display = 'flex';
+        let button_idle_text = await toggle_button( button, button_label, '[busy]' );
+        let popouts_pending = await create_popouts( output, [ pending_text ], classes );
+
+
+        // Start fetch and CSS transitions simultaneously.
+        let [ ,,result ] = await Promise.all( [
+            css_transition( output, 'opacity', '1' ),
+            transition_popouts( popouts_pending, 'opacity', '1' ),
+            fetch_http_request( url, fetch_options )
+        ] );
+
         result.class = ( result.ok ) ? 'success' : 'danger';
+        classes = [ ...classes, 'alert-' + result.class ];
 
+        await transition_popouts( popouts_pending, 'opacity', '0' );
+        await remove_all_child_nodes( output );
 
-        let node_list = output.childNodes;
-        let children = [ ...node_list ];
-        let hide_popouts = [];
-        children.forEach( function( popout ){
-            hide_popouts.push( css_transition( popout, 'opacity', '0' ) );
-        } );
-        await Promise.all( hide_popouts );
-        remove_all_child_nodes( output );
+        let popouts_response = await create_popouts( output, result.output, classes );
+        await transition_popouts( popouts_response, 'opacity', '1' );
+        await pause( 5000 );
 
-        // Build result output and insert into dom.
-        //let div = document.createElement( 'div' );
+        await transition_popouts( popouts_response, 'opacity', '0' );
+        await css_transition( output, 'opacity', '0' );
 
-
-        const show_response_popouts = [];
-        for ( const message in result.output ) {
-            let p = document.createElement( 'p' );
-            p.innerText = make_human_readable( result.output[ message ] );
-            p.classList.add( 'alert' );
-            p.classList.add( 'alert-' + result.class );
-            p.classList.add( 'HB__form-popout' );
-            //div.appendChild( p );
-            output.appendChild( p );
-            show_response_popouts.push( css_transition( p, 'opacity', '1' ) );
-        }
-        await Promise.all( show_response_popouts );
-
-        let hide_response_popouts = [];
-        for ( const popout in output.childNodes ) {
-            hide_response_popouts.push( css_transition( popout, 'opacity', '0' ) );
-        }
-        await Promise.all( hide_response_popouts );
-
-        remove_all_child_nodes( output );
+        await remove_all_child_nodes( output );
         output.style.display = 'none';
-        button_label.innerText = button_idle_text;
-        button.disabled = false;
+        toggle_button( button, button_label, button_idle_text );
 
     };
 
@@ -241,6 +211,7 @@
      * @link https://www.regular-expressions.info/unicode.html#category
      * @param {string} string The dirty string.
      * @returns The cleaned string.
+     * 
      */
     function make_human_readable( string ) {
         const tags = /(?<!\([^)]*?)<[^>]*?>/g;
@@ -258,9 +229,12 @@
      * 
      */
     function remove_all_child_nodes( parent ) {
-        while ( parent.firstChild ) {
-            parent.removeChild( parent.firstChild );
-        }
+        return new Promise( ( resolve ) => {
+            while ( parent.firstChild ) {
+                parent.removeChild( parent.firstChild );
+            }
+            resolve();
+        } );
     }
 
 
@@ -271,14 +245,22 @@
      * 
      */
     function css_transition( element, property, value ) {
-        return new Promise( resolve => {
-            element.style[ property ] = value;
-            const resolve_and_cleanup = e => {
-                if ( e.propertyName !== property ) return;
-                element.removeEventListener( 'transitionend', resolve_and_cleanup );
-                resolve();
+        return new Promise( ( resolve, reject ) => {
+            try {
+
+console.log( element + ' : ' + property + ' : ' + value );
+
+                element.style[ property ] = value;
+                const resolve_and_cleanup = e => {
+                    if ( e.propertyName !== property ) reject( new Error( 'Property name does not match.' ) );
+                    element.removeEventListener( 'transitionend', resolve_and_cleanup );
+                    resolve(); 
+                }
+                element.addEventListener( 'transitionend', resolve_and_cleanup );
+            } catch ( error ) {
+                console.error( error );
+                reject( error );
             }
-            element.addEventListener( 'transitionend', resolve_and_cleanup );
         } );
     }
 
@@ -291,6 +273,90 @@
             setTimeout( () => {
                 resolve();
             }, ms )
+        } );
+    }
+
+
+    /**
+     * Toggle a button between two states and return the old label.
+     * 
+     */
+    function toggle_button( button, button_label, text ) {
+        if ( button_label.innerText === text ) return text;
+        let old_text = button_label.innerText;
+        button.disabled = ( button.disabled === true ) ? false : true;
+        button_label.innerText = text;
+        return old_text;
+    }
+
+
+    /**
+     * Create an array of popout elements and insert into dom.
+     * 
+     */
+    function create_popouts( parent_elem, message_array, class_array ) {
+        return new Promise( ( resolve, reject ) => {
+            try {
+                if ( ! parent_elem || parent_elem.nodeType !== Node.ELEMENT_NODE ) {
+                    throw new TypeError( 'parent_elem must be an element' );
+                } else if ( ! Array.isArray( message_array ) ) {
+                    throw new TypeError( 'message_array must be an array' );
+                }
+                popouts = [];
+                message_array.forEach( ( message ) => {
+                    let p = document.createElement( 'p' );
+                    p.innerText = make_human_readable( message );
+                    class_array.forEach( ( class_name ) => {
+                        p.classList.add( class_name );
+                    } );
+                    parent_elem.appendChild( p );
+                    popouts.push( p );
+                } );
+                resolve( popouts );
+            } catch ( error ) {
+                console.error( error );
+                reject( error );
+            }
+        } );
+    }
+
+
+    /**
+     * Transitions an array of popouts using a Promise.all, returned as a promise.
+     * 
+     */
+    async function transition_popouts( popouts, css_property, property_value ) {
+        // Declare parent promise to be returned.
+        return new Promise( ( resolve, reject ) => {
+            try {
+                if ( ! popouts || ! Array.isArray( popouts ) ) {
+                    throw new TypeError( 'popouts must be an array' );
+                }
+                // Declare promise to create popout_transitions array.
+                const transition_call = new Promise( ( resolve, reject ) => {
+                    try {
+                        popout_transitions = [];
+                        popouts.forEach( ( popout ) => {
+                            popout_transitions.push( css_transition( popout, css_property, property_value ) );
+                        } );
+                        resolve( popout_transitions );
+                    } catch ( error ) {
+                        console.error( error );
+                        reject( error );
+                    }
+                } );
+                // Call transitions promise, then call array children as promise.all.
+                transition_call.then( ( popout_transitions ) => {
+                        Promise.all( popout_transitions )
+                            .then( resolve() );
+                } ).catch( ( error ) => {
+                    // Bubble up.
+                    throw error;
+                } );
+            } catch ( error ) {
+                console.error( error );
+                reject( error );
+            }
         } );
     }
 
