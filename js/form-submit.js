@@ -93,12 +93,19 @@
         button_label.innerText = '[busy]';
         let p = document.createElement( "p" );
         p.classList.add( 'alert' );
-        p.classList.add( 'alert-hover' );
+        p.classList.add( 'HB__form-popout' );
         p.innerText = "Connecting...";
-        remove_all_child_nodes( output );
         output.appendChild( p );
         output.style.display = 'flex';
+
+
+
+
         css_transition( output, 'opacity', '1' );
+        css_transition( p, 'opacity', '1' );
+
+
+
 
         // Grab `FormData` then convert to plain obj, then to json string.
         const form_data = new FormData( form );
@@ -121,23 +128,41 @@
         result = await fetch_http_request( url, fetch_options );
         result.class = ( result.ok ) ? 'success' : 'danger';
 
-        // Build result output and insert into dom.
-        let div = document.createElement( 'div' );
 
+        let node_list = output.childNodes;
+        let children = [ ...node_list ];
+        let hide_popouts = [];
+        children.forEach( function( popout ){
+            hide_popouts.push( css_transition( popout, 'opacity', '0' ) );
+        } );
+        await Promise.all( hide_popouts );
+        remove_all_child_nodes( output );
+
+        // Build result output and insert into dom.
+        //let div = document.createElement( 'div' );
+
+
+        const show_response_popouts = [];
         for ( const message in result.output ) {
             let p = document.createElement( 'p' );
             p.innerText = make_human_readable( result.output[ message ] );
             p.classList.add( 'alert' );
-            p.classList.add( 'alert-hover' );
             p.classList.add( 'alert-' + result.class );
-            div.appendChild( p );
+            p.classList.add( 'HB__form-popout' );
+            //div.appendChild( p );
+            output.appendChild( p );
+            show_response_popouts.push( css_transition( p, 'opacity', '1' ) );
         }
+        await Promise.all( show_response_popouts );
+
+        let hide_response_popouts = [];
+        for ( const popout in output.childNodes ) {
+            hide_response_popouts.push( css_transition( popout, 'opacity', '0' ) );
+        }
+        await Promise.all( hide_response_popouts );
 
         remove_all_child_nodes( output );
-        output.appendChild( div );
-
-        await popout_alert( output, 'flex', 5000 );
-
+        output.style.display = 'none';
         button_label.innerText = button_idle_text;
         button.disabled = false;
 
@@ -246,7 +271,7 @@
      * 
      */
     function css_transition( element, property, value ) {
-        new Promise( resolve => {
+        return new Promise( resolve => {
             element.style[ property ] = value;
             const resolve_and_cleanup = e => {
                 if ( e.propertyName !== property ) return;
@@ -276,22 +301,17 @@
      * This 'popout' requires no human interaction unlike a popup.
      * Assumes the element has the following css properties:
      * 
-     * display: none;
      * opacity: 0;
      * transition: opacity {n}s ...;
      * 
+     * @param {object} element The dom element to popout.
+     * @param {integer} duration The duration of the popout in milliseconds.
+     * 
      */
-    async function popout_alert( element, display_property, ms ) {
-        //element.style.display = display_property;
-
-        await css_transition( element, 'display', display_property );
-        alert( 'transition started' );
+    async function popout_alert( element, ms ) {
         await css_transition( element, 'opacity', '1' );
-        alert( 'transition finished' );
         await pause( ms );
         await css_transition( element, 'opacity', '0' );
-        element.style.display = 'none';
-        return;
     }
 
 
