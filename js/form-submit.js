@@ -55,6 +55,7 @@
         } );
     };
 
+    let start;
 
     /**
      * Handle the submitted form.
@@ -72,6 +73,9 @@
 
         // prevent normal submit action
         event.preventDefault();
+
+        start = Date.now();
+        console.log( stopwatch() + ' |#####| FUNCTION START');
 
         // get the element the event handler was attached to.
         const form = event.currentTarget;
@@ -108,9 +112,10 @@
         };
 
         output.style.display = 'flex';
-        let button_idle_text = await toggle_button( button, button_label, '[busy]' );
-        let popouts_pending = await insert_popouts_into_dom( output, [ pending_text ], classes );
+        toggle_button( button, button_label, '[busy]' );
 
+
+        let popouts_pending = await insert_popouts_into_dom( output, [ pending_text ], classes );
 
         // Start fetch and CSS transitions simultaneously.
         let [ ,,result ] = await Promise.all( [
@@ -129,9 +134,7 @@
         await transition_array_of_elements( popouts_response, 'opacity', '1' );
         await pause( 5000 );
 
-        console.log('started');
         await transition_array_of_elements( popouts_response, 'opacity', '0' );
-        console.log('finish');
 
         await css_transition( output, 'opacity', '0' );
 
@@ -139,7 +142,13 @@
         output.style.display = 'none';
         toggle_button( button, button_label, button_idle_text );
 
+        console.log( stopwatch() + ' |#####| FUNCTION END');
     };
+
+    function stopwatch() {
+        let elapsed = Date.now() - start;
+        return elapsed;
+    }
 
 
     /**
@@ -256,13 +265,17 @@
         return new Promise( ( resolve, reject ) => {
             try {
 
-console.log( element + ' : ' + property + ' : ' + value );
+console.log( stopwatch() + ' |START| ' + element + ' : ' + property + ' : ' + value );
 
                 element.style[ property ] = value;
                 const resolve_and_cleanup = e => {
                     if ( e.propertyName !== property ) reject( new Error( 'Property name does not match.' ) );
                     element.removeEventListener( 'transitionend', resolve_and_cleanup );
-                    resolve(); 
+
+console.log( stopwatch() + ' |END  | ' + element + ' : ' + property + ' : ' + value );
+
+                    resolve();
+
                 }
                 element.addEventListener( 'transitionend', resolve_and_cleanup );
             } catch ( error ) {
