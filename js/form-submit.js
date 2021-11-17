@@ -109,27 +109,30 @@
 
         output.style.display = 'flex';
         let button_idle_text = await toggle_button( button, button_label, '[busy]' );
-        let popouts_pending = await create_popouts( output, [ pending_text ], classes );
+        let popouts_pending = await insert_popouts_into_dom( output, [ pending_text ], classes );
 
 
         // Start fetch and CSS transitions simultaneously.
         let [ ,,result ] = await Promise.all( [
             css_transition( output, 'opacity', '1' ),
-            transition_popouts( popouts_pending, 'opacity', '1' ),
+            transition_array_of_elements( popouts_pending, 'opacity', '1' ),
             fetch_http_request( url, fetch_options )
         ] );
 
         result.class = ( result.ok ) ? 'success' : 'danger';
         classes = [ ...classes, 'alert-' + result.class ];
 
-        await transition_popouts( popouts_pending, 'opacity', '0' );
+        await transition_array_of_elements( popouts_pending, 'opacity', '0' );
         await remove_all_child_nodes( output );
 
-        let popouts_response = await create_popouts( output, result.output, classes );
-        await transition_popouts( popouts_response, 'opacity', '1' );
+        let popouts_response = await insert_popouts_into_dom( output, result.output, classes );
+        await transition_array_of_elements( popouts_response, 'opacity', '1' );
         await pause( 5000 );
 
-        await transition_popouts( popouts_response, 'opacity', '0' );
+        console.log('started');
+        await transition_array_of_elements( popouts_response, 'opacity', '0' );
+        console.log('finish');
+
         await css_transition( output, 'opacity', '0' );
 
         await remove_all_child_nodes( output );
@@ -227,6 +230,8 @@
     /**
      * Remove all child nodes from a dom node.
      * 
+     * @param {object} parent The dom node to remove all child nodes from.
+     * 
      */
     function remove_all_child_nodes( parent ) {
         return new Promise( ( resolve ) => {
@@ -242,6 +247,9 @@
      * Perform a CSS transition with a callback on completion.
      * 
      * @link https://gist.github.com/davej/44e3bbec414ed4665220
+     * @param {object} element   The dom element to perform the transition on.
+     * @param {string} property  The CSS property to transition.
+     * @param {string} value     The CSS value to transition to.
      * 
      */
     function css_transition( element, property, value ) {
@@ -267,18 +275,25 @@ console.log( element + ' : ' + property + ' : ' + value );
 
     /**
      * Helper function to async pause.
+     * 
+     * @param {integer} milliseconds Duration to pause.
+     * 
      */
-    function pause( ms ) { 
+    function pause( milliseconds ) { 
         return new Promise( resolve => { 
             setTimeout( () => {
                 resolve();
-            }, ms )
+            }, milliseconds )
         } );
     }
 
 
     /**
      * Toggle a button between two states and return the old label.
+     * 
+     * @param {object} button The button element.
+     * @param {object} button_label The button label element.
+     * @param {string} text The text to set the button to.
      * 
      */
     function toggle_button( button, button_label, text ) {
@@ -291,14 +306,18 @@ console.log( element + ' : ' + property + ' : ' + value );
 
 
     /**
-     * Create an array of popout elements and insert into dom.
+     * Create an array of popout message elements and insert into dom.
+     * 
+     * @param {object} parent_element The parent node to append to.
+     * @param {array}  message_array An array of messages as strings.
+     * @param {array}  classes An array of classes.
      * 
      */
-    function create_popouts( parent_elem, message_array, class_array ) {
+    function insert_popouts_into_dom( parent_element, message_array, class_array ) {
         return new Promise( ( resolve, reject ) => {
             try {
-                if ( ! parent_elem || parent_elem.nodeType !== Node.ELEMENT_NODE ) {
-                    throw new TypeError( 'parent_elem must be an element' );
+                if ( ! parent_element || parent_element.nodeType !== Node.ELEMENT_NODE ) {
+                    throw new TypeError( 'parent_element must be an element' );
                 } else if ( ! Array.isArray( message_array ) ) {
                     throw new TypeError( 'message_array must be an array' );
                 }
@@ -309,7 +328,7 @@ console.log( element + ' : ' + property + ' : ' + value );
                     class_array.forEach( ( class_name ) => {
                         p.classList.add( class_name );
                     } );
-                    parent_elem.appendChild( p );
+                    parent_element.appendChild( p );
                     popouts.push( p );
                 } );
                 resolve( popouts );
@@ -322,37 +341,25 @@ console.log( element + ' : ' + property + ' : ' + value );
 
 
     /**
-     * Transitions an array of popouts using a Promise.all, returned as a promise.
+     * Transition an array of elements. Expects a transition duration
+     * to be set in CSS.
+     * 
+     * @param {array}  elements_array An array of elements.
+     * @param {string} css_property The css property to transition.
+     * @param {string} property_value The css value to transition to.
      * 
      */
-    async function transition_popouts( popouts, css_property, property_value ) {
-        // Declare parent promise to be returned.
+    function transition_array_of_elements( elements_array, css_property, property_value ) {
         return new Promise( ( resolve, reject ) => {
             try {
-                if ( ! popouts || ! Array.isArray( popouts ) ) {
-                    throw new TypeError( 'popouts must be an array' );
+                if ( ! elements_array || ! Array.isArray( elements_array ) ) {
+                    throw new TypeError( 'elements_array must be an array' );
                 }
-                // Declare promise to create popout_transitions array.
-                const transition_call = new Promise( ( resolve, reject ) => {
-                    try {
-                        popout_transitions = [];
-                        popouts.forEach( ( popout ) => {
-                            popout_transitions.push( css_transition( popout, css_property, property_value ) );
-                        } );
-                        resolve( popout_transitions );
-                    } catch ( error ) {
-                        console.error( error );
-                        reject( error );
-                    }
+                element_transitions = [];
+                elements_array.forEach( ( element ) => {
+                    element_transitions.push( css_transition( element, css_property, property_value ) );
                 } );
-                // Call transitions promise, then call array children as promise.all.
-                transition_call.then( ( popout_transitions ) => {
-                        Promise.all( popout_transitions )
-                            .then( resolve() );
-                } ).catch( ( error ) => {
-                    // Bubble up.
-                    throw error;
-                } );
+                Promise.all( element_transitions ).then( resolve() );
             } catch ( error ) {
                 console.error( error );
                 reject( error );
@@ -364,19 +371,13 @@ console.log( element + ' : ' + property + ' : ' + value );
     /**
      * Popout an alert element for a set time.
      * 
-     * This 'popout' requires no human interaction unlike a popup.
-     * Assumes the element has the following css properties:
-     * 
-     * opacity: 0;
-     * transition: opacity {n}s ...;
-     * 
      * @param {object} element The dom element to popout.
-     * @param {integer} duration The duration of the popout in milliseconds.
+     * @param {integer} milliseconds The display duration.
      * 
      */
-    async function popout_alert( element, ms ) {
+    async function popout_alert( element, milliseconds ) {
         await css_transition( element, 'opacity', '1' );
-        await pause( ms );
+        await pause( milliseconds );
         await css_transition( element, 'opacity', '0' );
     }
 
