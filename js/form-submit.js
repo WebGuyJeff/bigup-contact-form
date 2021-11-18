@@ -13,7 +13,7 @@
  */
 (function form_sender() {
 
-    debug = true;
+    let debug = true;
 
     /**
      * Grab WP localize vars.
@@ -26,19 +26,6 @@
      */
     wp = wp_localize_hb_contact_form_vars;
 
-
-    /**
-     * Form element vars.
-     * 
-     * These element vars will be assigned as the form submission
-     * is handled and used to provide feedback to the user. They are
-     * declared here to provide top-level scope.
-     * 
-     */
-     let button;
-     let button_label;
-     let output;
-     let form_hide;
 
     /**
      * Prepare the form ready for input.
@@ -56,7 +43,7 @@
         } );
     };
 
-    let start;
+    let start; //holds the start time of the request for debugging.
 
     /**
      * Handle the submitted form.
@@ -76,7 +63,7 @@
         event.preventDefault();
 
         start = Date.now();
-        console.log( stopwatch() + ' |#####| FUNCTION START');
+        if(debug) console.log( stopwatch() + ' |#####| FUNCTION START');
 
         // get the element the event handler was attached to.
         const form = event.currentTarget;
@@ -112,49 +99,55 @@
             body: json_string_data,
         };
 
-        output.style.display = 'flex';
-        button_idle_text = toggle_button( button, button_label, '[busy]' );
+
+        /**
+         * Async form submission timeline
+         * 
+         * For debugging, set 'debug = true' (see start of form_sender()).
+         * 
+         */
+        try {
+            output.style.display = 'flex';
+            button_idle_text = toggle_button( button, button_label, '[busy]' );
+            let popouts_pending = await popouts_into_dom( output, [ pending_text ], classes );
+            // Start fetch and CSS transitions simultaneously.
+            let [ ,,result ] = await Promise.all( [
+                transition( output, 'opacity', '1' ),
+                transition( popouts_pending, 'opacity', '1' ),
+                fetch_http_request( url, fetch_options )
+            ] );
+            result.class = ( result.ok ) ? 'success' : 'danger';
+            classes = [ ...classes, 'alert-' + result.class ];
 
 
-        let popouts_pending = await insert_popouts_into_dom( output, [ pending_text ], classes );
+            testing = await transition( popouts_pending, 'opacity', '0' );
+console.log(testing);
 
-        // Start fetch and CSS transitions simultaneously.
-        let [ a,b,result ] = await Promise.allSettled( [
-            css_transition( output, 'opacity', '1' ),
-            transition_array_of_elements( popouts_pending, 'opacity', '1' ),
-            fetch_http_request( url, fetch_options )
-        ] );
+            await remove_children( output );
+            let popouts_complete = await popouts_into_dom( output, result.output, classes );
+            await transition( popouts_complete, 'opacity', '1' );
+            await pause( 5000 );
+            await transition( popouts_complete, 'opacity', '0' );
+            await transition( output, 'opacity', '0' );
+            await remove_children( output );
+            output.style.display = 'none';
+            toggle_button( button, button_label, button_idle_text );
 
-console.log('A');
-console.log(a);
-console.log('B');
-console.log(b);
-console.log(result);
+        } catch ( error ) {
+            console.error( error );
+        } finally {
+            if(debug) console.log( stopwatch() + ' |#####| FUNCTION END');
+        }
 
-        result.class = ( result.ok ) ? 'success' : 'danger';
-        classes = [ ...classes, 'alert-' + result.class ];
-
-        await transition_array_of_elements( popouts_pending, 'opacity', '0' );
-        await remove_all_child_nodes( output );
-
-        let popouts_response = await insert_popouts_into_dom( output, result.output, classes );
-        await transition_array_of_elements( popouts_response, 'opacity', '1' );
-        await pause( 5000 );
-
-        await transition_array_of_elements( popouts_response, 'opacity', '0' );
-
-        await css_transition( output, 'opacity', '0' );
-
-        await remove_all_child_nodes( output );
-        output.style.display = 'none';
-        toggle_button( button, button_label, button_idle_text );
-
-        console.log( stopwatch() + ' |#####| FUNCTION END');
     };
 
+    /**
+     * Log timestamps in debug mode.
+     * @returns milliseconds since function call.
+     */
     function stopwatch() {
         let elapsed = Date.now() - start;
-        return elapsed;
+        return elapsed.toString().padStart(4, '0');
     }
 
 
@@ -177,26 +170,22 @@ console.log(result);
      * 
      */
     async function fetch_http_request( url, options ) {
-
+        if(debug) console.log( `${stopwatch()} |START| Fetch request` );
         const controller = new AbortController();
         const abort = setTimeout( () => controller.abort(), 14000 );
-
         try {
             const response = await fetch( url, {
                 ...options,
                 signal: controller.signal
             } );
             clearTimeout( abort );
-
             // parse response body as JSON.
             const result = await response.json();
             result.ok = response.ok;
             if ( typeof result.output === 'string' ) result.output = [ result.output ];
             if ( ! result.ok ) throw result;
             return result;
-
         } catch ( error ) {
-
             if ( ! error.output ) {
                 // error is not a server response.
                 error.output = [ 'Failed to establish a connection to the server.' ];
@@ -206,6 +195,8 @@ console.log(result);
                 console.error( make_human_readable( error.output[ message ] ) );
             }
             return error;
+        } finally {
+            if(debug) console.log( `${stopwatch()} | END | Fetch request` );
         }
     }
 
@@ -249,12 +240,17 @@ console.log(result);
      * @param {object} parent The dom node to remove all child nodes from.
      * 
      */
-    function remove_all_child_nodes( parent ) {
+    function remove_children( parent ) {
+        if(debug) console.log( `${stopwatch()} |START| remove_children | ${parent.classList}` );
         return new Promise( ( resolve ) => {
-            while ( parent.firstChild ) {
-                parent.removeChild( parent.firstChild );
+            try {
+                while ( parent.firstChild ) {
+                    parent.removeChild( parent.firstChild );
+                }
+                resolve();
+            } finally {
+                if(debug) console.log( `${stopwatch()} | END | remove_children | ${parent.classList}` );
             }
-            resolve();
         } );
     }
 
@@ -268,14 +264,14 @@ console.log(result);
      * @param {string} value     The CSS value to transition to.
      * 
      */
-    async function css_transition( element, property, value ) {
+    function transition_single( element, property, value ) {
         return new Promise( ( resolve, reject ) => {
             try {
-                if(debug) console.log( `${stopwatch()} |START| ${property} : ${value} : ${element.classList}` );
+                if(debug) console.log( `${stopwatch()} |START| transition_single | ${property} : ${value} : ${element.classList}` );
                 element.style[ property ] = value;
                 const resolve_and_cleanup = e => {
                     if ( e.propertyName !== property ) throw new Error( 'Property name mismatch.' );
-                    if(debug) console.log( `${stopwatch()} | END | ${property} : ${value} : ${element.classList}` );
+                    if(debug) console.log( `${stopwatch()} | END | transition_single | ${property} : ${value} : ${element.classList}` );
                     element.removeEventListener( 'transitionend', resolve_and_cleanup );
                     resolve();
                 }
@@ -327,13 +323,14 @@ console.log(result);
      * @param {array}  classes An array of classes.
      * 
      */
-    function insert_popouts_into_dom( parent_element, message_array, class_array ) {
+    function popouts_into_dom( parent_element, message_array, class_array ) {
+        if(debug) console.log( `${stopwatch()} |START| popouts_into_dom | ${message_array[0]}` );
         return new Promise( ( resolve, reject ) => {
             try {
                 if ( ! parent_element || parent_element.nodeType !== Node.ELEMENT_NODE ) {
-                    throw new TypeError( 'parent_element must be an element' );
-                } else if ( ! Array.isArray( message_array ) ) {
-                    throw new TypeError( 'message_array must be an array' );
+                    throw new TypeError( `parent_element must be an element node.` );
+                } else if ( ! is_iterable( message_array ) ) {
+                    throw new TypeError( `message_array must be non-string iterable. ${typeof message_array} found.` );
                 }
                 popouts = [];
                 message_array.forEach( ( message ) => {
@@ -347,8 +344,9 @@ console.log(result);
                 } );
                 resolve( popouts );
             } catch ( error ) {
-                console.error( error );
                 reject( error );
+            } finally {
+                console.log( `${stopwatch()} | END | popouts_into_dom | ${message_array[0]}` );
             }
         } );
     }
@@ -363,36 +361,88 @@ console.log(result);
      * @param {string} property_value The css value to transition to.
      * 
      */
-    function transition_array_of_elements( elements_array, css_property, property_value ) {
+    function transition_array( elements_array, css_property, property_value ) {
         return new Promise( ( resolve, reject ) => {
             try {
-                if ( ! elements_array || ! Array.isArray( elements_array ) ) {
-                    throw new TypeError( 'elements_array must be an array' );
+                if ( ! is_iterable( elements_array ) ) {
+                    throw new TypeError( 'elements_array must be iterable.' );
                 }
                 element_transitions = [];
                 elements_array.forEach( ( element ) => {
-                    element_transitions.push( css_transition( element, css_property, property_value ) );
+                    element_transitions.push( transition_single( element, css_property, property_value ) );
                 } );
                 Promise.all( element_transitions ).then( resolve() );
+
+
             } catch ( error ) {
-                console.error( error );
                 reject( error );
             }
         } );
     }
 
 
-    /**
-     * Popout an alert element for a set time.
-     * 
-     * @param {object} element The dom element to popout.
-     * @param {integer} milliseconds The display duration.
-     * 
-     */
-    async function popout_alert( element, milliseconds ) {
-        await css_transition( element, 'opacity', '1' );
-        await pause( milliseconds );
-        await css_transition( element, 'opacity', '0' );
+
+    function transition_to_resolve( element_node, property, value ) {
+        return new Promise( ( resolve, reject ) => {
+            try {
+                element_node.style[ property ] = value;
+                const resolve_and_cleanup = ( element ) => {
+                    try {
+                        if ( element.propertyName !== property ) throw new Error( 'Property name mismatch.' );
+                        if(debug) console.log( `${stopwatch()} | END | transition | ${element_node.classList} : ${property} : ${value}` );
+                        element_node.removeEventListener( 'transitionend', resolve_and_cleanup );
+                        resolve( 'Transition event listener cleaned up successfully.' );
+                    } catch ( error ) {
+                        reject( error );
+                    }
+                }
+                element_node.addEventListener( 'transitionend', resolve_and_cleanup );
+            } catch ( error ) {
+                reject( error );
+            }
+        } );
+    }
+
+    async function transition( elements, property, value ) {
+        try {
+
+            let transitions = [];
+
+            //array of nodes.
+            if ( is_iterable( elements )
+                && elements.every( ( element ) => { return element.nodeType === 1 } ) ) {
+                elements.forEach( ( element_node ) => {
+                    if(debug) console.log( `${stopwatch()} |START| transition | ${element_node.classList} : ${property} : ${value}` );
+                    transitions.push( transition_to_resolve( element_node, property, value ) );
+                } );
+
+            //single node.
+            } else if ( elements.nodeType === 1 ) {
+                let element_node = elements;
+                if(debug) console.log( `${stopwatch()} |START| transition | ${element_node.classList} : ${property} : ${value}` );
+                transitions.push( transition_to_resolve( element_node, property, value ) );
+
+            //bad param passed.
+            } else {
+                throw new TypeError( 'elements must be non-string iterable. ' + typeof elements + ' found.');
+            }
+
+            result = await Promise.all( transitions );
+            return result;
+
+        } catch ( error ) {
+            return error;
+        } 
+
+    }
+
+
+    function is_iterable( object ) {
+        // checks for null and undefined
+        if ( object == null ) {
+          return false;
+        }
+        return typeof object[Symbol.iterator] === 'function';
     }
 
 
