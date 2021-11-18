@@ -13,6 +13,7 @@
  */
 (function form_sender() {
 
+    debug = true;
 
     /**
      * Grab WP localize vars.
@@ -112,17 +113,23 @@
         };
 
         output.style.display = 'flex';
-        toggle_button( button, button_label, '[busy]' );
+        button_idle_text = toggle_button( button, button_label, '[busy]' );
 
 
         let popouts_pending = await insert_popouts_into_dom( output, [ pending_text ], classes );
 
         // Start fetch and CSS transitions simultaneously.
-        let [ ,,result ] = await Promise.all( [
+        let [ a,b,result ] = await Promise.allSettled( [
             css_transition( output, 'opacity', '1' ),
             transition_array_of_elements( popouts_pending, 'opacity', '1' ),
             fetch_http_request( url, fetch_options )
         ] );
+
+console.log('A');
+console.log(a);
+console.log('B');
+console.log(b);
+console.log(result);
 
         result.class = ( result.ok ) ? 'success' : 'danger';
         classes = [ ...classes, 'alert-' + result.class ];
@@ -261,25 +268,19 @@
      * @param {string} value     The CSS value to transition to.
      * 
      */
-    function css_transition( element, property, value ) {
+    async function css_transition( element, property, value ) {
         return new Promise( ( resolve, reject ) => {
             try {
-
-console.log( stopwatch() + ' |START| ' + element + ' : ' + property + ' : ' + value );
-
+                if(debug) console.log( `${stopwatch()} |START| ${property} : ${value} : ${element.classList}` );
                 element.style[ property ] = value;
                 const resolve_and_cleanup = e => {
-                    if ( e.propertyName !== property ) reject( new Error( 'Property name does not match.' ) );
+                    if ( e.propertyName !== property ) throw new Error( 'Property name mismatch.' );
+                    if(debug) console.log( `${stopwatch()} | END | ${property} : ${value} : ${element.classList}` );
                     element.removeEventListener( 'transitionend', resolve_and_cleanup );
-
-console.log( stopwatch() + ' |END  | ' + element + ' : ' + property + ' : ' + value );
-
                     resolve();
-
                 }
                 element.addEventListener( 'transitionend', resolve_and_cleanup );
             } catch ( error ) {
-                console.error( error );
                 reject( error );
             }
         } );
