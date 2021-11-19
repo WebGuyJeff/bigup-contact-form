@@ -333,38 +333,6 @@ console.log(testing);
 
 
     /**
-     * Perform a CSS transition with a callback on completion. This function
-     * would typically only be called by transition();
-     * 
-     * @link https://gist.github.com/davej/44e3bbec414ed4665220
-     * @param {object} element_node DOM element to perform the transition on.
-     * @param {string} property     CSS property to transition.
-     * @param {string} value        CSS value to transition to.
-     * 
-     */
-    function transition_to_resolve( element_node, property, value ) {
-        return new Promise( ( resolve, reject ) => {
-            try {
-                element_node.style[ property ] = value;
-                const resolve_and_cleanup = ( element ) => {
-                    try {
-                        if ( element.propertyName !== property ) throw new Error( 'Property name mismatch.' );
-                        if(debug) console.log( `${stopwatch()} | END | transition | ${element_node.classList} : ${property} : ${value}` );
-                        element_node.removeEventListener( 'transitionend', resolve_and_cleanup );
-                        resolve( 'Transition event listener cleaned up successfully.' );
-                    } catch ( error ) {
-                        reject( error );
-                    }
-                }
-                element_node.addEventListener( 'transitionend', resolve_and_cleanup );
-            } catch ( error ) {
-                reject( error );
-            }
-        } );
-    }
-
-
-    /**
      * Transition node(s) in parallel with resolved promise on completion.
      * Accepts a single node or an array of nodes to provide a common interface
      * for all element transitions.
@@ -378,8 +346,28 @@ console.log(testing);
      * 
      */
     async function transition( elements, property, value ) {
-        try {
 
+        const transition_to_resolve = ( element_node, property, value ) =>
+            new Promise( ( resolve, reject ) => {
+                try {
+                    element_node.style[ property ] = value;
+                    const resolve_and_cleanup = ( element ) => {
+                        try {
+                            if ( element.propertyName !== property ) throw new Error( 'Property name mismatch.' );
+                            if(debug) console.log( `${stopwatch()} | END | transition | ${element_node.classList} : ${property} : ${value}` );
+                            element_node.removeEventListener( 'transitionend', resolve_and_cleanup );
+                            resolve( 'Transition event listener cleaned up successfully.' );
+                        } catch ( error ) {
+                            reject( error );
+                        }
+                    }
+                    element_node.addEventListener( 'transitionend', resolve_and_cleanup );
+                } catch ( error ) {
+                    reject( error );
+                }
+            } );
+
+        try {
             let transitions = [];
 
             //array of nodes.
@@ -401,12 +389,12 @@ console.log(testing);
                 throw new TypeError( 'elements must be non-string iterable. ' + typeof elements + ' found.');
             }
 
-            return Promise.all( transitions );
+            let dump = await Promise.all( transitions );
+console.log(dump);            
 
         } catch ( error ) {
             return error;
-        } 
-
+        }
     }
 
 
