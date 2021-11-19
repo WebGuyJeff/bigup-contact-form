@@ -26,7 +26,7 @@
      * .admin_email;
      * 
      */
-    wp = wp_localize_hb_contact_form_vars;
+    const wp = wp_localize_hb_contact_form_vars;
 
 
     /**
@@ -115,6 +115,10 @@
             // Start fetch and CSS transitions simultaneously.
 
 
+
+            //i think these are being called rather than inserted into array.
+            //perhaps all functions should return PENDING promises?
+
             let [ ,,result ] = await Promise.all( [
                 transition( output, 'opacity', '1' ),
                 transition( popouts_pending, 'opacity', '1' ),
@@ -122,19 +126,18 @@
             ] );
 
 
-            
+            console.log([ ,,result ]);
+
             result.class = ( result.ok ) ? 'success' : 'danger';
             classes = [ ...classes, 'alert-' + result.class ];
 
 
-            let testing = await transition( popouts_pending, 'opacity', '0' );
-console.log( 'testing' );
-console.log(testing);
+            await transition( popouts_pending, 'opacity', '0' );
 
             await remove_children( output );
             let popouts_complete = await popouts_into_dom( output, result.output, classes );
-            await transition( popouts_complete, 'opacity', '1' );
-            await pause( 5000 );
+            await transition( popouts_complete, 'opacity', '1' ).then(console.log);
+            await pause( 5000 ).then(console.log);
             await transition( popouts_complete, 'opacity', '0' );
             await transition( output, 'opacity', '0' );
             await remove_children( output );
@@ -142,7 +145,7 @@ console.log(testing);
             toggle_button( button, button_label, button_idle_text );
 
         } catch ( error ) {
-            console.error( error );
+            console.error( error.stack );
         } finally {
             if(debug) console.log( stopwatch() + ' |#####| FUNCTION END');
         }
@@ -255,7 +258,7 @@ console.log(testing);
                 while ( parent.firstChild ) {
                     parent.removeChild( parent.firstChild );
                 }
-                resolve();
+                resolve( 'All child nodes removed successfully.' );
             } finally {
                 if(debug) console.log( `${stopwatch()} | END | remove_children | ${parent.classList}` );
             }
@@ -272,7 +275,7 @@ console.log(testing);
     function pause( milliseconds ) { 
         return new Promise( resolve => { 
             setTimeout( () => {
-                resolve();
+                resolve( 'Pause completed successfully.' );
             }, milliseconds )
         } );
     }
@@ -347,25 +350,28 @@ console.log(testing);
      */
     async function transition( elements, property, value ) {
 
-        const transition_to_resolve = ( element_node, property, value ) =>
-            new Promise( ( resolve, reject ) => {
+        function return_transition_promise( element_node, property, value ) {
+            let transition_to_resolve = new Promise( ( resolve, reject ) => {
                 try {
                     element_node.style[ property ] = value;
                     const resolve_and_cleanup = ( element ) => {
                         try {
                             if ( element.propertyName !== property ) throw new Error( 'Property name mismatch.' );
-                            if(debug) console.log( `${stopwatch()} | END | transition | ${element_node.classList} : ${property} : ${value}` );
                             element_node.removeEventListener( 'transitionend', resolve_and_cleanup );
                             resolve( 'Transition event listener cleaned up successfully.' );
                         } catch ( error ) {
                             reject( error );
+                        } finally {
+                            if(debug) console.log( `${stopwatch()} | END | transition | ${element_node.classList} : ${property} : ${value}` );
                         }
-                    }
+                    };
                     element_node.addEventListener( 'transitionend', resolve_and_cleanup );
                 } catch ( error ) {
                     reject( error );
                 }
             } );
+            return transition_to_resolve;
+        };
 
         try {
             let transitions = [];
@@ -375,22 +381,31 @@ console.log(testing);
                 && elements.every( ( element ) => { return element.nodeType === 1 } ) ) {
                 elements.forEach( ( element_node ) => {
                     if(debug) console.log( `${stopwatch()} |START| transition | ${element_node.classList} : ${property} : ${value}` );
-                    transitions.push( transition_to_resolve( element_node, property, value ) );
+                    transitions.push( return_transition_promise( element_node, property, value ) );                
+console.log('array promises');
+console.log(transitions);
                 } );
 
             //single node.
             } else if ( elements.nodeType === 1 ) {
                 let element_node = elements;
                 if(debug) console.log( `${stopwatch()} |START| transition | ${element_node.classList} : ${property} : ${value}` );
-                transitions.push( transition_to_resolve( element_node, property, value ) );
+                transitions.push( return_transition_promise( element_node, property, value ) );
+console.log('single promises');
+console.log(transitions);
 
             //bad param passed.
             } else {
-                throw new TypeError( 'elements must be non-string iterable. ' + typeof elements + ' found.');
+                throw new TypeError( 'elements must be a non-string iterable. ' + typeof elements + ' found.');
             }
 
-            let dump = await Promise.all( transitions );
-console.log(dump);            
+            let result = await Promise.all( transitions );
+console.log('result')
+            console.log( result );
+console.log( 'promise.all: ' + result_item );
+
+
+            return result;
 
         } catch ( error ) {
             return error;
