@@ -12,6 +12,8 @@
  * 
  */
 (function form_sender() {
+'use strict';
+
 
     let debug = true;
 
@@ -108,19 +110,25 @@
          */
         try {
             output.style.display = 'flex';
-            button_idle_text = toggle_button( button, button_label, '[busy]' );
+            let button_idle_text = toggle_button( button, button_label, '[busy]' );
             let popouts_pending = await popouts_into_dom( output, [ pending_text ], classes );
             // Start fetch and CSS transitions simultaneously.
+
+
             let [ ,,result ] = await Promise.all( [
                 transition( output, 'opacity', '1' ),
                 transition( popouts_pending, 'opacity', '1' ),
                 fetch_http_request( url, fetch_options )
             ] );
+
+
+            
             result.class = ( result.ok ) ? 'success' : 'danger';
             classes = [ ...classes, 'alert-' + result.class ];
 
 
-            testing = await transition( popouts_pending, 'opacity', '0' );
+            let testing = await transition( popouts_pending, 'opacity', '0' );
+console.log( 'testing' );
 console.log(testing);
 
             await remove_children( output );
@@ -256,34 +264,6 @@ console.log(testing);
 
 
     /**
-     * Perform a CSS transition with a callback on completion.
-     * 
-     * @link https://gist.github.com/davej/44e3bbec414ed4665220
-     * @param {object} element   The dom element to perform the transition on.
-     * @param {string} property  The CSS property to transition.
-     * @param {string} value     The CSS value to transition to.
-     * 
-     */
-    function transition_single( element, property, value ) {
-        return new Promise( ( resolve, reject ) => {
-            try {
-                if(debug) console.log( `${stopwatch()} |START| transition_single | ${property} : ${value} : ${element.classList}` );
-                element.style[ property ] = value;
-                const resolve_and_cleanup = e => {
-                    if ( e.propertyName !== property ) throw new Error( 'Property name mismatch.' );
-                    if(debug) console.log( `${stopwatch()} | END | transition_single | ${property} : ${value} : ${element.classList}` );
-                    element.removeEventListener( 'transitionend', resolve_and_cleanup );
-                    resolve();
-                }
-                element.addEventListener( 'transitionend', resolve_and_cleanup );
-            } catch ( error ) {
-                reject( error );
-            }
-        } );
-    }
-
-
-    /**
      * Helper function to async pause.
      * 
      * @param {integer} milliseconds Duration to pause.
@@ -332,7 +312,7 @@ console.log(testing);
                 } else if ( ! is_iterable( message_array ) ) {
                     throw new TypeError( `message_array must be non-string iterable. ${typeof message_array} found.` );
                 }
-                popouts = [];
+                let popouts = [];
                 message_array.forEach( ( message ) => {
                     let p = document.createElement( 'p' );
                     p.innerText = make_human_readable( message );
@@ -353,35 +333,15 @@ console.log(testing);
 
 
     /**
-     * Transition an array of elements. Expects a transition duration
-     * to be set in CSS.
+     * Perform a CSS transition with a callback on completion. This function
+     * would typically only be called by transition();
      * 
-     * @param {array}  elements_array An array of elements.
-     * @param {string} css_property The css property to transition.
-     * @param {string} property_value The css value to transition to.
+     * @link https://gist.github.com/davej/44e3bbec414ed4665220
+     * @param {object} element_node DOM element to perform the transition on.
+     * @param {string} property     CSS property to transition.
+     * @param {string} value        CSS value to transition to.
      * 
      */
-    function transition_array( elements_array, css_property, property_value ) {
-        return new Promise( ( resolve, reject ) => {
-            try {
-                if ( ! is_iterable( elements_array ) ) {
-                    throw new TypeError( 'elements_array must be iterable.' );
-                }
-                element_transitions = [];
-                elements_array.forEach( ( element ) => {
-                    element_transitions.push( transition_single( element, css_property, property_value ) );
-                } );
-                Promise.all( element_transitions ).then( resolve() );
-
-
-            } catch ( error ) {
-                reject( error );
-            }
-        } );
-    }
-
-
-
     function transition_to_resolve( element_node, property, value ) {
         return new Promise( ( resolve, reject ) => {
             try {
@@ -403,6 +363,20 @@ console.log(testing);
         } );
     }
 
+
+    /**
+     * Transition node(s) in parallel with resolved promise on completion.
+     * Accepts a single node or an array of nodes to provide a common interface
+     * for all element transitions.
+     * 
+     * Expects a transition duration to be set in CSS.
+     * 
+     * @param {array}  elements_array An array of elements.
+     * @param {string} css_property The css property to transition.
+     * @param {string} property_value The css value to transition to.
+     * @return {Promise} A promise that resolves when all transitions are complete.
+     * 
+     */
     async function transition( elements, property, value ) {
         try {
 
@@ -427,8 +401,7 @@ console.log(testing);
                 throw new TypeError( 'elements must be non-string iterable. ' + typeof elements + ' found.');
             }
 
-            result = await Promise.all( transitions );
-            return result;
+            return Promise.all( transitions );
 
         } catch ( error ) {
             return error;
