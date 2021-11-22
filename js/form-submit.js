@@ -112,21 +112,19 @@
             output.style.display = 'flex';
             let button_idle_text = toggle_button( button, button_label, '[busy]' );
             let popouts_pending = await popouts_into_dom( output, [ pending_text ], classes );
-            // Start fetch and CSS transitions simultaneously.
 
-
-
-            //i think these are being called rather than inserted into array.
-            //perhaps all functions should return PENDING promises?
-
+/*
             let [ ,,result ] = await Promise.all( [
-                transition( output, 'opacity', '1' ),
+                node_transition( output, 'opacity', '1' ),
                 transition( popouts_pending, 'opacity', '1' ),
                 fetch_http_request( url, fetch_options )
             ] );
+*/
 
+            await transition( output, 'opacity', '1' );
+            await transition( popouts_pending, 'opacity', '1' );
+            result = await fetch_http_request( url, fetch_options );
 
-            console.log([ ,,result ]);
 
             result.class = ( result.ok ) ? 'success' : 'danger';
             classes = [ ...classes, 'alert-' + result.class ];
@@ -195,7 +193,7 @@
             result.ok = response.ok;
             if ( typeof result.output === 'string' ) result.output = [ result.output ];
             if ( ! result.ok ) throw result;
-            return result;
+            return Promise.resolve ( result );
         } catch ( error ) {
             if ( ! error.output ) {
                 // error is not a server response.
@@ -205,7 +203,8 @@
             for ( const message in error.output ) {
                 console.error( make_human_readable( error.output[ message ] ) );
             }
-            return error;
+            //Don't reject as having an error to handle is a success to caller.
+            return Promise.resolve ( error );
         } finally {
             if(debug) console.log( `${stopwatch()} | END | Fetch request` );
         }
@@ -335,6 +334,25 @@
     }
 
 
+
+
+
+    function node_transition( element, property, value ) {
+        return new Promise( ( resolve, reject ) => {
+            element.style[ property ] = value;
+            const resolve_and_cleanup = ( event ) => {
+                if ( event.propertyName !== property ) throw new Error( 'Property name mismatch.' );
+                element.removeEventListener( 'transitionend', resolve_and_cleanup );
+                if(debug) console.log( `${stopwatch()} | END | transition | ${element.classList} : ${property} : ${value}` );
+                resolve( 'Transition event listener cleaned up successfully.' );
+            };
+            element.addEventListener( 'transitionend', resolve_and_cleanup );
+        } );
+    }
+
+
+
+
     /**
      * Transition node(s) in parallel with resolved promise on completion.
      * Accepts a single node or an array of nodes to provide a common interface
@@ -348,68 +366,35 @@
      * @return {Promise} A promise that resolves when all transitions are complete.
      * 
      */
-    async function transition( elements, property, value ) {
-
-        function return_transition_promise( element_node, property, value ) {
-            let transition_to_resolve = new Promise( ( resolve, reject ) => {
-                try {
-                    element_node.style[ property ] = value;
-                    const resolve_and_cleanup = ( element ) => {
-                        try {
-                            if ( element.propertyName !== property ) throw new Error( 'Property name mismatch.' );
-                            element_node.removeEventListener( 'transitionend', resolve_and_cleanup );
-                            resolve( 'Transition event listener cleaned up successfully.' );
-                        } catch ( error ) {
-                            reject( error );
-                        } finally {
-                            if(debug) console.log( `${stopwatch()} | END | transition | ${element_node.classList} : ${property} : ${value}` );
-                        }
-                    };
-                    element_node.addEventListener( 'transitionend', resolve_and_cleanup );
-                } catch ( error ) {
-                    reject( error );
-                }
-            } );
-            return transition_to_resolve;
-        };
-
-        try {
-            let transitions = [];
-
-            //array of nodes.
+    function transition( elements, property, value ) {
+        return new Promise( ( resolve, reject ) => {
+            let promises = [];
+            if ( ! is_iterable( elements ) && elements.nodeType === 1 ) elements = [ elements ];
             if ( is_iterable( elements )
                 && elements.every( ( element ) => { return element.nodeType === 1 } ) ) {
+
+                //we have an array of nodes.
                 elements.forEach( ( element_node ) => {
                     if(debug) console.log( `${stopwatch()} |START| transition | ${element_node.classList} : ${property} : ${value}` );
-                    transitions.push( return_transition_promise( element_node, property, value ) );                
-console.log('array promises');
-console.log(transitions);
+                    const promise = node_transition( element_node, property, value );
+                    promises.push( promise );
                 } );
 
-            //single node.
-            } else if ( elements.nodeType === 1 ) {
-                let element_node = elements;
-                if(debug) console.log( `${stopwatch()} |START| transition | ${element_node.classList} : ${property} : ${value}` );
-                transitions.push( return_transition_promise( element_node, property, value ) );
-console.log('single promises');
-console.log(transitions);
-
-            //bad param passed.
             } else {
                 throw new TypeError( 'elements must be a non-string iterable. ' + typeof elements + ' found.');
             }
 
-            let result = await Promise.all( transitions );
-console.log('result')
-            console.log( result );
-console.log( 'promise.all: ' + result_item );
+    console.log('propmises');
+    console.log(promises);
 
 
-            return result;
+            Promise.all( promises ).then( ( results ) => {
+                return resolve( results );
+            } ).catch( ( error ) => {
+                return reject( error );
+            } );
 
-        } catch ( error ) {
-            return error;
-        }
+        } );
     }
 
 
