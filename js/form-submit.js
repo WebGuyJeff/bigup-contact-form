@@ -360,11 +360,21 @@ console.log( out9 );
             if(debug) console.log( `${stopwatch()} |START| transition | ${element_node.classList} : ${property} : ${value}` );
             element_node.style[ property ] = value;
             const resolve_and_cleanup = ( event ) => {
+
+console.log( 'this' );
+console.log( this );
+
+
                 if ( event.propertyName !== property ) throw new Error( 'Property name mismatch.' );
-                if(debug) console.log( `${stopwatch()} | END | transition | ${element_node.classList} : ${property} : ${value}` );
-                resolve( 'Transition event listener cleaned up successfully.' );
+                if(debug) console.log( `${stopwatch()} | END | transition | ${this.classList} : ${property} : ${value}` );
+                resolve( 'Transition complete.' );
+                this.removeEventListener( 'transitionend', resolve_and_cleanup_binded, { once: true } );
             };
-            element_node.addEventListener( 'transitionend', resolve_and_cleanup , { once: true } );
+
+// why does bind not bind here?
+const resolve_and_cleanup_binded = resolve_and_cleanup.bind( element_node );
+
+            element_node.addEventListener( 'transitionend', resolve_and_cleanup_binded, { once: true } );
         } );
     }
 
