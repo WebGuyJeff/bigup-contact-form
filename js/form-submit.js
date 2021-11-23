@@ -121,29 +121,50 @@
             ] );
 */
 
-            await transition( output, 'opacity', '1' );
-            await transition( popouts_pending, 'opacity', '1' );
-            result = await fetch_http_request( url, fetch_options );
-
+            let out1 = await transition( output, 'opacity', '1' );
+console.log( 'out1' );
+console.log( out1 );
+            let out2 = await transition( popouts_pending, 'opacity', '1' );
+console.log( 'out2' );
+console.log( out2 );
+            let result = await fetch_http_request( url, fetch_options );
+console.log( 'result' );
+console.log( result );
 
             result.class = ( result.ok ) ? 'success' : 'danger';
             classes = [ ...classes, 'alert-' + result.class ];
 
 
-            await transition( popouts_pending, 'opacity', '0' );
-
-            await remove_children( output );
+            let out3 = await transition( popouts_pending, 'opacity', '0' );
+console.log( 'out3' );
+console.log( out3 );
+            let out4 = await remove_children( output );
+console.log( 'out4' );
+console.log( out4 );
             let popouts_complete = await popouts_into_dom( output, result.output, classes );
-            await transition( popouts_complete, 'opacity', '1' ).then(console.log);
-            await pause( 5000 ).then(console.log);
-            await transition( popouts_complete, 'opacity', '0' );
-            await transition( output, 'opacity', '0' );
-            await remove_children( output );
+console.log( 'popouts_complete' );
+console.log( popouts_complete );
+            let out5 = await transition( popouts_complete, 'opacity', '1' ).then(console.log);
+console.log( 'out5' );
+console.log( out5 );
+            let out6 = await pause( 5000 ).then(console.log);
+console.log( 'out6' );
+console.log( out6 );
+            let out7 = await transition( popouts_complete, 'opacity', '0' );
+console.log( 'out7' );
+console.log( out7 );
+            let out8 = await transition( output, 'opacity', '0' );
+console.log( 'out8' );
+console.log( out8 );
+            let out9 = await remove_children( output );
+console.log( 'out9' );
+console.log( out9 );
+
             output.style.display = 'none';
             toggle_button( button, button_label, button_idle_text );
 
         } catch ( error ) {
-            console.error( error.stack );
+            console.error( error );
         } finally {
             if(debug) console.log( stopwatch() + ' |#####| FUNCTION END');
         }
@@ -272,7 +293,7 @@
      * 
      */
     function pause( milliseconds ) { 
-        return new Promise( resolve => { 
+        return new Promise( ( resolve ) => { 
             setTimeout( () => {
                 resolve( 'Pause completed successfully.' );
             }, milliseconds )
@@ -334,23 +355,18 @@
     }
 
 
-
-
-
-    function node_transition( element, property, value ) {
-        return new Promise( ( resolve, reject ) => {
-            element.style[ property ] = value;
+    function transition_to_resolve( element_node, property, value ) {
+        return new Promise( ( resolve ) => {
+            if(debug) console.log( `${stopwatch()} |START| transition | ${element_node.classList} : ${property} : ${value}` );
+            element_node.style[ property ] = value;
             const resolve_and_cleanup = ( event ) => {
                 if ( event.propertyName !== property ) throw new Error( 'Property name mismatch.' );
-                element.removeEventListener( 'transitionend', resolve_and_cleanup );
-                if(debug) console.log( `${stopwatch()} | END | transition | ${element.classList} : ${property} : ${value}` );
+                if(debug) console.log( `${stopwatch()} | END | transition | ${element_node.classList} : ${property} : ${value}` );
                 resolve( 'Transition event listener cleaned up successfully.' );
             };
-            element.addEventListener( 'transitionend', resolve_and_cleanup );
+            element_node.addEventListener( 'transitionend', resolve_and_cleanup , { once: true } );
         } );
     }
-
-
 
 
     /**
@@ -366,35 +382,25 @@
      * @return {Promise} A promise that resolves when all transitions are complete.
      * 
      */
-    function transition( elements, property, value ) {
-        return new Promise( ( resolve, reject ) => {
-            let promises = [];
-            if ( ! is_iterable( elements ) && elements.nodeType === 1 ) elements = [ elements ];
-            if ( is_iterable( elements )
-                && elements.every( ( element ) => { return element.nodeType === 1 } ) ) {
+    async function transition( elements, property, value ) {
 
-                //we have an array of nodes.
-                elements.forEach( ( element_node ) => {
-                    if(debug) console.log( `${stopwatch()} |START| transition | ${element_node.classList} : ${property} : ${value}` );
-                    const promise = node_transition( element_node, property, value );
-                    promises.push( promise );
-                } );
+        if ( ! is_iterable( elements ) ) elements = [ elements ];
+        if ( is_iterable( elements )
+            && elements.every( ( element ) => { return element.nodeType === 1 } ) ) {
 
-            } else {
-                throw new TypeError( 'elements must be a non-string iterable. ' + typeof elements + ' found.');
-            }
+            //we have an array of nodes.
+            const promises = elements.map( ( node ) => 
+                transition_to_resolve( node, property, value ) );
 
-    console.log('propmises');
-    console.log(promises);
+console.log('promise.all');
+console.log(promises);
+            
+            const parent_promise = await Promise.all( promises );
+            return parent_promise;
 
-
-            Promise.all( promises ).then( ( results ) => {
-                return resolve( results );
-            } ).catch( ( error ) => {
-                return reject( error );
-            } );
-
-        } );
+        } else {
+            throw new TypeError( 'elements must be a non-string iterable. ' + typeof elements + ' found.');
+        }
     }
 
 
