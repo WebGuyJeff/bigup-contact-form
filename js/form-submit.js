@@ -138,16 +138,25 @@ console.log( result );
             let out3 = await transition( popouts_pending, 'opacity', '0' );
 console.log( 'out3' );
 console.log( out3 );
+
+await pause( 5000 );
+
             let out4 = await remove_children( output );
 console.log( 'out4' );
 console.log( out4 );
+
+await pause( 5000 );
+
             let popouts_complete = await popouts_into_dom( output, result.output, classes );
 console.log( 'popouts_complete' );
 console.log( popouts_complete );
-            let out5 = await transition( popouts_complete, 'opacity', '1' ).then(console.log);
+
+await pause( 5000 );
+
+            let out5 = await transition( popouts_complete, 'opacity', '1' );
 console.log( 'out5' );
 console.log( out5 );
-            let out6 = await pause( 5000 ).then(console.log);
+            let out6 = await pause( 5000 );
 console.log( 'out6' );
 console.log( out6 );
             let out7 = await transition( popouts_complete, 'opacity', '0' );
@@ -279,6 +288,8 @@ console.log( out9 );
                     parent.removeChild( parent.firstChild );
                 }
                 resolve( 'All child nodes removed successfully.' );
+            } catch ( error ) {
+                reject( error );
             } finally {
                 if(debug) console.log( `${stopwatch()} | END | remove_children | ${parent.classList}` );
             }
@@ -355,26 +366,36 @@ console.log( out9 );
     }
 
 
-    function transition_to_resolve( element_node, property, value ) {
+
+    /**
+     * Transition a single element node with a callback on completion.
+     *
+     * No animation is performed here, this function expects a transition
+     * duration to be set in CSS, otherwise the promise will not resolve as
+     * no 'transitionend' event will be fired.
+     * 
+     * @param {object} node Element bound using bind() by caller.
+     * @param {string} property The css property to transition.
+     * @param {string} value The css value to transition to.
+     * @return {Promise} A promise that resolves when the transition is complete.
+     * 
+     */
+    function transition_to_resolve( property, value ) {
+
         return new Promise( ( resolve ) => {
-            if(debug) console.log( `${stopwatch()} |START| transition | ${element_node.classList} : ${property} : ${value}` );
-            element_node.style[ property ] = value;
+            if(debug) console.log( `${stopwatch()} |START| transition | ${this.classList} : ${property} : ${value}` );
+            this.style[ property ] = value;
+
             const resolve_and_cleanup = ( event ) => {
-
-console.log( 'this' );
-console.log( this );
-
 
                 if ( event.propertyName !== property ) throw new Error( 'Property name mismatch.' );
                 if(debug) console.log( `${stopwatch()} | END | transition | ${this.classList} : ${property} : ${value}` );
                 resolve( 'Transition complete.' );
-                this.removeEventListener( 'transitionend', resolve_and_cleanup_binded, { once: true } );
+                this.removeEventListener( 'transitionend', resolve_and_cleanup, { once: true } );
             };
 
-// why does bind not bind here?
-const resolve_and_cleanup_binded = resolve_and_cleanup.bind( element_node );
+            this.addEventListener( 'transitionend', resolve_and_cleanup, { once: true } );
 
-            element_node.addEventListener( 'transitionend', resolve_and_cleanup_binded, { once: true } );
         } );
     }
 
@@ -386,9 +407,9 @@ const resolve_and_cleanup_binded = resolve_and_cleanup.bind( element_node );
      * 
      * Expects a transition duration to be set in CSS.
      * 
-     * @param {array}  elements_array An array of elements.
-     * @param {string} css_property The css property to transition.
-     * @param {string} property_value The css value to transition to.
+     * @param {array}  elements An array of elements.
+     * @param {string} property The css property to transition.
+     * @param {string} value The css value to transition to.
      * @return {Promise} A promise that resolves when all transitions are complete.
      * 
      */
@@ -399,12 +420,7 @@ const resolve_and_cleanup_binded = resolve_and_cleanup.bind( element_node );
             && elements.every( ( element ) => { return element.nodeType === 1 } ) ) {
 
             //we have an array of nodes.
-            const promises = elements.map( ( node ) => 
-                transition_to_resolve( node, property, value ) );
-
-console.log('promise.all');
-console.log(promises);
-            
+            const promises = elements.map( ( node ) => transition_to_resolve.bind( node )( property, value ) );
             const parent_promise = await Promise.all( promises );
             return parent_promise;
 
