@@ -113,36 +113,30 @@
             let button_idle_text = toggle_button( button, button_label, '[busy]' );
             let popouts_pending = await popouts_into_dom( output, [ pending_text ], classes );
 
-/*
-            let [ ,,result ] = await Promise.all( [
-                node_transition( output, 'opacity', '1' ),
-                transition( popouts_pending, 'opacity', '1' ),
-                fetch_http_request( url, fetch_options )
-            ] );
-*/
+await pause( 2000 );
 
-            let out1 = await transition( output, 'opacity', '1' );
-console.log( 'out1' );
-console.log( out1 );
-            let out2 = await transition( popouts_pending, 'opacity', '1' );
-console.log( 'out2' );
-console.log( out2 );
-            let result = await fetch_http_request( url, fetch_options );
-console.log( 'result' );
-console.log( result );
+
+            let [ result,, ] = await Promise.all( [
+                fetch_http_request( url, fetch_options ),
+                transition( output, 'opacity', '1' ),
+                transition( popouts_pending, 'opacity', '1' )
+            ] );
+
+
+
 
             result.class = ( result.ok ) ? 'success' : 'danger';
             classes = [ ...classes, 'alert-' + result.class ];
 
 
-            let out3 = await transition( popouts_pending, 'opacity', '0' );
-console.log( 'out3' );
-console.log( out3 );
+//            let out3 = await transition( popouts_pending, 'opacity', '0' );
+//console.log( '{{{ out3 }}}' );
+//console.log( out3 );
 
 await pause( 5000 );
 
             let out4 = await remove_children( output );
-console.log( 'out4' );
+console.log( '{{{ out4 }}}' );
 console.log( out4 );
 
 await pause( 5000 );
@@ -154,19 +148,19 @@ console.log( popouts_complete );
 await pause( 5000 );
 
             let out5 = await transition( popouts_complete, 'opacity', '1' );
-console.log( 'out5' );
+console.log( '{{{ out5 }}}' );
 console.log( out5 );
             let out6 = await pause( 5000 );
-console.log( 'out6' );
+console.log( '{{{ out6 }}}' );
 console.log( out6 );
             let out7 = await transition( popouts_complete, 'opacity', '0' );
-console.log( 'out7' );
+console.log( '{{{ out7 }}}' );
 console.log( out7 );
             let out8 = await transition( output, 'opacity', '0' );
-console.log( 'out8' );
+console.log( '{{{ out8 }}}' );
 console.log( out8 );
             let out9 = await remove_children( output );
-console.log( 'out9' );
+console.log( '{{{ out9 }}}' );
 console.log( out9 );
 
             output.style.display = 'none';
@@ -287,7 +281,7 @@ console.log( out9 );
                 while ( parent.firstChild ) {
                     parent.removeChild( parent.firstChild );
                 }
-                resolve( 'All child nodes removed successfully.' );
+                resolve( 'Child nodes removed successfully.' );
             } catch ( error ) {
                 reject( error );
             } finally {
@@ -419,10 +413,9 @@ console.log( out9 );
         if ( is_iterable( elements )
             && elements.every( ( element ) => { return element.nodeType === 1 } ) ) {
 
-            //we have an array of nodes.
+            //we have an array of element nodes.
             const promises = elements.map( ( node ) => transition_to_resolve.bind( node )( property, value ) );
-            const parent_promise = await Promise.all( promises );
-            return parent_promise;
+            return await Promise.all( promises );
 
         } else {
             throw new TypeError( 'elements must be a non-string iterable. ' + typeof elements + ' found.');

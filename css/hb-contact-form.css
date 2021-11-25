@@ -89,6 +89,9 @@
                     width: 60%;
                 }}
                     .HB__form_output {
+                        
+                        border: solid 1em blue;
+
                         position: absolute;
                         top: 0;
                         right: 0;
@@ -97,7 +100,7 @@
                         flex-flow: column nowrap;
                         align-items: center;
                         justify-content: center;
-                        transition: opacity 2s ease-in-out, backdrop-filter 2s ease-in-out;
+                        transition: opacity 2s ease-in-out;
                         backdrop-filter: blur(2px);
                     }
                         .HB__form-popout {
