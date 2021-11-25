@@ -30,7 +30,7 @@ $admin_email = get_bloginfo( 'admin_email' );
         ?>
     </header>
 
-    <div class="HB__form_section">
+    <fieldset class="HB__form_section">
 
         <input class="HB__form_input jsSaveTheBees" name="required_field" type="text" autocomplete="off">
 
@@ -86,7 +86,7 @@ $admin_email = get_bloginfo( 'admin_email' );
             </span>
         </button>
 
-    </div>
+    </fieldset>
 
     <footer class="HB__form_section">
         <div class="HB__form_output" style="display:none; opacity:0;"></div>

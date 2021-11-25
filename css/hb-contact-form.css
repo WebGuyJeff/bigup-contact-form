@@ -20,6 +20,10 @@
 }
         .HB__form_section {
             width: 100%;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            border: none;
         }
             .HB__form_message {
                 margin: 1em 0 1.5em 0;

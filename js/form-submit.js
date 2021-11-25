@@ -14,11 +14,18 @@
 (function form_sender() {
 'use strict';
 
+
     /**
      * For debugging, set 'debug = true'. Output will be
      * sent to the console.
      */
     let debug = true;
+
+
+    /**
+     * Holds the start time of the request for debugging.
+     */
+    let start;
 
 
     /**
@@ -59,45 +66,36 @@
         } );
     };
 
-    let start; //holds the start time of the request for debugging.
+
+    let form_busy = false;
+
 
     /**
      * Handle the submitted form.
      * 
-     * Process:
-     *      fetch    initiate http request using fetch api.
-     *      .then    parse json to js object.
-     *      .then    process response to user output.
-     *      .catch   process errors that came down chain.
+     * Calls all functions to perform the form submission, and handle
+     * user feedback displayed over the form as 'popout messages'.
+     * Popout transitions and fetch request are performed asynchronously.
      * 
      * @param {SubmitEvent} event
      * 
      */
     async function handle_form_submit( event ) {
 
-        // prevent normal submit action
         event.preventDefault();
-
         start = Date.now();
         if(debug) console.log( 'Time | Start/Finish | Function | Target' );
         if(debug) console.log( stopwatch() + ' |START| handle_form_submit');
 
-        // get the element the event handler was attached to.
         const form = event.currentTarget;
+        const output = form.querySelector( '.HB__form_output' );
+        let classes = [ 'HB__form-popout', 'alert' ];
 
-        // if honeypot has a value ( bye bye bot )
+        // boot bots if honeypot is filled.
         if ( '' != form.querySelector( '[name="required_field"]' ).value ) {
             document.documentElement.remove();
             window.location.replace( "https://en.wikipedia.org/wiki/Robot" );
         }
-
-        // Get elements of submitted form.
-        const button = form.querySelector( '.jsButtonSubmit' );
-        const button_label = form.querySelector( '.jsButtonSubmit > *:first-child' );
-        const output = form.querySelector( '.HB__form_output' );
-
-        let classes = [ 'HB__form-popout', 'alert' ];
-        const pending_text = "Connecting...";
 
         // Grab `FormData` then convert to plain obj, then to json string.
         const form_data = new FormData( form );
@@ -119,14 +117,17 @@
         // Async form submission timeline
         try {
 
+            form_busy = true;
+            lock_form( form );
             output.style.display = 'flex';
-            let button_idle_text = toggle_button( button, button_label, '[busy]' );
-            let popouts_pending = await popouts_into_dom( output, [ pending_text ], classes );
 
-            let [ result,, ] = await Promise.all( [
+            await popouts_into_dom( output, [ "Connecting..." ], classes );
+
+            let [ result, ] = await Promise.all( [
                 fetch_http_request( url, fetch_options ),
                 transition( output, 'opacity', '1' )
             ] );
+
             result.class = ( result.ok ) ? 'success' : 'danger';
             classes = [ ...classes, 'alert-' + result.class ];
 
@@ -137,8 +138,9 @@
             await pause( 5000 );
             await transition( output, 'opacity', '0' );
             await remove_children( output );
+
             output.style.display = 'none';
-            toggle_button( button, button_label, button_idle_text );
+            form_busy = false;
 
         } catch ( error ) {
             console.error( error );
@@ -272,19 +274,29 @@
 
 
     /**
-     * Toggle a button between two states and return the old label.
+     * Lock the formfields to prevent editing while the form is processing.
      * 
-     * @param {object} button The button element.
-     * @param {object} button_label The button label element.
-     * @param {string} text The text to set the button to.
-     * 
+     * @param {object} form element
      */
-    function toggle_button( button, button_label, text ) {
-        if ( button_label.innerText === text ) return text;
-        let old_text = button_label.innerText;
-        button.disabled = ( button.disabled === true ) ? false : true;
-        button_label.innerText = text;
-        return old_text;
+    function lock_form( form ) {
+
+        if(debug) console.log( `${stopwatch()} |START| lock_form | Locked` );
+
+        const button_label = form.querySelector( '.jsButtonSubmit > *:first-child' );
+        const formfields = form.querySelectorAll( '.HB__form_section' );
+
+        formfields.forEach( section => { section.disabled = true } );
+        let idle_text = button_label.innerText;
+        button_label.innerText = '[Busy]';
+
+        let unlock_form = setInterval( () => {
+            if ( ! form_busy ) {
+                clearInterval( unlock_form );
+                formfields.forEach( section => { section.disabled = false } );
+                button_label.innerText = idle_text;
+                if(debug) console.log( `${stopwatch()} | END | lock_form | Unlocked` );
+            }
+        }, 250);
     }
 
 
@@ -323,7 +335,6 @@
             }
         } );
     }
-
 
 
     /**
@@ -405,9 +416,9 @@
      * Fire form_init() on 'doc ready'.
      * 
      */
-    let interval = setInterval( function() {
+    let doc_ready = setInterval( () => {
         if ( document.readyState === 'complete' ) {
-            clearInterval( interval );
+            clearInterval( doc_ready );
             form_init();
         }
     }, 100);
