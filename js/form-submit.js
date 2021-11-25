@@ -14,8 +14,22 @@
 (function form_sender() {
 'use strict';
 
-
+    /**
+     * For debugging, set 'debug = true'. Output will be
+     * sent to the console.
+     */
     let debug = true;
+
+
+    /**
+     * Log timestamps in debug mode.
+     * @returns milliseconds since function call.
+     */
+     function stopwatch() {
+        let elapsed = Date.now() - start;
+        return elapsed.toString().padStart(5, '0');
+    }
+
 
     /**
      * Grab WP localize vars.
@@ -65,7 +79,8 @@
         event.preventDefault();
 
         start = Date.now();
-        if(debug) console.log( stopwatch() + ' |#####| FUNCTION START');
+        if(debug) console.log( 'Time | Start/Finish | Function | Target' );
+        if(debug) console.log( stopwatch() + ' |START| handle_form_submit');
 
         // get the element the event handler was attached to.
         const form = event.currentTarget;
@@ -101,87 +116,37 @@
             body: json_string_data,
         };
 
-
-        /**
-         * Async form submission timeline
-         * 
-         * For debugging, set 'debug = true' (see start of form_sender()).
-         * 
-         */
+        // Async form submission timeline
         try {
+
             output.style.display = 'flex';
             let button_idle_text = toggle_button( button, button_label, '[busy]' );
             let popouts_pending = await popouts_into_dom( output, [ pending_text ], classes );
 
-await pause( 2000 );
-
-
             let [ result,, ] = await Promise.all( [
                 fetch_http_request( url, fetch_options ),
-                transition( output, 'opacity', '1' ),
-                transition( popouts_pending, 'opacity', '1' )
+                transition( output, 'opacity', '1' )
             ] );
-
-
-
-
             result.class = ( result.ok ) ? 'success' : 'danger';
             classes = [ ...classes, 'alert-' + result.class ];
 
-
-//            let out3 = await transition( popouts_pending, 'opacity', '0' );
-//console.log( '{{{ out3 }}}' );
-//console.log( out3 );
-
-await pause( 5000 );
-
-            let out4 = await remove_children( output );
-console.log( '{{{ out4 }}}' );
-console.log( out4 );
-
-await pause( 5000 );
-
-            let popouts_complete = await popouts_into_dom( output, result.output, classes );
-console.log( 'popouts_complete' );
-console.log( popouts_complete );
-
-await pause( 5000 );
-
-            let out5 = await transition( popouts_complete, 'opacity', '1' );
-console.log( '{{{ out5 }}}' );
-console.log( out5 );
-            let out6 = await pause( 5000 );
-console.log( '{{{ out6 }}}' );
-console.log( out6 );
-            let out7 = await transition( popouts_complete, 'opacity', '0' );
-console.log( '{{{ out7 }}}' );
-console.log( out7 );
-            let out8 = await transition( output, 'opacity', '0' );
-console.log( '{{{ out8 }}}' );
-console.log( out8 );
-            let out9 = await remove_children( output );
-console.log( '{{{ out9 }}}' );
-console.log( out9 );
-
+            await transition( output, 'opacity', '0' );
+            await remove_children( output );
+            await popouts_into_dom( output, result.output, classes );
+            await transition( output, 'opacity', '1' );
+            await pause( 5000 );
+            await transition( output, 'opacity', '0' );
+            await remove_children( output );
             output.style.display = 'none';
             toggle_button( button, button_label, button_idle_text );
 
         } catch ( error ) {
             console.error( error );
         } finally {
-            if(debug) console.log( stopwatch() + ' |#####| FUNCTION END');
+            if(debug) console.log( stopwatch() + ' | END | handle_form_submit');
         }
 
     };
-
-    /**
-     * Log timestamps in debug mode.
-     * @returns milliseconds since function call.
-     */
-    function stopwatch() {
-        let elapsed = Date.now() - start;
-        return elapsed.toString().padStart(4, '0');
-    }
 
 
     /**
@@ -423,6 +388,10 @@ console.log( out9 );
     }
 
 
+    /**
+     * Check if passed variable is iterable.
+     * 
+     */
     function is_iterable( object ) {
         // checks for null and undefined
         if ( object == null ) {
