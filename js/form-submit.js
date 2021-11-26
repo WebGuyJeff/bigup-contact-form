@@ -400,13 +400,9 @@
         if ( ! is_iterable( elements ) ) elements = [ elements ];
         if ( is_iterable( elements )
             && elements.every( ( element ) => { return element.nodeType === 1 } ) ) {
-
             //we have an array of element nodes.
             const promises = elements.map( ( node ) => transition_to_resolve.bind( node )( property, value ) );
-            
-            
             let result = await Promise.all( promises );
-
             return result;
 
         } else {

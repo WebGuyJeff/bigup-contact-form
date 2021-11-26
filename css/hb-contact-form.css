@@ -48,6 +48,9 @@
                 color: var(--hb_white);
                 font-weight: 400;
             }
+            .HB__form_input:not(.HB__form_section:disabled > .HB__form_input):hover {
+                cursor: text;
+            }
                 span.HB__form_hoverFlag {
                     display: flex;
                     position: absolute;
@@ -61,6 +64,9 @@
                     background: var(--hb_orange);
                     width: 4em;
                     height: 1.5em;
+                }
+                .HB__form_inputWrap:not(.HB__form_section:disabled > .HB__form_inputWrap):hover .HB__form_hoverFlag {
+                    top: 0;
                 }
                 span.HB__form_focusFlag {
                     display: flex;
@@ -77,6 +83,9 @@
                     height: 1.5em;
                     color: var(--hb_white);
                 }
+                .HB__form_inputWrap:not(.HB__form_section:disabled > .HB__form_inputWrap):focus-within .HB__form_focusFlag {
+                    top: 0;
+                }
                 .HB__form_inputWrap {
                     position: relative;
                     transition: 0.2s;
@@ -89,14 +98,8 @@
                     min-width: 8em;
                     overflow: hidden;
                 }
-                .HB__form_inputWrap:not(.HB__form_section:disabled > .HB__form_inputWrap):hover .HB__form_hoverFlag {
-                    top: 0;
-                }
-                .HB__form_inputWrap:not(.HB__form_section:disabled > .HB__form_inputWrap):focus-within .HB__form_focusFlag {
-                    top: 0;
-                }
                 .HB__form_inputWrap-wide {
-                    width: 100%;
+                     width: 100%;
                     resize: vertical;
                 }
                 @media (min-width: 48em) { .HB__form_inputWrap-short {
