@@ -20,7 +20,7 @@ $admin_email = get_bloginfo( 'admin_email' );
 
 ?>
 
-<form class="HB__form jsFormSubmit" method="post" accept-charset="utf-8" autocomplete="on">
+<form class="HB__form" method="post" accept-charset="utf-8" autocomplete="on">
 
     <header class="HB__form_section">
         <?php
@@ -32,7 +32,12 @@ $admin_email = get_bloginfo( 'admin_email' );
 
     <fieldset class="HB__form_section">
 
-        <input class="HB__form_input jsSaveTheBees" name="required_field" type="text" autocomplete="off">
+        <input
+            class="HB__form_input saveTheBees"
+            name="required_field"
+            type="text"
+            autocomplete="off"
+        >
 
         <div class="HB__form_inputWrap HB__form_inputWrap-short">
             
@@ -44,10 +49,14 @@ $admin_email = get_bloginfo( 'admin_email' );
                 maxlength="100"
                 title="Name"
                 required aria-label="Name"
+                placeholder="Name (required)"
+                onfocus="this.placeholder=''"
+                onblur="this.placeholder='Name (required)'"
             >
 
             <span class="HB__form_hoverFlag">Tap</span>
             <span class="HB__form_focusFlag">Type</span>
+
         </div>
 
         <div class="HB__form_inputWrap HB__form_inputWrap-short">
@@ -55,13 +64,16 @@ $admin_email = get_bloginfo( 'admin_email' );
             <input
                 class="HB__form_input"
                 name="email" type="text"
-                placeholder="Email (required)"
                 maxlength="100" title="Email"
                 required aria-label="Email"
+                placeholder="Email (required)"
+                onfocus="this.placeholder=''"
+                onblur="this.placeholder='Email (required)'"
             >
 
             <span class="HB__form_hoverFlag">Tap</span>
             <span class="HB__form_focusFlag">Type</span>
+
         </div>
 
         <div class="HB__form_inputWrap HB__form_inputWrap-wide">
@@ -69,18 +81,21 @@ $admin_email = get_bloginfo( 'admin_email' );
             <textarea
                 class="HB__form_input"
                 name="message"
-                placeholder="Type your message here..."
                 maxlength="5000"
                 title="Message"
                 rows="8"
                 aria-label="Message"
+                placeholder="Type your message here..."
+                onfocus="this.placeholder=''"
+                onblur="this.placeholder='Type your message...'"
             ></textarea>
 
             <span class="HB__form_hoverFlag">Tap</span>
             <span class="HB__form_focusFlag">Type</span>
+
         </div>
 
-        <button class="button jsButtonSubmit" type="submit" value="Submit">
+        <button class="button HB__form_submit" type="submit" value="Submit">
             <span>
                 Submit
             </span>

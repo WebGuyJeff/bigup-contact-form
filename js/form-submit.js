@@ -19,7 +19,7 @@
      * For debugging, set 'debug = true'. Output will be
      * sent to the console.
      */
-    let debug = true;
+    let debug = false;
 
 
     /**
@@ -57,11 +57,11 @@
     function form_init() {
 
         // Hide the honeypot input field(s)
-        let honeypot = document.querySelectorAll( '.jsSaveTheBees' );
+        let honeypot = document.querySelectorAll( '.saveTheBees' );
         honeypot.forEach( input => { input.style.display = "none" } );
 
         // Attach submit listener callback to the form(s)
-        document.querySelectorAll( '.jsFormSubmit' ).forEach( form => {
+        document.querySelectorAll( '.HB__form' ).forEach( form => {
             form.addEventListener( 'submit', handle_form_submit );
         } );
     };
@@ -127,7 +127,6 @@
                 fetch_http_request( url, fetch_options ),
                 transition( output, 'opacity', '1' )
             ] );
-
             result.class = ( result.ok ) ? 'success' : 'danger';
             classes = [ ...classes, 'alert-' + result.class ];
 
@@ -139,6 +138,10 @@
             await transition( output, 'opacity', '0' );
             await remove_children( output );
 
+            if ( result.ok ) { // Clean up the form.
+                let fieldset = form.querySelectorAll( '.HB__form_input' );
+                fieldset.forEach( input => { input.value = '' } );
+            }
             output.style.display = 'none';
             form_busy = false;
 
@@ -170,32 +173,32 @@
      * 
      */
     async function fetch_http_request( url, options ) {
-        if(debug) console.log( `${stopwatch()} |START| Fetch request` );
-        const controller = new AbortController();
-        const abort = setTimeout( () => controller.abort(), 14000 );
+
         try {
-            const response = await fetch( url, {
-                ...options,
-                signal: controller.signal
-            } );
+            if(debug) console.log( `${stopwatch()} |START| Fetch request` );
+            const controller = new AbortController();
+            const abort = setTimeout( () => controller.abort(), 14000 );
+        
+            const response = await fetch( url, { ...options, signal: controller.signal } );
             clearTimeout( abort );
-            // parse response body as JSON.
             const result = await response.json();
             result.ok = response.ok;
             if ( typeof result.output === 'string' ) result.output = [ result.output ];
             if ( ! result.ok ) throw result;
-            return Promise.resolve ( result );
+            return result;
+
         } catch ( error ) {
+            
             if ( ! error.output ) {
-                // error is not a server response.
+                // error is not a server response, so display a generic error.
                 error.output = [ 'Failed to establish a connection to the server.' ];
                 error.ok = false;
             }
             for ( const message in error.output ) {
                 console.error( make_human_readable( error.output[ message ] ) );
             }
-            //Don't reject as having an error to handle is a success to caller.
-            return Promise.resolve ( error );
+            return error;
+
         } finally {
             if(debug) console.log( `${stopwatch()} | END | Fetch request` );
         }
@@ -242,6 +245,7 @@
      * 
      */
     function remove_children( parent ) {
+
         if(debug) console.log( `${stopwatch()} |START| remove_children | ${parent.classList}` );
         return new Promise( ( resolve ) => {
             try {
@@ -282,7 +286,7 @@
 
         if(debug) console.log( `${stopwatch()} |START| lock_form | Locked` );
 
-        const button_label = form.querySelector( '.jsButtonSubmit > *:first-child' );
+        const button_label = form.querySelector( '.HB__form_submit > *:first-child' );
         const formfields = form.querySelectorAll( '.HB__form_section' );
 
         formfields.forEach( section => { section.disabled = true } );
@@ -309,6 +313,7 @@
      * 
      */
     function popouts_into_dom( parent_element, message_array, class_array ) {
+
         if(debug) console.log( `${stopwatch()} |START| popouts_into_dom | ${message_array[0]}` );
         return new Promise( ( resolve, reject ) => {
             try {
@@ -331,7 +336,7 @@
             } catch ( error ) {
                 reject( error );
             } finally {
-                console.log( `${stopwatch()} | END | popouts_into_dom | ${message_array[0]}` );
+                if(debug) console.log( `${stopwatch()} | END | popouts_into_dom | ${message_array[0]}` );
             }
         } );
     }
@@ -344,6 +349,10 @@
      * duration to be set in CSS, otherwise the promise will not resolve as
      * no 'transitionend' event will be fired.
      * 
+     * Built in event listener was failing due to browser not initialising the
+     * new dom node in time for the new event listener. This problem wouldn't
+     * exist if the nodes weren't being created/removed on the fly.
+     * 
      * @param {object} node Element bound using bind() by caller.
      * @param {string} property The css property to transition.
      * @param {string} value The css value to transition to.
@@ -353,19 +362,22 @@
     function transition_to_resolve( property, value ) {
 
         return new Promise( ( resolve ) => {
-            if(debug) console.log( `${stopwatch()} |START| transition | ${this.classList} : ${property} : ${value}` );
-            this.style[ property ] = value;
+            try {
+                if(debug) console.log( `${stopwatch()} |START| transition | ${this.classList} : ${property} : ${value}` );
+                this.style[ property ] = value;
 
-            const resolve_and_cleanup = ( event ) => {
-
-                if ( event.propertyName !== property ) throw new Error( 'Property name mismatch.' );
-                if(debug) console.log( `${stopwatch()} | END | transition | ${this.classList} : ${property} : ${value}` );
-                resolve( 'Transition complete.' );
-                this.removeEventListener( 'transitionend', resolve_and_cleanup, { once: true } );
-            };
-
-            this.addEventListener( 'transitionend', resolve_and_cleanup, { once: true } );
-
+                // Custom event listener to resolve the promise.
+                let transition_complete = setInterval( () => {
+                    let style = getComputedStyle( this );
+                    if ( style.opacity === value ) {
+                        clearInterval( transition_complete );
+                        if(debug) console.log( `${stopwatch()} | END | transition | ${this.classList} : ${property} : ${value}` );
+                        resolve( 'Transition complete.' );
+                    }
+                }, 10);
+            } catch ( error ) {
+                reject( error );
+            }
         } );
     }
 
@@ -391,7 +403,11 @@
 
             //we have an array of element nodes.
             const promises = elements.map( ( node ) => transition_to_resolve.bind( node )( property, value ) );
-            return await Promise.all( promises );
+            
+            
+            let result = await Promise.all( promises );
+
+            return result;
 
         } else {
             throw new TypeError( 'elements must be a non-string iterable. ' + typeof elements + ' found.');
@@ -421,6 +437,6 @@
             clearInterval( doc_ready );
             form_init();
         }
-    }, 100);
+    }, 250);
 
 })();

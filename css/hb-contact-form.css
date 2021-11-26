@@ -1,7 +1,13 @@
 /**
  * Herringbone Contact Form css.
  *
- * This stylesheet defines the look and feel of the form.
+ * The styles should allow the theme to apply it's styles with
+ * only clean base styles applied by the plugin. Customisation 
+ * of the styles could be later added and edited in the admin
+ * interface.
+ * The only intentional theme override is 'pointer-events: none'
+ * on the submit button although this is technically overkill
+ * as the output element covers the form while disabled.
  *
  * @package Herringbone
  * @subpackage HB_Contact_Form
@@ -24,6 +30,10 @@
             margin: 0;
             padding: 0;
             border: none;
+        }
+        .HB__form_section:disabled {
+            opacity: 0.5;
+            transition: opacity 150ms ease-in-out;
         }
             .HB__form_message {
                 margin: 1em 0 1.5em 0;
@@ -79,10 +89,10 @@
                     min-width: 8em;
                     overflow: hidden;
                 }
-                .HB__form_inputWrap:hover .HB__form_hoverFlag {
+                .HB__form_inputWrap:not(.HB__form_section:disabled > .HB__form_inputWrap):hover .HB__form_hoverFlag {
                     top: 0;
                 }
-                .HB__form_inputWrap:focus-within .HB__form_focusFlag {
+                .HB__form_inputWrap:not(.HB__form_section:disabled > .HB__form_inputWrap):focus-within .HB__form_focusFlag {
                     top: 0;
                 }
                 .HB__form_inputWrap-wide {
@@ -90,7 +100,7 @@
                     resize: vertical;
                 }
                 @media (min-width: 48em) { .HB__form_inputWrap-short {
-                    width: 60%;
+                    width: 65%;
                 }}
                     .HB__form_output {
                         position: absolute;
@@ -102,12 +112,10 @@
                         align-items: center;
                         justify-content: center;
                         transition: opacity 150ms ease-in-out;
-                        backdrop-filter: blur(2px);
                     }
                         .HB__form-popout {
                             box-shadow: 1px 3px 6px 1px #000a;
                         }
-
 
 /* Widget overrides */
 .widget .HB__form_ {
@@ -121,3 +129,10 @@
             margin: 0.5em auto 0 0;
             width: 100%;
         }
+
+/* Theme overrides */
+.HB__form_section:disabled button:hover,
+.HB__form_section:disabled .button:hover,
+.HB__form_section:disabled .btn:hover {
+    pointer-events: none !important;
+}
