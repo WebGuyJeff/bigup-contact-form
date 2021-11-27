@@ -22,18 +22,19 @@
     padding: 1.1em;
     width: 100%;
     max-width: 34em;
+    text-align: center;
     font: inherit;
 }
         .HB__form_section {
-            width: 100%;
-            width: 100%;
             margin: 0;
-            padding: 0;
             border: none;
+            padding: 0;
+            width: 100%;
+            width: 100%;
         }
         .HB__form_section:disabled {
-            opacity: 0.5;
             transition: opacity 150ms ease-in-out;
+            opacity: 0.5;
         }
             .HB__form_message {
                 margin: 1em 0 1.5em 0;
