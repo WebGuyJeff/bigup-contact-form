@@ -19,7 +19,7 @@
 
  .HB__form {
     position: relative;
-    padding: 1.1em;
+    padding: 1em;
     width: 100%;
     max-width: 34em;
     text-align: center;
@@ -30,24 +30,28 @@
             border: none;
             padding: 0;
             width: 100%;
-            width: 100%;
         }
         .HB__form_section:disabled {
             transition: opacity 150ms ease-in-out;
             opacity: 0.5;
         }
+            .HB__form_title {
+                margin: 1.688em 0 0.688em 0;
+            }
             .HB__form_message {
-                margin: 1em 0 1.5em 0;
+                margin: 1em 0 1.688em 0;
             }
             .HB__form_input {
+                display: block;
                 outline: none;
                 border: none;
                 background: #0000;
                 padding: 0.5em;
                 width: 100%;
                 height: 100%;
+                resize: vertical;
+                text-shadow: 0 0 white;
                 color: var(--hb_white);
-                font-weight: 400;
             }
             .HB__form_input:not(.HB__form_section:disabled > .HB__form_input):hover {
                 cursor: text;
@@ -59,11 +63,11 @@
                     right: 0;
                     align-items: center;
                     justify-content: center;
-                    transition: 0.15s;
+                    transition: top 0.15s;
                     border-radius: 0 0 0 1em;
                     box-shadow: inset -0.3em 0.4em 0.5em 0 #000c;
                     background: var(--hb_orange);
-                    width: 4em;
+                    width: 1.5em;
                     height: 1.5em;
                 }
                 .HB__form_inputWrap:not(.HB__form_section:disabled > .HB__form_inputWrap):hover .HB__form_hoverFlag {
@@ -76,11 +80,11 @@
                     right: 0;
                     align-items: center;
                     justify-content: center;
-                    transition: 0.15s;
+                    transition: top 0.15s;
                     border-radius: 0 0 0 1em;
                     box-shadow: inset -0.3em 0.4em 0.5em 0 #000c;
                     background: var(--hb_green);
-                    width: 4em;
+                    width: 1.5em;
                     height: 1.5em;
                     color: var(--hb_white);
                 }
@@ -97,11 +101,12 @@
                     background: var(--hb_black);
                     width: 80%;
                     min-width: 8em;
+                    min-height: fit-content;
                     overflow: hidden;
+                    resize: none;
                 }
                 .HB__form_inputWrap-wide {
                      width: 100%;
-                    resize: vertical;
                 }
                 @media (min-width: 48em) { .HB__form_inputWrap-short {
                     width: 65%;

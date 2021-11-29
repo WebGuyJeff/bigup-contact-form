@@ -54,8 +54,8 @@ $admin_email = get_bloginfo( 'admin_email' );
                 onblur="this.placeholder='Name (required)'"
             >
 
-            <span class="HB__form_hoverFlag">Tap</span>
-            <span class="HB__form_focusFlag">Type</span>
+            <span class="HB__form_hoverFlag"></span>
+            <span class="HB__form_focusFlag"></span>
 
         </div>
 
@@ -71,8 +71,8 @@ $admin_email = get_bloginfo( 'admin_email' );
                 onblur="this.placeholder='Email (required)'"
             >
 
-            <span class="HB__form_hoverFlag">Tap</span>
-            <span class="HB__form_focusFlag">Type</span>
+            <span class="HB__form_hoverFlag"></span>
+            <span class="HB__form_focusFlag"></span>
 
         </div>
 
@@ -90,8 +90,8 @@ $admin_email = get_bloginfo( 'admin_email' );
                 onblur="this.placeholder='Type your message...'"
             ></textarea>
 
-            <span class="HB__form_hoverFlag">Tap</span>
-            <span class="HB__form_focusFlag">Type</span>
+            <span class="HB__form_hoverFlag"></span>
+            <span class="HB__form_focusFlag"></span>
 
         </div>
 
