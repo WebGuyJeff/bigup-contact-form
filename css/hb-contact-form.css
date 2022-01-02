@@ -19,11 +19,11 @@
 
  .HB__form {
     position: relative;
-    padding: 1em;
-    width: 100%;
-    max-width: 34em;
-    text-align: center;
-    font: inherit;
+	padding: 1em;
+	width: 34em;
+	max-width: 100vw;
+	text-align: center;
+	font: inherit;
 }
         .HB__form_section {
             margin: 0;

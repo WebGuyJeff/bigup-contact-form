@@ -24,8 +24,8 @@ $admin_email = get_bloginfo( 'admin_email' );
 
     <header class="HB__form_section">
         <?php
-            $title   = ( isset( $title ) ) ? '<h3 id="aria_form-title" class="HB__form_title">' . $title . '</h3>' . "\n" : '';
-            $message = ( isset( $message ) ) ? '<p id="aria_form-desc" class="HB__form_message">' . $message . '</p>' . "\n" : '';
+            $title   = ( ! empty( $title ) ) ? '<h3 id="aria_form-title" class="HB__form_title">' . $title . '</h3>' . "\n" : '';
+            $message = ( ! empty( $message ) ) ? '<p id="aria_form-desc" class="HB__form_message">' . $message . '</p>' . "\n" : '';
             echo $title . $message;
         ?>
     </header>

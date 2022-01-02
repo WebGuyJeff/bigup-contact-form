@@ -28,10 +28,10 @@ class Shortcode {
         if ( empty( $attributes ) ) {
             $attributes = array();
         }
-        if ( empty( $attributes[ 'title' ] ) ) {
+        if ( ! isset( $attributes[ 'title' ] ) ) {
             $attributes[ 'title' ] = 'Contact Form';
         }
-        if ( empty( $attributes[ 'message' ] ) ) {
+        if ( ! isset( $attributes[ 'message' ] ) ) {
             $attributes[ 'message' ] = 'Complete this contact form to send me a message';
         }
 
