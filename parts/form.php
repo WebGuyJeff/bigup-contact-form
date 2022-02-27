@@ -1,15 +1,16 @@
 <?php
 
 /**
- * Herringbone Contact Form HTML Template.
+ * Bigup Contact Form - HTML Template.
  *
  * This template defines the front end form HTML
  *
- * @package Herringbone
- * @subpackage HB_Contact_Form
+ * @package bigup_contact_form
  * @author Jefferson Real <me@jeffersonreal.com>
  * @copyright Copyright (c) 2021, Jefferson Real
  * @license GPL2+
+ * @link https://jeffersonreal.com
+ * 
  */
 
 //Variables passed from the calling file using Init::includeWithVariables()
@@ -20,29 +21,29 @@ $admin_email = get_bloginfo( 'admin_email' );
 
 ?>
 
-<form class="HB__form" method="post" accept-charset="utf-8" autocomplete="on">
+<form class="bigup__form" method="post" accept-charset="utf-8" autocomplete="on">
 
-    <header class="HB__form_section">
+    <header class="bigup__form_section">
         <?php
-            $title   = ( ! empty( $title ) ) ? '<h3 id="aria_form-title" class="HB__form_title">' . $title . '</h3>' . "\n" : '';
-            $message = ( ! empty( $message ) ) ? '<p id="aria_form-desc" class="HB__form_message">' . $message . '</p>' . "\n" : '';
+            $title   = ( ! empty( $title ) ) ? '<h3 id="aria_form-title" class="bigup__form_title">' . $title . '</h3>' . "\n" : '';
+            $message = ( ! empty( $message ) ) ? '<p id="aria_form-desc" class="bigup__form_message">' . $message . '</p>' . "\n" : '';
             echo $title . $message;
         ?>
     </header>
 
-    <fieldset class="HB__form_section">
+    <fieldset class="bigup__form_section">
 
         <input
-            class="HB__form_input saveTheBees"
+            class="bigup__form_input saveTheBees"
             name="required_field"
             type="text"
             autocomplete="off"
         >
 
-        <div class="HB__form_inputWrap HB__form_inputWrap-short">
+        <div class="bigup__form_inputWrap bigup__form_inputWrap-short">
             
             <input
-                class="HB__form_input"
+                class="bigup__form_input"
                 name="name"
                 type="text"
                 placeholder="Name (required)"
@@ -54,15 +55,15 @@ $admin_email = get_bloginfo( 'admin_email' );
                 onblur="this.placeholder='Name (required)'"
             >
 
-            <span class="HB__form_hoverFlag"></span>
-            <span class="HB__form_focusFlag"></span>
+            <span class="bigup__form_hoverFlag"></span>
+            <span class="bigup__form_focusFlag"></span>
 
         </div>
 
-        <div class="HB__form_inputWrap HB__form_inputWrap-short">
+        <div class="bigup__form_inputWrap bigup__form_inputWrap-short">
 
             <input
-                class="HB__form_input"
+                class="bigup__form_input"
                 name="email" type="text"
                 maxlength="100" title="Email"
                 required aria-label="Email"
@@ -71,15 +72,15 @@ $admin_email = get_bloginfo( 'admin_email' );
                 onblur="this.placeholder='Email (required)'"
             >
 
-            <span class="HB__form_hoverFlag"></span>
-            <span class="HB__form_focusFlag"></span>
+            <span class="bigup__form_hoverFlag"></span>
+            <span class="bigup__form_focusFlag"></span>
 
         </div>
 
-        <div class="HB__form_inputWrap HB__form_inputWrap-wide">
+        <div class="bigup__form_inputWrap bigup__form_inputWrap-wide">
 
             <textarea
-                class="HB__form_input"
+                class="bigup__form_input"
                 name="message"
                 maxlength="5000"
                 title="Message"
@@ -90,12 +91,12 @@ $admin_email = get_bloginfo( 'admin_email' );
                 onblur="this.placeholder='Type your message...'"
             ></textarea>
 
-            <span class="HB__form_hoverFlag"></span>
-            <span class="HB__form_focusFlag"></span>
+            <span class="bigup__form_hoverFlag"></span>
+            <span class="bigup__form_focusFlag"></span>
 
         </div>
 
-        <button class="button HB__form_submit" type="submit" value="Submit">
+        <button class="button bigup__form_submit" type="submit" value="Submit">
             <span>
                 Submit
             </span>
@@ -103,8 +104,8 @@ $admin_email = get_bloginfo( 'admin_email' );
 
     </fieldset>
 
-    <footer class="HB__form_section">
-        <div class="HB__form_output" style="display:none; opacity:0;"></div>
+    <footer class="bigup__form_section">
+        <div class="bigup__form_output" style="display:none; opacity:0;"></div>
     </footer>
 
 </form>

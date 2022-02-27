@@ -1,17 +1,20 @@
 <?php
-namespace Jefferson\HB_Contact_Form;
+namespace Bigup\Contact_Form;
 
 /**
- * Herringbone Contact Form Widget.
+ * Bigup Contact Form - Widget.
  *
- * This template defines the contact form widget including settings form,
- * front end html and saving settings.
+ * This template defines the widget including:
+ *  - settings form
+ *  - front end html
+ *  - saving settings
  *
- * @package Herringbone
- * @subpackage HB_Contact_Form
+ * @package bigup_contact_form
  * @author Jefferson Real <me@jeffersonreal.com>
  * @copyright Copyright (c) 2021, Jefferson Real
  * @license GPL2+
+ * @link https://jeffersonreal.com
+ * 
  */
 use WP_Widget;
 
@@ -25,9 +28,9 @@ class Widget extends WP_Widget {
 
         $widget_options = array (
             'classname' => 'Widget',
-            'description' => 'Add an SMTP contact form.'
+            'description' => 'An SMTP contact form.'
         );
-        parent::__construct( 'Widget', 'HB Contact Form', $widget_options );
+        parent::__construct( 'Widget', 'Bigup Contact Form', $widget_options );
     }
 
 
@@ -36,7 +39,7 @@ class Widget extends WP_Widget {
      */
     public function form( $instance ) {
 
-        $title = ! empty( $instance[ 'title' ] ) ? $instance[ 'title' ] : 'HB Contact Form';
+        $title = ! empty( $instance[ 'title' ] ) ? $instance[ 'title' ] : 'Contact Form';
         $message = ! empty( $instance['message'] ) ? $instance['message'] : 'Complete this contact form to send me a message';
         ?>
 
@@ -60,8 +63,8 @@ class Widget extends WP_Widget {
     public function widget( $args, $instance ) {
 
         //enqueue contact form and styles
-        wp_enqueue_script('hb_contact_form_js');
-        wp_enqueue_style('hb_contact_form_css');
+        wp_enqueue_script('bigup_contact_form_js');
+        wp_enqueue_style('bigup_contact_form_css');
 
         //define variables
         $title = apply_filters( 'widget_title', $instance[ 'title' ] );
@@ -71,7 +74,7 @@ class Widget extends WP_Widget {
         echo $args[ 'before_widget' ];
 
             //include the form template with the widget vars
-            //custom function defined in hb-contact-form.php
+            //custom function defined in plugin-entry.php
             $output_with_variables = Form_Template::include_with_variables(
                 plugin_dir_path( __DIR__ ) . 'parts/form.php',
 

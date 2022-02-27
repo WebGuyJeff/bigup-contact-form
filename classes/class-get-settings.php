@@ -1,18 +1,19 @@
 <?php
-namespace Jefferson\HB_Contact_Form;
+namespace Bigup\Contact_Form;
 
 /**
- * Herringbone Contact From Get Settings and Validate From DB.
+ * Bigup Contact Form - Get Settings and Validate From DB.
  *
  * This class fetches the settings from the database and validates their
  * values before passing them back to caller. If ANY of the settings are
  * invalid, returns false.
  *
- * @package Herringbone
- * @subpackage HB_Contact_Form
+ * @package bigup_contact_form
  * @author Jefferson Real <me@jeffersonreal.com>
  * @copyright Copyright (c) 2021, Jefferson Real
  * @license GPL2+
+ * @link https://jeffersonreal.com
+ * 
  */
 
 // Import PHPMailer for use of the email validation method.
@@ -48,7 +49,7 @@ class Get_Settings {
 			return $smtp_settings;
 		}
 		// settings bad
-		error_log( 'HB_Contact_Form: SMTP settings invalid.' );
+		error_log( 'Bigup_Contact_Form: SMTP settings invalid.' );
 		return false;
 	}
 
@@ -69,7 +70,7 @@ class Get_Settings {
 			$settings[ $option_names ] = get_option( $option_names );
 
 		} else {
-			error_log( 'HB_Contact_Form: get_options_from_database expects string or array but ' . gettype( $option_names ) . ' received.' );
+			error_log( 'Bigup_Contact_Form: get_options_from_database expects string or array but ' . gettype( $option_names ) . ' received.' );
 			return false;
 		}
 		return $settings;
@@ -86,7 +87,7 @@ class Get_Settings {
 
 		// Check for null values.
 		if ( in_array( null, $settings, true ) || in_array( '', $settings, true ) ) {
-			error_log( 'HB_Contact_Form: validate_settings found one or more null values.' );
+			error_log( 'Bigup_Contact_Form: validate_settings found one or more null values.' );
 			return false;
 		};
 
@@ -135,7 +136,7 @@ class Get_Settings {
 			}
 			if ( $valid === false ) {
 				//settings bad - we're done here
-				error_log( 'HB_Contact_Form: Setting "' . $name . '" has failed validation.');
+				error_log( 'Bigup_Contact_Form: Setting "' . $name . '" has failed validation.');
 				return false;
 			}
 		}

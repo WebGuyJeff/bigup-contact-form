@@ -1,16 +1,17 @@
 <?php
-namespace Jefferson\HB_Contact_Form;
+namespace Bigup\Contact_Form;
 
 /**
- * Herringbone Contact Form Template Builder.
+ * Bigup Contact Form - Template Builder.
  *
  * This class builds form templates.
  *
- * @package Herringbone
- * @subpackage HB_Contact_Form
+ * @package bigup_contact_form
  * @author Jefferson Real <me@jeffersonreal.com>
  * @copyright Copyright (c) 2021, Jefferson Real
  * @license GPL2+
+ * @link https://jeffersonreal.com
+ * 
  */
 
 class Form_Template {

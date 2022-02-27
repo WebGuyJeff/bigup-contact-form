@@ -1,18 +1,19 @@
 <?php
-namespace Jefferson\HB_Contact_Form;
+namespace Bigup\Contact_Form;
 
 /**
- * Herringbone Contact Form PHPMailer Handler.
+ * Bigup Contact Form - PHPMailer Handler.
  *
  * This template handles the construction of the email using values submitted
  * via the form, and sends the email via PHPMailer using the SMTP account
  * configured by the user.
  *
- * @package Herringbone
- * @subpackage HB_Contact_Form
+ * @package bigup_contact_form
  * @author Jefferson Real <me@jeffersonreal.com>
  * @copyright Copyright (c) 2021, Jefferson Real
  * @license GPL2+
+ * @link https://jeffersonreal.com
+ * 
  */
 
 // Import PHPMailer classes into the global namespace
@@ -71,7 +72,7 @@ class SMTP_Send {
         $site_url = get_bloginfo( 'url' );
 
         $server_name = gethostname();
-        $from_name = ( $server_name ) ? $server_name : 'HB Contact Form';
+        $from_name = ( $server_name ) ? $server_name : 'Bigup Contact Form';
 
 // Build plaintext email body
 $plaintext = <<<PLAIN
@@ -154,7 +155,7 @@ HTML;
         } catch ( Exception $e ) {
 
             //PHPMailer exceptions are not public-safe - Send to logs.
-            error_log( 'HB_Contact_Form: ' . $mail->ErrorInfo );
+            error_log( 'Bigup_Contact_Form: ' . $mail->ErrorInfo );
             //Generic public error.
             return [ 500, 'Sending your message failed while connecting to the mail server.' ];
         }

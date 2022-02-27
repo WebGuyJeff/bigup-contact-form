@@ -1,6 +1,6 @@
 <?php
 /**
- * Class Autoloader for the Herringbone Contact Form Project
+ * Bigup Contact Form - Class Autoloader
  *
  * After registering this autoload function with SPL, the following line
  * would cause the function to attempt to load the \Brand\Project\Sub_Project\Class class
@@ -12,12 +12,18 @@
  * 
  *  - See an undefined class being used in the code being executed
  *  - Call all the functions registered with the spl_autoloader, and pass them the undefined class name
- *
+ * 
+ * @package bigup_contact_form
+ * @author Jefferson Real <me@jeffersonreal.com>
+ * @copyright Copyright (c) 2021, Jefferson Real
+ * @license GPL2+
+ * @link https://jeffersonreal.com
  * @param string $class The fully-qualified class name.
+ * 
  */
 spl_autoload_register( function( $class ) {
 
-    $namespace = 'Jefferson\\HB_Contact_Form\\';
+    $namespace = 'Bigup\\Contact_Form\\';
     $root_dir = dirname( dirname( __FILE__ ), 1 );
     $sub_dir = str_replace( $root_dir, '', dirname( __FILE__ ) );
     $filename_prefix = 'class-';
@@ -41,6 +47,6 @@ spl_autoload_register( function( $class ) {
     if ( file_exists( $class_filepath ) ) {
         include_once $class_filepath;
     } else {
-        echo '<script>console.log("ERROR: HB_Contact_Form php autoload | Class not found: ' . $classname . '");</script>';
+        echo '<script>console.log("ERROR: Bigup_Contact_Form php autoload | Class not found: ' . $classname . '");</script>';
     }
 });

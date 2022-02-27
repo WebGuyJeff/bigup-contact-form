@@ -1,16 +1,16 @@
 /**
- * Herringbone Contact Form Client Controller.
+ * Bigup Contact Form - Client Controller.
  *
  * Control client form submission performed with fetch and the
- * WP REST api. All data transmitted in JSON for adabtability.
+ * WP REST api. All data transmitted in JSON for extensibility.
  * 
- * @package Herringbone
- * @subpackage HB_Contact_Form
+ * @package bigup_contact_form
  * @author Jefferson Real <me@jeffersonreal.com>
  * @copyright Copyright (c) 2021, Jefferson Real
  * @license GPL2+
- * 
+ * @link https://jeffersonreal.com
  */
+
 (function form_sender() {
 'use strict';
 
@@ -41,13 +41,13 @@
     /**
      * Grab WP localize vars.
      * 
-     * wp_localize_hb_contact_form_vars.*
+     * wp_localize_bigup_contact_form_vars.*
      * .rest_url;
      * .rest_nonce;
      * .admin_email;
      * 
      */
-    const wp = wp_localize_hb_contact_form_vars;
+    const wp = wp_localize_bigup_contact_form_vars;
 
 
     /**
@@ -61,7 +61,7 @@
         honeypot.forEach( input => { input.style.display = "none" } );
 
         // Attach submit listener callback to the form(s)
-        document.querySelectorAll( '.HB__form' ).forEach( form => {
+        document.querySelectorAll( '.bigup__form' ).forEach( form => {
             form.addEventListener( 'submit', handle_form_submit );
         } );
     };
@@ -88,8 +88,8 @@
         if(debug) console.log( stopwatch() + ' |START| handle_form_submit');
 
         const form = event.currentTarget;
-        const output = form.querySelector( '.HB__form_output' );
-        let classes = [ 'HB__form-popout', 'alert' ];
+        const output = form.querySelector( '.bigup__form_output' );
+        let classes = [ 'bigup__form-popout', 'alert' ];
 
         // boot bots if honeypot is filled.
         if ( '' != form.querySelector( '[name="required_field"]' ).value ) {
@@ -139,7 +139,7 @@
             await remove_children( output );
 
             if ( result.ok ) { // Clean up the form.
-                let fieldset = form.querySelectorAll( '.HB__form_input' );
+                let fieldset = form.querySelectorAll( '.bigup__form_input' );
                 fieldset.forEach( input => { input.value = '' } );
             }
             output.style.display = 'none';
@@ -286,8 +286,8 @@
 
         if(debug) console.log( `${stopwatch()} |START| lock_form | Locked` );
 
-        const button_label = form.querySelector( '.HB__form_submit > *:first-child' );
-        const formfields = form.querySelectorAll( '.HB__form_section' );
+        const button_label = form.querySelector( '.bigup__form_submit > *:first-child' );
+        const formfields = form.querySelectorAll( '.bigup__form_section' );
 
         formfields.forEach( section => { section.disabled = true } );
         let idle_text = button_label.innerText;

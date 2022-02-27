@@ -1,18 +1,19 @@
 <?php
-namespace Jefferson\HB_Contact_Form;
+namespace Bigup\Contact_Form;
 
 /**
- * Herringbone Contact Form PHPMailer SMTP Test.
+ * Bigup Contact Form - PHPMailer SMTP Test.
  *
  * Test the SMTP account settings provided to ensure a connection
  * can be established. Otherwise the settings are invalid and the
  * form should not be displayed to users.
  *
- * @package Herringbone
- * @subpackage HB_Contact_Form
+ * @package bigup_contact_form
  * @author Jefferson Real <me@jeffersonreal.com>
  * @copyright Copyright (c) 2021, Jefferson Real
  * @license GPL2+
+ * @link https://jeffersonreal.com
+ * 
  */
 
 // Import PHPMailer classes into the global namespace

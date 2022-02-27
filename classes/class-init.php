@@ -1,16 +1,17 @@
 <?php
-namespace Jefferson\HB_Contact_Form;
+namespace Bigup\Contact_Form;
 
 /**
- * Herringbone Contact Form Initialisation.
+ * Bigup Contact Form - Initialisation.
  *
  * Setup styles and helper functions for this plugin.
  *
- * @package Herringbone
- * @subpackage HB_Contact_Form
+ * @package bigup_contact_form
  * @author Jefferson Real <me@jeffersonreal.com>
  * @copyright Copyright (c) 2021, Jefferson Real
  * @license GPL2+
+ * @link https://jeffersonreal.com
+ * 
  */
 
 // WordPress dependencies.
@@ -44,7 +45,7 @@ class Init {
         /**
          * Register shortcode.
          */
-        add_shortcode( 'hb_contact_form', [ new Shortcode, 'display_shortcode' ] );
+        add_shortcode( 'bigup_contact_form', [ new Shortcode, 'display_shortcode' ] );
 
         /**
          * Register widget.
@@ -67,13 +68,13 @@ class Init {
      */
     public function register_scripts_and_styles() {
 
-        wp_register_style( 'hb_contact_form_css', plugins_url ( 'css/hb-contact-form.css', __DIR__ ), array(), '0.1', 'all' );
-        wp_register_script ( 'hb_contact_form_js', plugins_url ( 'js/form-submit.js', __DIR__ ), array(), '0.5', false );
+        wp_register_style( 'bigup_contact_form_css', plugins_url ( 'css/form.css', __DIR__ ), array(), '0.1', 'all' );
+        wp_register_script ( 'bigup_contact_form_js', plugins_url ( 'js/form-submit.js', __DIR__ ), array(), '0.5', false );
         wp_localize_script(
-            'hb_contact_form_js',
-            'wp_localize_hb_contact_form_vars',
+            'bigup_contact_form_js',
+            'wp_localize_bigup_contact_form_vars',
             array(
-                'rest_url'    => get_rest_url( null, 'jefferson/hb-contact-form/v1/submit' ),
+                'rest_url'    => get_rest_url( null, 'bigup/contact-form/v1/submit' ),
                 'rest_nonce'  => wp_create_nonce( 'wp_rest' ),
                 'admin_email' => get_bloginfo( 'admin_email' )
             )
@@ -92,9 +93,9 @@ class Init {
         /**
          * Define POST endpoint.
          */
-        register_rest_route( 'jefferson/hb-contact-form/v1', '/submit', array(
+        register_rest_route( 'bigup/contact-form/v1', '/submit', array(
             'methods'               => 'POST',
-            'callback'              => [ new Form_Controller, 'hb_contact_form_rest_api_callback' ],
+            'callback'              => [ new Form_Controller, 'bigup_contact_form_rest_api_callback' ],
             'permission_callback'   => '__return_true',
         ) );
     }

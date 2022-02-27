@@ -1,23 +1,23 @@
 /**
- * Herringbone Contact Form css.
+ * Bigup Contact Form - Styles.
  *
- * The styles should allow the theme to apply it's styles with
- * only clean base styles applied by the plugin. Customisation 
- * of the styles could be later added and edited in the admin
- * interface.
- * The only intentional theme override is 'pointer-events: none'
- * on the submit button although this is technically overkill
- * as the output element covers the form while disabled.
- *
- * @package Herringbone
- * @subpackage HB_Contact_Form
+ * @package bigup_contact_form
  * @author Jefferson Real <me@jeffersonreal.com>
  * @copyright Copyright (c) 2021, Jefferson Real
  * @license GPL2+
+ * @link https://jeffersonreal.com
  */
 
 
- .HB__form {
+.bigup__form {
+    --bigup_white: #fff;
+    --bigup_black: #262626;
+    --bigup_orange: #ffb908;
+    --bigup_green: #63CFA7;
+    --bigup_lightGrey: #eee;
+    --bigup_border: solid 0.3em var(--bigup_lightGrey);
+    --bigup_radius-small: 0.6em;
+    --bigup_shadow-inset: inset -0.1em 0.2em 0.5em 0.2em #000c;
     position: relative;
 	padding: 1em;
 	width: 34em;
@@ -25,23 +25,23 @@
 	text-align: center;
 	font: inherit;
 }
-        .HB__form_section {
+        .bigup__form_section {
             margin: 0;
             border: none;
             padding: 0;
             width: 100%;
         }
-        .HB__form_section:disabled {
+        .bigup__form_section:disabled {
             transition: opacity 150ms ease-in-out;
             opacity: 0.5;
         }
-            .HB__form_title {
+            .bigup__form_title {
                 margin: 1.688em 0 0.688em 0;
             }
-            .HB__form_message {
+            .bigup__form_message {
                 margin: 1em 0 1.688em 0;
             }
-            .HB__form_input {
+            .bigup__form_input {
                 display: block;
                 outline: none;
                 border: none;
@@ -51,12 +51,12 @@
                 height: 100%;
                 resize: vertical;
                 text-shadow: 0 0 white;
-                color: var(--hb_white);
+                color: var(--bigup_white);
             }
-            .HB__form_input:not(.HB__form_section:disabled > .HB__form_input):hover {
+            .bigup__form_input:not(.bigup__form_section:disabled > .bigup__form_input):hover {
                 cursor: text;
             }
-                span.HB__form_hoverFlag {
+                span.bigup__form_hoverFlag {
                     display: flex;
                     position: absolute;
                     top: -1.5em;
@@ -66,14 +66,14 @@
                     transition: top 0.15s;
                     border-radius: 0 0 0 1em;
                     box-shadow: inset -0.3em 0.4em 0.5em 0 #000c;
-                    background: var(--hb_orange);
+                    background: var(--bigup_orange);
                     width: 1.5em;
                     height: 1.5em;
                 }
-                .HB__form_inputWrap:not(.HB__form_section:disabled > .HB__form_inputWrap):hover .HB__form_hoverFlag {
+                .bigup__form_inputWrap:not(.bigup__form_section:disabled > .bigup__form_inputWrap):hover .bigup__form_hoverFlag {
                     top: 0;
                 }
-                span.HB__form_focusFlag {
+                span.bigup__form_focusFlag {
                     display: flex;
                     position: absolute;
                     top: -1.5em;
@@ -83,35 +83,35 @@
                     transition: top 0.15s;
                     border-radius: 0 0 0 1em;
                     box-shadow: inset -0.3em 0.4em 0.5em 0 #000c;
-                    background: var(--hb_green);
+                    background: var(--bigup_green);
                     width: 1.5em;
                     height: 1.5em;
-                    color: var(--hb_white);
+                    color: var(--bigup_white);
                 }
-                .HB__form_inputWrap:not(.HB__form_section:disabled > .HB__form_inputWrap):focus-within .HB__form_focusFlag {
+                .bigup__form_inputWrap:not(.bigup__form_section:disabled > .bigup__form_inputWrap):focus-within .bigup__form_focusFlag {
                     top: 0;
                 }
-                .HB__form_inputWrap {
+                .bigup__form_inputWrap {
                     position: relative;
                     transition: 0.2s;
                     margin: 0.5em auto 0.5em 0;
-                    border: var(--hb_border);
-                    border-radius: var(--hb_radius-small);
-                    box-shadow: var(--hb_shadow-inset);
-                    background: var(--hb_black);
+                    border: var(--bigup_border);
+                    border-radius: var(--bigup_radius-small);
+                    box-shadow: var(--bigup_shadow-inset);
+                    background: var(--bigup_black);
                     width: 80%;
                     min-width: 8em;
                     min-height: fit-content;
                     overflow: hidden;
                     resize: none;
                 }
-                .HB__form_inputWrap-wide {
+                .bigup__form_inputWrap-wide {
                      width: 100%;
                 }
-                @media (min-width: 48em) { .HB__form_inputWrap-short {
+                @media (min-width: 48em) { .bigup__form_inputWrap-short {
                     width: 65%;
                 }}
-                    .HB__form_output {
+                    .bigup__form_output {
                         position: absolute;
                         top: 0;
                         right: 0;
@@ -122,26 +122,26 @@
                         justify-content: center;
                         transition: opacity 150ms ease-in-out;
                     }
-                        .HB__form-popout {
+                        .bigup__form-popout {
                             box-shadow: 1px 3px 6px 1px #000a;
                         }
 
 /* Widget overrides */
-.widget .HB__form_ {
+.widget .bigup__form_ {
     padding: .5em;
 }
-    .widget .HB__form_message {
+    .widget .bigup__form_message {
         margin: 1em 0;
         font-size: 0.8em;
     }
-        .widget .HB__form_inputWrap {
+        .widget .bigup__form_inputWrap {
             margin: 0.5em auto 0 0;
             width: 100%;
         }
 
 /* Theme overrides */
-.HB__form_section:disabled button:hover,
-.HB__form_section:disabled .button:hover,
-.HB__form_section:disabled .btn:hover {
+.bigup__form_section:disabled button:hover,
+.bigup__form_section:disabled .button:hover,
+.bigup__form_section:disabled .btn:hover {
     pointer-events: none !important;
 }

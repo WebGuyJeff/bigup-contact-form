@@ -1,5 +1,5 @@
 {
-    "name": "jefferson/hb_contact_form",
+    "name": "jefferson/bigup_contact_form",
     "description": "An SMTP contact form plugin for WordPress",
     "type": "project",
     "require": {

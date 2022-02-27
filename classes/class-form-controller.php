@@ -1,16 +1,17 @@
 <?php
-namespace Jefferson\HB_Contact_Form;
+namespace Bigup\Contact_Form;
 
 /**
- * Herringbone Contact Form POST handler.
+ * Bigup Contact Form - POST handler.
  *
  * This template defines the front end form HTML
  *
- * @package Herringbone
- * @subpackage HB_Contact_Form
+ * @package bigup_contact_form
  * @author Jefferson Real <me@jeffersonreal.com>
  * @copyright Copyright (c) 2021, Jefferson Real
  * @license GPL2+
+ * @link https://jeffersonreal.com
+ * 
  */
 
 // Load Composer's autoloader
@@ -36,7 +37,7 @@ class Form_Controller {
      * Note: Rest api handles nonces automatically.
      * 
      */
-    public function hb_contact_form_rest_api_callback( WP_REST_Request $request ) {
+    public function bigup_contact_form_rest_api_callback( WP_REST_Request $request ) {
 
         // if content-type header is json
         if ( $request->get_header( 'Content-Type' ) === 'application/json'){
@@ -243,7 +244,7 @@ class Form_Controller {
     private function send_json_response( $public_status ) {
         
         if ( ! is_array( $public_status ) ) {
-            error_log( 'HB_Contact_Form: send_json_response expects array but ' . gettype( $public_status ) . ' received.' );
+            error_log( 'Bigup_Contact_Form: send_json_response expects array but ' . gettype( $public_status ) . ' received.' );
             $public_status = null;
             $public_status[ 0 ] = 500;
             $public_status[ 1 ] = 'Sending your message failed due to an unexpected error.';

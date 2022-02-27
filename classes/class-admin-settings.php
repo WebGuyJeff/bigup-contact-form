@@ -1,8 +1,8 @@
 <?php
-namespace Jefferson\HB_Contact_Form;
+namespace Bigup\Contact_Form;
 
 /**
- * Herringbone Contact Form Admin Settings.
+ * Bigup Contact Form - Admin Settings.
  *
  * Hook into the WP admin area and add menu options and settings
  * pages.
@@ -17,11 +17,12 @@ namespace Jefferson\HB_Contact_Form;
  * 
  * register_setting( 'option_group', 'from_email' );
  *
- * @package Herringbone
- * @subpackage HB_Contact_Form
+ * @package bigup_contact_form
  * @author Jefferson Real <me@jeffersonreal.com>
  * @copyright Copyright (c) 2021, Jefferson Real
  * @license GPL2+
+ * @link https://jeffersonreal.com
+ * 
  */
 
 class Admin_Settings {
@@ -58,12 +59,12 @@ class Admin_Settings {
 
 
     /**
-     * Add Herringbone admin menu option to sidebar
+     * Add admin menu option to sidebar
      * 
      */
     public function register_sub_menu() {
         add_submenu_page(
-            'herringbone-settings',             //parent_slug
+            'bigup-web-settings',             //parent_slug
             'Contact Form Settings',            //page_title
             'Contact Form',                     //menu_title
             'manage_options',                   //capability
@@ -85,7 +86,7 @@ class Admin_Settings {
             <span>
                 <img style="max-height: 1em;margin-right: 0.5em;vertical-align: middle;" src="<?php echo $this->icon ?>"/>
             </span>
-            Herringbone Contact Form Settings
+            Bigup Web Contact Form Settings
         </h1>
 
         <div class="wrap">
