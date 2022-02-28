@@ -49,9 +49,13 @@ class Init {
 
         /**
          * Register widget.
+		 * 
+		 * @link https://stackoverflow.com/questions/5247302/php-namespace-5-3-and-wordpress-widget/5247436#5247436
          */
-        add_action( 'widgets_init', [ new Widget, '__construct' ] );
-        
+		add_action('widgets_init', function() {
+			return register_widget(new Widget);
+		});
+
     }
 
 

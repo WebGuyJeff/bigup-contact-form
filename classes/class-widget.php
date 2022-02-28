@@ -27,10 +27,14 @@ class Widget extends WP_Widget {
     public function __construct() {
 
         $widget_options = array (
-            'classname' => 'Widget',
+            'classname' => 'bigup_contact_form',
             'description' => 'An SMTP contact form.'
         );
-        parent::__construct( 'Widget', 'Bigup Contact Form', $widget_options );
+        parent::__construct(
+			'bigup_contact_form',		/* Base ID */
+			'Bigup Web: Contact Form',	/* widget name as it appears in widget picker */
+			$widget_options
+		);
     }
 
 
