@@ -10,10 +10,10 @@ namespace Bigup\Contact_Form;
  *  - saving settings
  *
  * @package bigup_contact_form
- * @author Jefferson Real <me@jeffersonreal.com>
+ * @author Jefferson Real <me@jeffersonreal.uk>
  * @copyright Copyright (c) 2021, Jefferson Real
  * @license GPL2+
- * @link https://jeffersonreal.com
+ * @link https://jeffersonreal.uk
  * 
  */
 use WP_Widget;
@@ -105,5 +105,3 @@ class Widget extends WP_Widget {
     }
 
 } // Class Widget end
-
-

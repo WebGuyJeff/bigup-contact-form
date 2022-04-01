@@ -7,10 +7,10 @@ namespace Bigup\Contact_Form;
  * This template defines the front end form HTML
  *
  * @package bigup_contact_form
- * @author Jefferson Real <me@jeffersonreal.com>
+ * @author Jefferson Real <me@jeffersonreal.uk>
  * @copyright Copyright (c) 2021, Jefferson Real
  * @license GPL2+
- * @link https://jeffersonreal.com
+ * @link https://jeffersonreal.uk
  * 
  */
 

@@ -5,10 +5,10 @@
  * WP REST api. All data transmitted in JSON for extensibility.
  * 
  * @package bigup_contact_form
- * @author Jefferson Real <me@jeffersonreal.com>
+ * @author Jefferson Real <me@jeffersonreal.uk>
  * @copyright Copyright (c) 2021, Jefferson Real
  * @license GPL2+
- * @link https://jeffersonreal.com
+ * @link https://jeffersonreal.uk
  */
 
 (function form_sender() {
