@@ -18,10 +18,12 @@
 //$message
 
 $admin_email = get_bloginfo( 'admin_email' );
+$dark_styles = get_option('styles');
+$classes     = ( $dark_styles ) ? 'bigup__form-dark' : 'bigup__form-vanilla';
 
 ?>
 
-<form class="bigup__form" method="post" accept-charset="utf-8" autocomplete="on">
+<form class="bigup__form <?php echo esc_attr( $classes ); ?>" method="post" accept-charset="utf-8" autocomplete="on">
 
     <header class="bigup__form_section">
         <?php
@@ -55,8 +57,8 @@ $admin_email = get_bloginfo( 'admin_email' );
                 onblur="this.placeholder='Name (required)'"
             >
 
-            <span class="bigup__form_hoverFlag"></span>
-            <span class="bigup__form_focusFlag"></span>
+            <span class="bigup__form_flag bigup__form_flag-hover"></span>
+            <span class="bigup__form_flag bigup__form_flag-focus"></span>
 
         </div>
 
@@ -72,8 +74,8 @@ $admin_email = get_bloginfo( 'admin_email' );
                 onblur="this.placeholder='Email (required)'"
             >
 
-            <span class="bigup__form_hoverFlag"></span>
-            <span class="bigup__form_focusFlag"></span>
+            <span class="bigup__form_flag bigup__form_flag-hover"></span>
+            <span class="bigup__form_flag bigup__form_flag-focus"></span>
 
         </div>
 
@@ -91,8 +93,8 @@ $admin_email = get_bloginfo( 'admin_email' );
                 onblur="this.placeholder='Type your message...'"
             ></textarea>
 
-            <span class="bigup__form_hoverFlag"></span>
-            <span class="bigup__form_focusFlag"></span>
+            <span class="bigup__form_flag bigup__form_flag-hover"></span>
+            <span class="bigup__form_flag bigup__form_flag-focus"></span>
 
         </div>
 

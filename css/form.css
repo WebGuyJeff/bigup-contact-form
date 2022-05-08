@@ -8,21 +8,16 @@
  * @link https://jeffersonreal.uk
  */
 
-
-.bigup__form {
+ .bigup__form {
     --bigup_white: #fff;
     --bigup_black: #262626;
     --bigup_orange: #ffb908;
     --bigup_green: #63CFA7;
-    --bigup_lightGrey: #eee;
-    --bigup_border: solid 0.3em var(--bigup_lightGrey);
-    --bigup_radius-small: 0.6em;
-    --bigup_shadow-inset: inset -0.1em 0.2em 0.5em 0.2em #000c;
+    --bigup_border: solid 0.2em var(--bigup_black);
     position: relative;
-	padding: 1em;
 	width: 34em;
 	max-width: 100vw;
-	text-align: center;
+	text-align: inherit;
 	font: inherit;
 }
         .bigup__form_section {
@@ -41,103 +36,85 @@
             .bigup__form_message {
                 margin: 1em 0 1.688em 0;
             }
-            .bigup__form_input {
-                display: block;
-                outline: none;
-                border: none;
-                background: #0000;
-                padding: 0.5em;
-                width: 100%;
-                height: 100%;
-                resize: vertical;
-                text-shadow: 0 0 white;
-                color: var(--bigup_white);
-            }
-            .bigup__form_input:not(.bigup__form_section:disabled > .bigup__form_input):hover {
-                cursor: text;
-            }
-                span.bigup__form_hoverFlag {
-                    display: flex;
-                    position: absolute;
-                    top: -1.5em;
-                    right: 0;
-                    align-items: center;
-                    justify-content: center;
-                    transition: top 0.15s;
-                    border-radius: 0 0 0 1em;
-                    box-shadow: inset -0.3em 0.4em 0.5em 0 #000c;
-                    background: var(--bigup_orange);
-                    width: 1.5em;
-                    height: 1.5em;
-                }
-                .bigup__form_inputWrap:not(.bigup__form_section:disabled > .bigup__form_inputWrap):hover .bigup__form_hoverFlag {
-                    top: 0;
-                }
-                span.bigup__form_focusFlag {
-                    display: flex;
-                    position: absolute;
-                    top: -1.5em;
-                    right: 0;
-                    align-items: center;
-                    justify-content: center;
-                    transition: top 0.15s;
-                    border-radius: 0 0 0 1em;
-                    box-shadow: inset -0.3em 0.4em 0.5em 0 #000c;
-                    background: var(--bigup_green);
-                    width: 1.5em;
-                    height: 1.5em;
-                    color: var(--bigup_white);
-                }
-                .bigup__form_inputWrap:not(.bigup__form_section:disabled > .bigup__form_inputWrap):focus-within .bigup__form_focusFlag {
-                    top: 0;
-                }
-                .bigup__form_inputWrap {
-                    position: relative;
-                    transition: 0.2s;
-                    margin: 0.5em auto 0.5em 0;
-                    border: var(--bigup_border);
-                    border-radius: var(--bigup_radius-small);
-                    box-shadow: var(--bigup_shadow-inset);
-                    background: var(--bigup_black);
-                    width: 80%;
-                    min-width: 8em;
-                    min-height: fit-content;
-                    overflow: hidden;
-                    resize: none;
-                }
-                .bigup__form_inputWrap-wide {
-                     width: 100%;
-                }
-                @media (min-width: 48em) { .bigup__form_inputWrap-short {
-                    width: 65%;
-                }}
-                    .bigup__form_output {
-                        position: absolute;
-                        top: 0;
-                        right: 0;
-                        bottom: 0;
-                        left: 0;
-                        flex-flow: column nowrap;
-                        align-items: center;
-                        justify-content: center;
-                        transition: opacity 150ms ease-in-out;
-                    }
-                        .bigup__form-popout {
-                            box-shadow: 1px 3px 6px 1px #000a;
-                        }
+			.bigup__form_inputWrap {
+				position: relative;
+				transition: 0.2s;
+				margin: 0.5em auto 0.5em 0;
+				border: solid 0.1em;
+				width: 80%;
+				min-width: 8em;
+				min-height: fit-content;
+				overflow: hidden;
+				resize: none;
+			}
+			.bigup__form_inputWrap-wide {
+				width: 100%;
+			}
+			@media (min-width: 48em) {
+				.bigup__form_inputWrap-short {
+					width: 65%;
+				}
+			}
+				.bigup__form_input {
+					display: block;
+					outline: none;
+					border: none;
+					background: #0000;
+					padding: 0.5em;
+					width: 100%;
+					height: 100%;
+					resize: vertical;
+					color: inherit;
+				}
+				.bigup__form_input:not(.bigup__form_section:disabled > .bigup__form_input):hover {
+					cursor: text;
+				}
+					.bigup__form_flag {
+						display: flex;
+						position: absolute;
+						top: -1.5em;
+						right: 0.2em;
+						align-items: center;
+						justify-content: center;
+						transition: top 0.15s;
+						border-radius: 0 0 0 2em;
+						width: 1.5em;
+						height: 1.5em;
+					}
+					.bigup__form_flag-hover {
+						background: var(--bigup_orange);
+					}
+					.bigup__form_flag-focus {
+						background: var(--bigup_green);
+					}
+					.bigup__form_inputWrap:not(.bigup__form_section:disabled > .bigup__form_inputWrap):hover .bigup__form_flag-hover,
+					.bigup__form_inputWrap:not(.bigup__form_section:disabled > .bigup__form_inputWrap):focus-within .bigup__form_flag-focus {
+						top: 0.2em;
+					}
+						.bigup__form_output {
+							position: absolute;
+							top: 0;
+							right: 0;
+							bottom: 0;
+							left: 0;
+							flex-flow: column nowrap;
+							align-items: center;
+							justify-content: center;
+							transition: opacity 150ms ease-in-out;
+						}
+							.bigup__form-popout {
+								box-shadow: 1px 3px 6px 1px #000a;
+							}
 
 /* Widget overrides */
-.widget .bigup__form_ {
-    padding: .5em;
+.widget .bigup__form_message {
+	margin: 1em 0;
+	font-size: 0.8em;
 }
-    .widget .bigup__form_message {
-        margin: 1em 0;
-        font-size: 0.8em;
-    }
-        .widget .bigup__form_inputWrap {
-            margin: 0.5em auto 0 0;
-            width: 100%;
-        }
+	.widget .bigup__form_inputWrap {
+		margin: 0.5em auto 0 0;
+		width: 100%;
+	}
 
 /* Theme overrides */
 .bigup__form_section:disabled button:hover,
@@ -145,3 +122,33 @@
 .bigup__form_section:disabled .btn:hover {
     pointer-events: none !important;
 }
+
+
+/* =============================================================== Dark Theme (.bigup__form-dark) */
+
+
+
+.bigup__form.bigup__form-dark  {
+    --bigup_lightGrey: #eee;
+    --bigup_border: solid 0.3em var(--bigup_lightGrey);
+    --bigup_radius-small: 0.6em;
+    --bigup_shadow-inset: inset -0.1em 0.2em 0.5em 0.2em #000c;
+}
+	.bigup__form-dark .bigup__form_inputWrap {
+		border-radius: var(--bigup_radius-small);
+		box-shadow: var(--bigup_shadow-inset);
+		background: var(--bigup_black);
+	}
+		.bigup__form-dark .bigup__form_input {
+			text-shadow: 0 0 white;
+			color: var(--bigup_white);
+		}
+			.bigup__form-dark .bigup__form_flag {
+				right: 0;
+				border-radius: 0 0 0 1em;
+				box-shadow: inset -0.3em 0.4em 0.5em 0 #000c;
+			}
+			.bigup__form-dark .bigup__form_inputWrap:not(.bigup__form_section:disabled > .bigup__form_inputWrap):hover .bigup__form_flag-hover,
+			.bigup__form-dark .bigup__form_inputWrap:not(.bigup__form_section:disabled > .bigup__form_inputWrap):focus-within .bigup__form_flag-focus {
+				top: 0;
+			}
