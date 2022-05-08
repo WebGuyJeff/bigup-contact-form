@@ -42,6 +42,11 @@ class Init {
          */
         add_action( 'wp_enqueue_scripts', [ $this, 'register_scripts_and_styles' ] );
 
+		/**
+		 * Enqueue admin scripts and styles.
+		 */
+		add_action( 'admin_enqueue_scripts', [ $this, 'register_admin_scripts_and_styles' ] );
+
         /**
          * Register shortcode.
          */
@@ -84,6 +89,19 @@ class Init {
             )
         );
     }
+
+
+	/**
+	 * Register admin scripts and styles.
+	 */
+	public function register_admin_scripts_and_styles() {
+		if ( ! wp_script_is( 'bigup_icons', 'registered' ) ) {
+			wp_register_style( 'bigup_icons', BIGUP_CONTACT_FORM_PLUGIN_URL . 'dashicons/css/bigup-icons.css', array(), filemtime( BIGUP_CONTACT_FORM_PLUGIN_PATH . 'dashicons/css/bigup-icons.css' ), 'all' );
+		}
+		if ( ! wp_script_is( 'bigup_icons', 'enqueued' ) ) {
+			wp_enqueue_style( 'bigup_icons' );
+		}
+	}
 
 
     /**

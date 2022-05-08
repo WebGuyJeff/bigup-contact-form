@@ -68,7 +68,7 @@ class Admin_Settings {
 				'manage_options',	              //capability
 				'bigup-web-settings',             //menu_slug
 				[ &$this, 'create_parent_page' ], //function
-				$this->icon,		              //icon_url
+				'dashicons-bigup-fist',		      //icon_url
 				4					              //position
 			);
 		}
@@ -92,14 +92,12 @@ class Admin_Settings {
     public function create_parent_page() {
 		?>
 
-		<h1>
-			<span>
-				<img style="max-height: 2em;margin-right: 0.5em;vertical-align: middle;" src="<?php echo $this->icon ?>"/>
-			</span>
-			Bigup Web Settings
-		</h1>
-
 		<div class="wrap">
+			<h1>
+				<span class="dashicons-bigup-logo" style="font-size: 2em; margin-right: 0.2em;"></span>
+				Bigup Web Settings
+			</h1>
+
 			<a href="/wp-admin/admin.php?page=contact-form-settings">
 				Go to contact form settings
 			</a>
@@ -115,14 +113,13 @@ class Admin_Settings {
     public function create_settings_page() {
     	?>
 
-        <h1>
-            <span>
-                <img style="max-height: 2em;margin-right: 0.5em;vertical-align: middle;" src="<?php echo $this->icon ?>"/>
-            </span>
-            Bigup Web Contact Form Settings
-        </h1>
+		<div class="wrap">
 
-        <div class="wrap">
+			<h1>
+				<span class="dashicons-bigup-logo" style="font-size: 2em; margin-right: 0.2em;"></span>
+				Bigup Web Contact Form Settings
+			</h1>
+
             <form method="post" action="options.php">
 
                 <?php
@@ -137,6 +134,7 @@ class Admin_Settings {
                 ?>
 
             </form>
+
         </div>
 
     	<?php
