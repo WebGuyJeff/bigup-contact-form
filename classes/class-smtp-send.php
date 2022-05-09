@@ -144,7 +144,7 @@ HTML;
 
             //Content
             $mail->isHTML(true);
-            $mail->Subject = 'Message from: ' . $name . ' via ' . $site_url;
+            $mail->Subject = 'New website message from ' . $site_url;
             $mail->Body    = $html;
             $mail->AltBody = $plaintext_cleaned;
         
