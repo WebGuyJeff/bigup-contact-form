@@ -36,6 +36,18 @@ class Shortcode {
             $attributes[ 'message' ] = 'Complete this contact form to send a message';
         }
 
+        if ( ! isset( $attributes[ 'align' ] ) ) {
+            $align_class = '';
+        } elseif ( 'middle' === $attributes[ 'align' ] ) {
+			$align_class = 'aligncenter';
+		} elseif ( 'left' === $attributes[ 'align' ] ) {
+			$align_class = 'alignleft';
+		} elseif ( 'right' === $attributes[ 'align' ] ) {
+			$align_class = 'alignright';
+		} else {
+			$align_class = '';
+		}
+
         //include the form template with the widget vars
         //custom function defined in plugin-entry.php
 
@@ -43,8 +55,9 @@ class Shortcode {
             plugin_dir_path( __DIR__ ) . 'parts/form.php',
 
             array(
-                'title' => $attributes[ 'title' ],
+                'title'   => $attributes[ 'title' ],
                 'message' => $attributes[ 'message' ],
+                'align'   => $align_class,
             )
         );
 

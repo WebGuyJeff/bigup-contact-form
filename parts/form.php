@@ -16,11 +16,11 @@
 //Variables passed from the calling file using Init::includeWithVariables()
 //$title
 //$message
+//$align (not applicable for widget)
 
-$admin_email = get_bloginfo( 'admin_email' );
-$dark_styles = get_option('styles');
-$classes     = ( $dark_styles ) ? 'bigup__form-dark' : 'bigup__form-vanilla';
-
+$dark_styles  = get_option('styles');
+$classes      = ( $dark_styles ) ? 'bigup__form-dark' : 'bigup__form-vanilla';
+$classes     .= ' ' . $align;
 ?>
 
 <form class="bigup__form <?php echo esc_attr( $classes ); ?>" method="post" accept-charset="utf-8" autocomplete="on">
