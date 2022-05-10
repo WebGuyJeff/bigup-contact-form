@@ -33,7 +33,7 @@ class Shortcode {
             $attributes[ 'title' ] = 'Contact Form';
         }
         if ( ! isset( $attributes[ 'message' ] ) ) {
-            $attributes[ 'message' ] = 'Complete this contact form to send me a message';
+            $attributes[ 'message' ] = 'Complete this contact form to send a message';
         }
 
         //include the form template with the widget vars

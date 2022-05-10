@@ -120,6 +120,17 @@ class Admin_Settings {
 				Bigup Web Contact Form Settings
 			</h1>
 
+			<h2>
+				Usage
+			</h2>
+			<p>
+				With the settings below complete, you can either set a contact form in the widget
+				area using the customizer, or use the shortcode as below in your theme files or via
+				the shortcode block in the editor:
+			</p>
+			<code style="margin: 1em 0 2em 0;display: block;width: fit-content;: 0.5em 0;">
+				[bigup_contact_form title="Contact Form" message="Complete this contact form to send me a message"]
+			</code>
             <form method="post" action="options.php">
 
                 <?php
