@@ -13,7 +13,7 @@ namespace Bigup\Contact_Form;
  * @package bigup_contact_form
  * @version 0.5.0
  * @author Jefferson Real <me@jeffersonreal.uk>
- * @copyright Copyright (c) 2021, Jefferson Real
+ * @copyright Copyright (c) 2022, Jefferson Real
  * @license GPL2+
  * @link https://jeffersonreal.uk
  */
