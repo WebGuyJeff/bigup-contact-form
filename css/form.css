@@ -45,7 +45,7 @@
 				resize: none;
 			}
 			.bigup__form_inputWrap-wide {
-				width: 100%;
+				max-width: 100%;
 			}
 			@media (min-width: 48em) {
 				.bigup__form_inputWrap-short {
