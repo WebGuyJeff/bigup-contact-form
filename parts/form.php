@@ -98,6 +98,22 @@ $classes     .= ' ' . $align;
 
         </div>
 
+        <div class="bigup__form_inputWrap bigup__form_inputWrap-wide">
+
+			<label
+				for="fileToUpload"
+			>
+				Attach a file
+			</label>
+			<input
+				class="bigup__form_input"
+				title="Attach a File"
+				type="file"
+				name="fileToUpload"
+			>
+
+		</div>
+
         <button class="button bigup__form_submit" type="submit" value="Submit">
             <span>
                 Submit
