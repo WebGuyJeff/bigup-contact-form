@@ -133,6 +133,11 @@ class Get_Settings {
 				case 'to_email':
 					$valid = ( PHPMailer::validateAddress( $value ) ) ? true : false;
 					break;	
+
+				case 'styles':
+					$valid = ( is_bool( (bool)$value ) ) ? true : false;
+					break;
+
 			}
 			if ( $valid === false ) {
 				//settings bad - we're done here

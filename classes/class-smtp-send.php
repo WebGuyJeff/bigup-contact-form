@@ -61,12 +61,12 @@ class SMTP_Send {
     /**
      * Compose and send an SMTP email.
      */
-    public function compose_and_send_smtp_email( $email_values ) {
+    public function compose_and_send_smtp_email( $form_data ) {
 
         $mail = new PHPMailer( true );
 
         extract( $this->smtp_settings );
-        extract( $email_values );
+        extract( $form_data[ 'fields' ] );
 
         // Meta variables
         $site_url = get_bloginfo( 'url' );
@@ -124,7 +124,7 @@ HTML;
         set_time_limit( 60 );
 
         try {
-            //Server settings
+            // Server settings.
             $mail->SMTPDebug    = SMTP::DEBUG_OFF;             // Debug level: DEBUG_[OFF/SERVER/CONNECTION]
             $mail->Debugoutput  = 'error_log';
             $mail->isSMTP();                                   // Use SMTP
@@ -137,18 +137,25 @@ HTML;
             $mail->Timeout      = 6;                           // Connection timeout (secs)
             $mail->getSMTPInstance()->Timelimit = 8;           // Time allowed for each SMTP command response
 
-            //Recipients
+            // Recipients.
             $mail->setFrom( $from_email, $from_name); // Use fixed and owned SMTP account address to pass SPF checks.
             $mail->addAddress( $to_email, );
             $mail->addReplyTo( $email, $name );
 
-            //Content
+            // Content.
             $mail->isHTML(true);
             $mail->Subject = 'New website message from ' . $site_url;
             $mail->Body    = $html;
             $mail->AltBody = $plaintext_cleaned;
         
-            //Gotime
+			// File attachments.
+			if ( array_key_exists( 'files', $form_data ) ) {
+				foreach ( $form_data[ 'files' ] as $file ) {
+					$mail->AddAttachment( $file[ 'tmp_name' ], $file[ 'name' ] );
+				}
+			}
+			
+            // Gotime.
             $mail->send();
             return [ 200, 'Message sent successfully.' ];
 

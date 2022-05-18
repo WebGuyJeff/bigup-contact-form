@@ -39,20 +39,32 @@ class Form_Controller {
      */
     public function bigup_contact_form_rest_api_callback( WP_REST_Request $request ) {
 
-        // if content-type header is json
-        if ( $request->get_header( 'Content-Type' ) === 'application/json'){
+        // if content-type header is multipart/form-data
+		$content_type = $request->get_header( 'Content-Type' );
+        if ( str_contains( $content_type, 'multipart/form-data' ) ){
 
-            // parse json from request.body
-            $form_data = $request->get_json_params( $request );
+			$data = [];
 
-            // object to vars
-            extract( $form_data );
-            // vars to array
+			// Get the form file data.
+			$file_data = $request->get_file_params();
+			if ( array_key_exists( 'files', $file_data ) ) {
+				$number_of_files = count( $file_data[ 'files' ][ 'name' ] ) - 1;
+				for ( $n = 0; $n <= $number_of_files; $n++ ) {
+					$data[ 'files' ][ $n ] = [
+						'name'   => $file_data[ 'files' ][ 'name' ][ $n ],
+						'tmp_name'    => $file_data[ 'files' ][ 'tmp_name' ][ $n ]
+					];
+				}
+			}
+
+			// Get the form text data.
+			$text_data = $request->get_body_params();
             $data[ 'fields' ] = [
-                'email'   => $email,
-                'name'    => $name,
-                'message' => $message
+                'email'   => $text_data[ 'email' ],
+                'name'    => $text_data[ 'name' ],
+                'message' => $text_data[ 'message' ]
             ];
+
 
             /**
              * Sanitise and validate.
@@ -93,7 +105,7 @@ class Form_Controller {
                 // Send valid form values to mailer.
                 $smtp_handler = new SMTP_Send();
                 if ( $smtp_handler->settings_ok ) {
-                    $send_result = $smtp_handler->compose_and_send_smtp_email( $data[ 'fields' ] );
+                    $send_result = $smtp_handler->compose_and_send_smtp_email( $data );
                     $this->send_json_response( $send_result );
                 } else {
                     $this->send_json_response( [ 500, 'Sending your message failed due to a bad local mailserver configuration.' ] );
