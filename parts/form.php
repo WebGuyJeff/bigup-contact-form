@@ -52,7 +52,6 @@ $classes     .= ' ' . $align;
                 class="bigup__form_input"
                 name="name"
                 type="text"
-                placeholder="Name (required)"
                 maxlength="100"
                 title="Name"
                 required aria-label="Name"
