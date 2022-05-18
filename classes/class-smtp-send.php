@@ -69,10 +69,10 @@ class SMTP_Send {
         extract( $form_data[ 'fields' ] );
 
         // Meta variables
-        $site_url = get_bloginfo( 'url' );
+        $site_url  = get_bloginfo( 'url' );
+		$site_name = get_bloginfo( 'name' );
 
-        $server_name = gethostname();
-        $from_name = ( $server_name ) ? $server_name : 'Bigup Contact Form';
+        $from_name = ( $site_name ) ? $site_name : 'Bigup Contact Form';
 
 // Build plaintext email body
 $plaintext = <<<PLAIN
