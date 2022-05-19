@@ -20,7 +20,7 @@
     --bigup_border: solid 0.2em var(--bigup_lightGrey);
     position: relative;
 	width: 34em;
-	max-width: 100vw;
+	max-width: 100%;
 	text-align: inherit;
 	font: inherit;
 }
