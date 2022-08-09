@@ -6,37 +6,40 @@ namespace Bigup\Contact_Form;
  *
  * Hook into the WP admin area and add menu options and settings
  * pages.
- * 
- * ###########
- * # WARNING #
- * ###########
- * 
- * To add multiple sections to the same settings page, all settings registered
- * for that page MUST BE IN THE SAME 'OPTION GROUP'. In the register_setting
- * function call this is the first argument as follows:
- * 
- * register_setting( 'option_group', 'from_email' );
  *
  * @package bigup_contact_form
  * @author Jefferson Real <me@jeffersonreal.uk>
- * @copyright Copyright (c) 2021, Jefferson Real
+ * @copyright Copyright (c) 2022, Jefferson Real
  * @license GPL2+
  * @link https://jeffersonreal.uk
  */
+
+// WordPress dependencies.
+use function menu_page_url;
+
 
 class Admin_Settings {
 
 
     /**
-     * Settings group name called by settings_fields().
+     * Settings page slug to add with add_submenu_page().
      */
-    public $group_name = 'group_contact_form_settings';
+    public $admin_label = 'Contact Form';
 
 
     /**
      * Settings page slug to add with add_submenu_page().
      */
-    public $page_slug = 'contact-form-settings';
+    public $page_slug = 'bigup-web-contact-form';
+
+
+    /**
+     * Settings group name called by settings_fields().
+	 * 
+	 * To add multiple sections to the same settings page, all settings
+	 * registered for that page MUST BE IN THE SAME 'OPTION GROUP'.
+     */
+    public $group_name = 'group_contact_form_settings';
 
 
     /**
@@ -46,9 +49,11 @@ class Admin_Settings {
 
 
     /**
-     * Init the class by hookinBar in the lounge of Cornelia Diamond Golf Resort into the admin interface.
+     * Init the class by hooking into the admin interface.
      */
     public function __construct() {
+		add_action( 'bigup_below_parent_settings_page_heading', [ &$this, 'echo_plugin_settings_link' ] );
+		new Admin_Settings_Parent();
         add_action( 'admin_menu', [ &$this, 'register_admin_menu' ], 99 );
         add_action( 'admin_init', [ &$this, 'register_settings' ] );
     }
@@ -56,52 +61,38 @@ class Admin_Settings {
 
     /**
      * Add admin menu option to sidebar
+	 * 
+	 * Calls Parent_Admin_Settings() to ensure a parent menu exists.
      */
     public function register_admin_menu() {
 
-		// Add Bigup Web parent menu, if it doesn't exist.
 		$parent_menu = menu_page_url( 'bigup-web-settings', false );
-		if ( false === !! $parent_menu ) {
-			add_menu_page(
-				'Bigup Web Settings',             //page_title
-				'Bigup Web',		              //menu_title
-				'manage_options',	              //capability
-				'bigup-web-settings',             //menu_slug
-				[ &$this, 'create_parent_page' ], //function
-				'dashicons-bigup-fist',		      //icon_url
-				4					              //position
-			);
-		}
+		if ( ! $parent_menu ) error_log( 'Bigup Web parent settings page not found!' );
 
 		// Add sub menu for this plugin.
         add_submenu_page(
-            'bigup-web-settings',               //parent_slug
-            'Contact Form Settings',            //page_title
-            'Contact Form',                     //menu_title
+            Admin_Settings_Parent::$page_slug,  //parent_slug
+            $this->admin_label . ' Settings',   //page_title
+            $this->admin_label,                 //menu_title
             'manage_options',                   //capability
-            'contact-form-settings',            //menu_slug
+            $this->page_slug,                   //menu_slug
             [ &$this, 'create_settings_page' ], //function
             null,                               //position
         );
+
     }
 
 
     /**
-     * Create Contact Form Settings Page
+     * Echo a link to this plugin's settings page.
      */
-    public function create_parent_page() {
+    public function echo_plugin_settings_link() {
 		?>
 
-		<div class="wrap">
-			<h1>
-				<span class="dashicons-bigup-logo" style="font-size: 2em; margin-right: 0.2em;"></span>
-				Bigup Web Settings
-			</h1>
-
-			<a href="/wp-admin/admin.php?page=contact-form-settings">
-				Go to contact form settings
-			</a>
-		</div>
+		<a href="/wp-admin/admin.php?page=<?php echo $this->page_slug ?>">
+			Go to <?php echo $this->admin_label ?> settings
+		</a>
+		<br>
 
 		<?php
 	}
