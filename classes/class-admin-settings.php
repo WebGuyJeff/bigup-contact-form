@@ -61,15 +61,9 @@ class Admin_Settings {
 
     /**
      * Add admin menu option to sidebar
-	 * 
-	 * Calls Parent_Admin_Settings() to ensure a parent menu exists.
      */
     public function register_admin_menu() {
 
-		$parent_menu = menu_page_url( 'bigup-web-settings', false );
-		if ( ! $parent_menu ) error_log( 'Bigup Web parent settings page not found!' );
-
-		// Add sub menu for this plugin.
         add_submenu_page(
             Admin_Settings_Parent::$page_slug,  //parent_slug
             $this->admin_label . ' Settings',   //page_title
