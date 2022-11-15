@@ -19,7 +19,7 @@
     --bigup_radius-small: 0.6em;
     --bigup_border: solid 0.1em;
     position: relative;
-	width: clamp(100%, 100%, 34em);
+	width: clamp(10em, 100%, 34em);
 	text-align: inherit;
 	font: inherit;
 }
