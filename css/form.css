@@ -17,10 +17,9 @@
 	--bigup_blue: #70d3e5;
     --bigup_lightGrey: #eee;
     --bigup_radius-small: 0.6em;
-    --bigup_border: solid 0.2em var(--bigup_lightGrey);
+    --bigup_border: solid 0.1em;
     position: relative;
-	width: 34em;
-	max-width: 100%;
+	width: clamp(100%, 100%, 34em);
 	text-align: inherit;
 	font: inherit;
 }
@@ -41,7 +40,7 @@
 				position: relative;
 				transition: 0.2s;
 				margin: 0.5em auto 0.5em 0;
-				border: solid 0.1em;
+				border: var( --bigup_border );
 				width: 80%;
 				min-width: 8em;
 				min-height: fit-content;
@@ -151,11 +150,18 @@
 
 .bigup__form.bigup__form-dark  {
     --bigup_shadow-inset: inset -0.1em 0.2em 0.5em 0.2em #000c;
+	--bigup_border: solid 0.2em var(--bigup_lightGrey);
+	padding: 1em;
+	text-align: center;
 }
 	.bigup__form-dark .bigup__form_inputWrap {
+		border: var( --bigup_border );
 		border-radius: var(--bigup_radius-small);
 		box-shadow: var(--bigup_shadow-inset);
 		background: var(--bigup_black);
+	}
+	.bigup__form-dark .bigup__form_inputWrap-wide {
+		width: 100%;
 	}
 		.bigup__form-dark .bigup__form_input {
 			text-shadow: 0 0 white;
