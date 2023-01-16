@@ -24,6 +24,7 @@ use PHPMailer\PHPMailer\Exception;
 
 // WordPress Dependencies
 use WP_REST_Request;
+use get_option;
 
 class Form_Controller {
 
@@ -101,15 +102,23 @@ class Form_Controller {
             }
 
             if ( $form_values_ok ) {
-                
-                // Send valid form values to mailer.
-                $smtp_handler = new SMTP_Send();
-                if ( $smtp_handler->settings_ok ) {
-                    $send_result = $smtp_handler->compose_and_send_smtp_email( $data );
-                    $this->send_json_response( $send_result );
-                } else {
-                    $this->send_json_response( [ 500, 'Sending your message failed due to a bad local mailserver configuration.' ] );
-                }
+				$use_sendmail = get_option( 'use_sendmail' );
+
+				// Send valid form values to mailer.
+				if ( $use_sendmail ) {
+					$sendmail_handler = new Send_Sendmail();
+					$send_result = $sendmail_handler->compose_and_send_email( $data );
+					$this->send_json_response( $send_result );
+					
+				} else {
+					$smtp_handler = new Send_SMTP();
+					if ( $smtp_handler->settings_ok ) {
+						$send_result = $smtp_handler->compose_and_send_smtp_email( $data );
+						$this->send_json_response( $send_result );
+					} else {
+						$this->send_json_response( [ 500, 'Sending your message failed due to a bad local mailserver configuration.' ] );
+					}
+				}
 
             } else {
                 // BAD: validation fail

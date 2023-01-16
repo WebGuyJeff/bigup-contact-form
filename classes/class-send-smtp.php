@@ -25,12 +25,13 @@ use PHPMailer\PHPMailer\Exception;
 use function get_bloginfo;
 use function wp_strip_all_tags;
 use function plugin_dir_path;
+use function get_site_url;
 
 // Load Composer's autoloader
 require plugin_dir_path( __DIR__ ) . 'vendor/autoload.php';
 
 
-class SMTP_Send {
+class Send_SMTP {
 
 
     /**
@@ -52,7 +53,11 @@ class SMTP_Send {
     public function __construct() {
         
         $this->smtp_settings = Get_Settings::smtp();
-        if ( $this->smtp_settings ) {
+        if ( true === !! $this->smtp_settings ) {
+			if ( true === !! $this->smtp_settings[ 'use_sendmail' ] ) {
+				error_log( 'Bigup_Contact_Form: Invalid attempt to use SMTP - "Use Sendmail" is true in settings.' );
+				$this->settings_ok = false;
+			}
             $this->settings_ok = true;
         }
     }
@@ -68,10 +73,8 @@ class SMTP_Send {
         extract( $this->smtp_settings );
         extract( $form_data[ 'fields' ] );
 
-        // Meta variables
         $site_url  = get_bloginfo( 'url' );
 		$site_name = get_bloginfo( 'name' );
-
         $from_name = ( $site_name ) ? $site_name : 'Bigup Contact Form';
 
 // Build plaintext email body
@@ -125,9 +128,10 @@ HTML;
 
         try {
             // Server settings.
-            $mail->SMTPDebug    = SMTP::DEBUG_OFF;             // Debug level: DEBUG_[OFF/SERVER/CONNECTION]
-            $mail->Debugoutput  = 'error_log';
-            $mail->isSMTP();                                   // Use SMTP
+            $mail->SMTPDebug    = SMTP::DEBUG_SERVER;          // Debug level: DEBUG_[OFF/SERVER/CONNECTION]
+            $mail->Debugoutput  = 'error_log';                 // How to handle debug output
+			$mail->Helo         = get_site_url();              // Sender's FQDN to identify as
+			$mail->isSMTP();                                   // Use SMTP
             $mail->Host         = $host;                       // SMTP server to send through
             $mail->SMTPAuth     = (bool)$auth;                 // Enable SMTP authentication
             $mail->Username     = $username;                   // SMTP username
@@ -143,11 +147,10 @@ HTML;
             $mail->addReplyTo( $email, $name );
 
             // Content.
-            $mail->isHTML(true);
             $mail->Subject = 'New website message from ' . $site_url;
-            $mail->Body    = $html;
+			$mail->Body    = $html;
             $mail->AltBody = $plaintext_cleaned;
-        
+
 			// File attachments.
 			if ( array_key_exists( 'files', $form_data ) ) {
 				foreach ( $form_data[ 'files' ] as $file ) {

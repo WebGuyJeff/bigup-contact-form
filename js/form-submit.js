@@ -250,6 +250,7 @@
                 // error is not a server response, so display a generic error.
                 error.output = [ 'Failed to establish a connection to the server.' ];
                 error.ok = false;
+				console.error( error );
             }
             for ( const message in error.output ) {
                 console.error( make_human_readable( error.output[ message ] ) );

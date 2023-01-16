@@ -26,7 +26,7 @@ class Get_Settings {
 
 
 	/**
-	 * Init the class by grabbing the saved options.
+	 * Get the SMTP options.
 	 * 
 	 * Performs initial validation to ensure no values are empty.
 	 */
@@ -38,6 +38,7 @@ class Get_Settings {
 			'host',
 			'port',
 			'auth',
+			'use_sendmail',
 			'from_email',
 			'to_email',
 		];
@@ -50,6 +51,30 @@ class Get_Settings {
 		}
 		// settings bad
 		error_log( 'Bigup_Contact_Form: SMTP settings invalid.' );
+		return false;
+	}
+
+	/**
+	 * Get the Sendmail options.
+	 * 
+	 * Performs initial validation to ensure no values are empty.
+	 */
+	public static function sendmail() {
+		
+		$option_names = [
+			'use_sendmail',
+			'from_email',
+			'to_email',
+		];
+
+		$sendmail_settings = Self::get_options_from_database( $option_names );
+
+		if ( Self::validate_settings( $sendmail_settings ) ) {
+			// settings ok
+			return $sendmail_settings;
+		}
+		// settings bad
+		error_log( 'Bigup_Contact_Form: Sendmail settings invalid.' );
 		return false;
 	}
 
@@ -85,14 +110,9 @@ class Get_Settings {
 	 */
 	private static function validate_settings( $settings ) {
 
-		// Check for null values.
-		if ( in_array( null, $settings, true ) || in_array( '', $settings, true ) ) {
-			error_log( 'Bigup_Contact_Form: validate_settings found one or more null values.' );
-			return false;
-		};
-
 		// Tailored validation.
 		foreach ( $settings as $name => $value ) {
+
 			$valid = true;
 			switch ( $name ) {
 				case 'username':
@@ -123,6 +143,10 @@ class Get_Settings {
 					break;
 
 				case 'auth':
+					$valid = ( is_bool( (bool)$value ) ) ? true : false;
+					break;
+
+				case 'use_sendmail':
 					$valid = ( is_bool( (bool)$value ) ) ? true : false;
 					break;
 

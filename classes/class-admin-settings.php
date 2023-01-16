@@ -158,6 +158,15 @@ class Admin_Settings {
     }
 
 
+	/**
+     * Output Form Fields - Sendmail Settings
+     */
+    public function echo_field_use_sendmail() {
+        echo '<input type="checkbox" name="use_sendmail" id="use_sendmail" value="1"' . checked( '1', get_option('use_sendmail'), false ) . '>';
+        echo '<label for="use_sendmail">Tick to use Sendmail when SMTP isn\'t available. For this to work, Sendmail must be installed on the web server. This will override SMTP settings.</label>';
+    }
+
+
     /**
      * Output Form Fields - Message Header Settings
      */
@@ -216,6 +225,15 @@ class Admin_Settings {
 
             add_settings_field( 'auth', 'Authentication', [ &$this, 'echo_field_auth' ], $page, $section );
             register_setting( $group, 'auth', [ &$this, 'sanitise_checkbox' ] );
+
+        /**
+         * Register section and fields - Sendmail Settings
+         */
+        $section = 'section_sendmail';
+        add_settings_section( $section, 'Sendmail', null, $page );
+
+			add_settings_field( 'use_sendmail', 'Use Sendmail', [ &$this, 'echo_field_use_sendmail' ], $page, $section );
+			register_setting( $group, 'use_sendmail', [ &$this, 'sanitise_checkbox' ] );
 
         /**
          * Register section and fields - Message Header Settings
