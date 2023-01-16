@@ -4,8 +4,8 @@ namespace Bigup\Contact_Form;
 /**
  * Plugin Name: Bigup Web: Contact Form
  * Plugin URI: https://jeffersonreal.uk
- * Description: An SMTP contact form, useable as a widget and shortcode.
- * Version: 0.5.0
+ * Description: An SMTP/Sendmail contact form, including widget and shortcode.
+ * Version: 0.6
  * Author: Jefferson Real
  * Author URI: https://jeffersonreal.uk
  * License: GPL2
