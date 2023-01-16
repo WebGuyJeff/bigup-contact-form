@@ -168,7 +168,11 @@ HTML;
             error_log( 'Bigup_Contact_Form: ' . $mail->ErrorInfo );
             //Generic public error.
             return [ 500, 'Sending your message failed while connecting to the mail server.' ];
-        }
+		} finally {
+
+			// Log the form submission as custom post
+
+		}
     }
 
 
