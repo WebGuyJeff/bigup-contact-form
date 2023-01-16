@@ -11,8 +11,8 @@
  * @link https://jeffersonreal.uk
  */
 
-(function form_sender() {
-'use strict';
+ const form_sender = (function () {
+	'use strict';
 
 
     /**
@@ -36,6 +36,25 @@
         let elapsed = Date.now() - start;
         return elapsed.toString().padStart(5, '0');
     }
+
+
+    /**
+     * Allowed MIME type array.
+	 * 
+	 * Eventually this should be populated from form plugin settings.
+     */
+	const allowedMimeTypes = [
+		'image/jpeg',
+		'image/png',
+		'image/gif',
+		'image/webp',
+		'image/svg+xml',
+		'application/pdf',
+		'application/vnd.oasis.opendocument.text',
+		'application/vnd.oasis.opendocument.spreadsheet',
+		'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+		'application/msword',
+	];
 
 
     /**
@@ -67,6 +86,9 @@
     };
 
 
+    /**
+     * True when the form is processing a submission.
+     */
     let form_busy = false;
 
 
@@ -89,7 +111,7 @@
 
         const form = event.currentTarget;
         const output = form.querySelector( '.bigup__form_output' );
-        let classes = [ 'bigup__form-popout', 'alert' ];
+        let classes = [ 'bigup__form-popout', 'bigup__alert' ];
 
         // boot bots if honeypot is filled.
         if ( '' != form.querySelector( '[name="required_field"]' ).value ) {
@@ -97,10 +119,43 @@
             window.location.replace( "https://en.wikipedia.org/wiki/Robot" );
         }
 
-        // Grab `FormData` then convert to plain obj, then to json string.
-        const form_data = new FormData( form );
-        const plain_obj_data = Object.fromEntries( form_data.entries() );
-        const json_string_data = JSON.stringify( plain_obj_data );
+		const formData    = new FormData();
+		const textInputs  = form.querySelectorAll( '.bigup__form_input' );
+		const fileInput   = form.querySelector( '.bigup__customFileUpload_input' );
+
+		textInputs.forEach( input => {
+			formData.append( input.name, input.value );
+		} );
+
+		if ( !! fileInput ) {
+			const files = fileInput.files;
+
+			// Loop through each of the selected files.
+			for( let i = 0; i < files.length; i++ ){
+				let file = files[i];
+				// Check the file type
+				if ( allowedMimeTypes.includes( file.type ) ) {
+
+					// Add the file to the form's data.
+					formData.append( 'files[]', file, file.name );
+
+				} else {
+
+					// Animate an error message for bad MIME type.
+					classes = [ ...classes, 'bigup__alert-danger' ];
+					output.style.display = 'flex';
+					await transition( output, 'opacity', '0' );
+					await remove_children( output );
+					await popouts_into_dom( output, [ "The selected file type is not allowed" ], classes );
+					await transition( output, 'opacity', '1' );
+					await pause( 5000 );
+					await transition( output, 'opacity', '0' );
+					await remove_children( output );
+					output.style.display = 'none';
+					return;
+				}
+			}
+		}
 
         // Fetch params.
         const url = wp.rest_url;
@@ -108,10 +163,9 @@
             method: "POST",
             headers: {
                 "X-WP-Nonce"    : wp.rest_nonce,
-                "Content-Type"  : "application/json",
                 "Accept"        : "application/json"
             },
-            body: json_string_data,
+            body: formData,
         };
 
         // Async form submission timeline
@@ -128,8 +182,9 @@
                 transition( output, 'opacity', '1' )
             ] );
             result.class = ( result.ok ) ? 'success' : 'danger';
-            classes = [ ...classes, 'alert-' + result.class ];
+            classes = [ ...classes, 'bigup__alert-' + result.class ];
 
+			// Animate the popout messages.
             await transition( output, 'opacity', '0' );
             await remove_children( output );
             await popouts_into_dom( output, result.output, classes );
@@ -138,9 +193,11 @@
             await transition( output, 'opacity', '0' );
             await remove_children( output );
 
-            if ( result.ok ) { // Clean up the form.
+			// Clean up the form.
+            if ( result.ok ) {
                 let fieldset = form.querySelectorAll( '.bigup__form_input' );
                 fieldset.forEach( input => { input.value = '' } );
+				remove_children( form.querySelector( '.bigup__customFileUpload_fileList' ) );
             }
             output.style.display = 'none';
             form_busy = false;
@@ -193,6 +250,7 @@
                 // error is not a server response, so display a generic error.
                 error.output = [ 'Failed to establish a connection to the server.' ];
                 error.ok = false;
+				console.error( error );
             }
             for ( const message in error.output ) {
                 console.error( make_human_readable( error.output[ message ] ) );
@@ -434,5 +492,21 @@
             form_init();
         }
     }, 250);
+
+
+	return { //------------------------------------------------------------------- Public functions.
+		/**
+		 * Update the file select custom input with details of selected files.
+		 */
+		updateFileList: function( input ) {
+			const output = input.parentElement.nextElementSibling;
+			const list   = document.createElement("ul");
+			remove_children( output );
+			output.appendChild( list );
+			for (var i = 0; i < input.files.length; ++i) {
+				list.innerHTML += '<li>' + input.files.item(i).name + '</li>';
+			}
+		}
+	}
 
 })();

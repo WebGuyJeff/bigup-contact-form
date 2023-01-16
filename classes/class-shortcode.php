@@ -29,9 +29,11 @@ class Shortcode {
         if ( empty( $attributes ) ) {
             $attributes = array();
         }
+
         if ( ! isset( $attributes[ 'title' ] ) ) {
             $attributes[ 'title' ] = 'Contact Form';
         }
+
         if ( ! isset( $attributes[ 'message' ] ) ) {
             $attributes[ 'message' ] = 'Complete this contact form to send a message';
         }
@@ -48,6 +50,10 @@ class Shortcode {
 			$align_class = '';
 		}
 
+		if ( ! isset( $attributes[ 'files' ] ) ) {
+            $attributes[ 'files' ] = 'false';
+        }
+
         //include the form template with the widget vars
         //custom function defined in plugin-entry.php
 
@@ -58,6 +64,7 @@ class Shortcode {
                 'title'   => $attributes[ 'title' ],
                 'message' => $attributes[ 'message' ],
                 'align'   => $align_class,
+				'files'   => $attributes[ 'files' ],
             )
         );
 

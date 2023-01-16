@@ -3,7 +3,9 @@
 /**
  * Bigup Contact Form - HTML Template.
  *
- * This template defines the front end form HTML
+ * This template defines the front end form HTML.
+ * 
+ * Note: FormData will only use input fields that use the name attribute.
  *
  * @package bigup_contact_form
  * @author Jefferson Real <me@jeffersonreal.uk>
@@ -17,10 +19,12 @@
 //$title
 //$message
 //$align (not applicable for widget)
+//$files (not applicable for widget)
 
 $dark_styles  = get_option('styles');
 $classes      = ( $dark_styles ) ? 'bigup__form-dark' : 'bigup__form-vanilla';
 $classes     .= ' ' . $align;
+
 ?>
 
 <form class="bigup__form <?php echo esc_attr( $classes ); ?>" method="post" accept-charset="utf-8" autocomplete="on">
@@ -97,9 +101,37 @@ $classes     .= ' ' . $align;
 
         </div>
 
+		<?php
+		if ( 'true' === $files ) {
+			?>
+
+			<div class="bigup__customFileUpload">
+				<label class="bigup__customFileUpload_label">
+					<input
+						class="bigup__customFileUpload_input"
+						title="Attach a File"
+						type="file"
+						name="files"
+						multiple
+						onChange="form_sender.updateFileList( this )"
+					>
+					<span class="bigup__customFileUpload_icon">
+						<svg xmlns="http://www.w3.org/2000/svg" height="1em"  viewBox="0 0 512 512">
+							<path fill="currentColor" preserveAspectRatio="xMidYMid meet" d="M512 144v288c0 26.5-21.5 48-48 48h-416C21.5 480 0 458.5 0 432v-352C0 53.5 21.5 32 48 32h160l64 64h192C490.5 96 512 117.5 512 144z"/>
+						</svg>
+					</span>	
+					<?php _e( 'Attach file', 'bigup_contact_form' ); ?>
+				</label>
+				<div class="bigup__customFileUpload_fileList"></div>
+			</div>
+
+			<?php
+		}
+		?>
+
         <button class="button bigup__form_submit" type="submit" value="Submit">
             <span>
-                Submit
+                <?php _e( 'Submit', 'bigup_contact_form' ); ?>
             </span>
         </button>
 

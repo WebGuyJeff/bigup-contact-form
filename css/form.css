@@ -13,10 +13,13 @@
     --bigup_black: #262626;
     --bigup_orange: #ffb908;
     --bigup_green: #63CFA7;
-    --bigup_border: solid 0.2em var(--bigup_black);
+	--bigup_red: #fd6a42;
+	--bigup_blue: #70d3e5;
+    --bigup_lightGrey: #eee;
+    --bigup_radius-small: 0.6em;
+    --bigup_border: solid 0.1em;
     position: relative;
-	width: 34em;
-	max-width: 100vw;
+	width: clamp(10em, 100%, 34em);
 	text-align: inherit;
 	font: inherit;
 }
@@ -37,7 +40,7 @@
 				position: relative;
 				transition: 0.2s;
 				margin: 0.5em auto 0.5em 0;
-				border: solid 0.1em;
+				border: var( --bigup_border );
 				width: 80%;
 				min-width: 8em;
 				min-height: fit-content;
@@ -88,20 +91,40 @@
 					.bigup__form_inputWrap:not(.bigup__form_section:disabled > .bigup__form_inputWrap):focus-within .bigup__form_flag-focus {
 						top: 0.2em;
 					}
-						.bigup__form_output {
-							position: absolute;
-							top: 0;
-							right: 0;
-							bottom: 0;
-							left: 0;
-							flex-flow: column nowrap;
-							align-items: center;
-							justify-content: center;
-							transition: opacity 150ms ease-in-out;
+					.bigup__customFileUpload {
+						display: block;
+						margin: 0.5em auto 0.5em 0;
+					}
+						.bigup__customFileUpload_label {
+							display: block;
+							border: 1px solid #ccc;
+							cursor: pointer;
+							padding: 6px 12px;
+							width: fit-content;
 						}
-							.bigup__form-popout {
-								box-shadow: 1px 3px 6px 1px #000a;
+							.bigup__customFileUpload_input {
+								display: none;
 							}
+							.bigup__customFileUpload_icon {
+								vertical-align: middle;
+							}
+						.bigup__customFileUpload_fileList ul {
+							margin-left: 0;
+						}
+					.bigup__form_output {
+						position: absolute;
+						top: 0;
+						right: 0;
+						bottom: 0;
+						left: 0;
+						flex-flow: column nowrap;
+						align-items: center;
+						justify-content: center;
+						transition: opacity 150ms ease-in-out;
+					}
+						.bigup__form-popout {
+							box-shadow: 1px 3px 6px 1px #000a;
+						}
 
 /* Widget overrides */
 .widget .bigup__form_message {
@@ -126,15 +149,19 @@
 
 
 .bigup__form.bigup__form-dark  {
-    --bigup_lightGrey: #eee;
-    --bigup_border: solid 0.3em var(--bigup_lightGrey);
-    --bigup_radius-small: 0.6em;
     --bigup_shadow-inset: inset -0.1em 0.2em 0.5em 0.2em #000c;
+	--bigup_border: solid 0.2em var(--bigup_lightGrey);
+	padding: 1em;
+	text-align: center;
 }
 	.bigup__form-dark .bigup__form_inputWrap {
+		border: var( --bigup_border );
 		border-radius: var(--bigup_radius-small);
 		box-shadow: var(--bigup_shadow-inset);
 		background: var(--bigup_black);
+	}
+	.bigup__form-dark .bigup__form_inputWrap-wide {
+		width: 100%;
 	}
 		.bigup__form-dark .bigup__form_input {
 			text-shadow: 0 0 white;
@@ -149,3 +176,45 @@
 			.bigup__form-dark .bigup__form_inputWrap:not(.bigup__form_section:disabled > .bigup__form_inputWrap):focus-within .bigup__form_flag-focus {
 				top: 0;
 			}
+
+
+/* ================================================================================= Alert Popups */
+
+
+.bigup__alert::before {
+	margin-inline-end:.5em;
+	content: "\24D8";
+}
+	.bigup__alert {
+		margin-block-end:1.688em;
+		border:var(--bigup_border);
+		border-radius:var(--bigup_radius-small);
+		background:var(--bigup_lightGrey);
+		padding:.8em;
+		text-align:center;
+		line-height:1.688em;
+		color:var(--bigup_black);
+		font-weight:700;
+	}
+	.bigup__alert-hover {
+		box-shadow: 1px 3px 6px 1px #000a;
+	}
+	.bigup__alert-danger {
+		background:var(--bigup_red);
+		color:#fff;
+	}
+	.bigup__alert-success {
+		background:var(--bigup_green);
+		color:#fff;
+	}
+	.bigup__alert-info {
+		background:var(--bigup_blue);
+		color:#fff;
+	}
+	.bigup__alert-warning {
+		background:var(--bigup_orange);
+		color:#fff;
+	}
+		.bigup__alert:last-child {
+			margin-block-end: 0;
+		}
