@@ -125,7 +125,8 @@ HTML;
         try {
             // Server settings.
             $mail->Debugoutput  = 'error_log'; // How to handle debug output
-			$mail->isSendmail();               // Use Sendmail
+			//$mail->isSendmail();               // Use Sendmail
+			$mail->isMail();                     // Use mail
 
             // Recipients.
             $mail->setFrom( $from_email, $from_name); // Use fixed and owned address to pass SPF checks.
