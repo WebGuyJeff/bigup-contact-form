@@ -38,10 +38,3 @@ require_once( plugin_dir_path( __FILE__ ) . 'classes/autoload.php');
  * Init class which in turn calls all plugin dependencies.
  */
 new Init();
-
-/**
- * If the user is on admin page, process the admin settings menu.
- */
-if ( is_admin() ){
-    new Admin_Settings();
-}
