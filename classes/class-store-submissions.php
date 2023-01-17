@@ -189,5 +189,7 @@ class Store_Submissions {
 	 */
 	public function log_form_entry() {
 
+		// set title here, something like timestamp_name
+
 	}
 }
