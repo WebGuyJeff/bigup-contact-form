@@ -182,7 +182,7 @@ class Admin_Settings {
 
 
     /**
-     * Output Form Fields - Message Header Settings
+     * Output Form Fields - Appearance Settings
      */
     public function echo_intro_section_appearance() {
         echo '<p>These options determine the appearance of your form.</p>';
@@ -190,6 +190,17 @@ class Admin_Settings {
     public function echo_field_styles() {
         echo '<input type="checkbox" name="styles" id="styles" value="1"' . checked( '1', get_option('styles'), false ) . '>';
         echo '<label for="styles">Tick to use the fancy dark form theme.</label>';
+    }
+
+	/**
+     * Output Form Fields - Fields Settings
+     */
+    public function echo_intro_section_fields() {
+        echo '<p>Customise the fields on the form.</p>';
+    }
+    public function echo_field_files() {
+        echo '<input type="checkbox" name="files" id="files" value="1"' . checked( '1', get_option('files'), false ) . '>';
+        echo '<label for="files">Tick to enable the file select input so user can upload files.</label>';
     }
 
 
@@ -255,6 +266,16 @@ class Admin_Settings {
 
 			add_settings_field( 'styles', 'Fancy Dark Theme', [ &$this, 'echo_field_styles' ], $page, $section );
 			register_setting( $group, 'styles', [ &$this, 'sanitise_checkbox' ] );
+
+
+        /**
+         * Register section and fields - Fields Settings
+         */
+        $section = 'section_fields';
+        add_settings_section( $section, 'Fields', [ &$this, 'echo_intro_section_fields' ], $page );
+
+			add_settings_field( 'files', 'Files', [ &$this, 'echo_field_files' ], $page, $section );
+			register_setting( $group, 'files', [ &$this, 'sanitise_checkbox' ] );
     }
 
 

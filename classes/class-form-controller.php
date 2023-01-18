@@ -4,11 +4,14 @@ namespace Bigup\Contact_Form;
 /**
  * Bigup Contact Form - POST handler.
  *
- * This template defines the front end form HTML
+ * Handle backend form data validation, sanitization and response
+ * messaging before passing to mail handler.
+ * 
+ * Note: Rest api handles nonces automatically.
  *
  * @package bigup_contact_form
  * @author Jefferson Real <me@jeffersonreal.uk>
- * @copyright Copyright (c) 2021, Jefferson Real
+ * @copyright Copyright (c) 2023, Jefferson Real
  * @license GPL2+
  * @link https://jeffersonreal.uk
  * 
@@ -28,108 +31,74 @@ use get_option;
 
 class Form_Controller {
 
-    
     /**
      * Receive form submissions.
-     *
-     * Handle backend form data validation, sanitization and response
-     * messaging before passing to SMTP handler.
-     * 
-     * Note: Rest api handles nonces automatically.
-     * 
      */
     public function bigup_contact_form_rest_api_callback( WP_REST_Request $request ) {
 
-        // if content-type header is multipart/form-data
-		$content_type = $request->get_header( 'Content-Type' );
-        if ( str_contains( $content_type, 'multipart/form-data' ) ){
-
-			$data = [];
-
-			// Get the form file data.
-			$file_data = $request->get_file_params();
-			if ( array_key_exists( 'files', $file_data ) ) {
-				$number_of_files = count( $file_data[ 'files' ][ 'name' ] ) - 1;
-				for ( $n = 0; $n <= $number_of_files; $n++ ) {
-					$data[ 'files' ][ $n ] = [
-						'name'   => $file_data[ 'files' ][ 'name' ][ $n ],
-						'tmp_name'    => $file_data[ 'files' ][ 'tmp_name' ][ $n ]
-					];
-				}
-			}
-
-			// Get the form text data.
-			$text_data = $request->get_body_params();
-            $data[ 'fields' ] = [
-                'email'   => $text_data[ 'email' ],
-                'name'    => $text_data[ 'name' ],
-                'message' => $text_data[ 'message' ]
-            ];
-
-
-            /**
-             * Sanitise and validate.
-             * 
-             * In this instance, sanitisation is treated as a validation check. Any
-             * sanitisation required, is passed back to the user for human correction
-             * as not to pass unexpected values to the mailer. The returned array WILL
-             * have it's values modified.
-             * 
-             * @param array $data_clean: The sanitised array.
-             * @param array $data_clean_valid: The sanitised AND validated array.
-             * 
-             */
-            $data_sanitised = $this->sanitise_user_input( $data );
-            $data_validated = $this->validate_user_input( $data );
-
-            $form_values_ok = true;
-            $errors = [];
-
-            // Collect sanitise errors.
-            if ( $data_sanitised[ 'modified_by_sanitise' ] ) {
-                foreach ( $data_sanitised[ 'modified_by_sanitise' ] as $field ) {
-                    $errors[] = $field[ 'error' ];
-                }
-                $form_values_ok = false;
-            }
-
-            // Collect validation errors.
-            if ( $data_validated[ 'validation_errors' ] ) {
-                foreach ( $data_validated[ 'validation_errors' ] as $error ) {
-                    $errors[] = $error;
-                }
-                $form_values_ok = false;
-            }
-
-            if ( $form_values_ok ) {
-				$use_sendmail = get_option( 'use_sendmail' );
-
-				// Send valid form values to mailer.
-				if ( $use_sendmail ) {
-					$sendmail_handler = new Send_Sendmail();
-					$send_result = $sendmail_handler->compose_and_send_email( $data );
-					$this->send_json_response( $send_result );
-					
-				} else {
-					$smtp_handler = new Send_SMTP();
-					if ( $smtp_handler->settings_ok ) {
-						$send_result = $smtp_handler->compose_and_send_smtp_email( $data );
-						$this->send_json_response( $send_result );
-					} else {
-						$this->send_json_response( [ 500, 'Sending your message failed due to a bad local mailserver configuration.' ] );
-					}
-				}
-
-            } else {
-                // BAD: validation fail
-                $this->send_json_response( [ 400, $errors ] );
-            }
-
-        } else {
-            // BAD: wrong type header
+        // Check header is multipart/form-data.
+        if ( ! str_contains( $request->get_header( 'Content-Type' ), 'multipart/form-data' ) ) {
             $this->send_json_response( [ 405, 'Sending your message failed due to a malformed request from your browser' ] );
+			exit; //request handlers should exit() when done
         }
-        exit; //request handlers should exit() when done
+
+		$data = [];
+
+		// Get the form file data.
+		$file_data = $request->get_file_params();
+		if ( array_key_exists( 'files', $file_data ) ) {
+			$number_of_files = count( $file_data[ 'files' ][ 'name' ] ) - 1;
+			for ( $n = 0; $n <= $number_of_files; $n++ ) {
+				$data[ 'files' ][ $n ] = [
+					'name'   => $file_data[ 'files' ][ 'name' ][ $n ],
+					'tmp_name'    => $file_data[ 'files' ][ 'tmp_name' ][ $n ]
+				];
+			}
+		}
+
+		// Get the form text data.
+		$text_data = $request->get_body_params();
+		$data[ 'fields' ] = [
+			'email'   => $text_data[ 'email' ],
+			'name'    => $text_data[ 'name' ],
+			'message' => $text_data[ 'message' ]
+		];
+		$data_sanitised = $this->sanitise_user_input( $data );
+		$data_validated = $this->validate_user_input( $data );
+		$form_values_ok = true;
+		$errors = [];
+
+		// Collect sanitise errors.
+		if ( $data_sanitised[ 'modified_by_sanitise' ] ) {
+			foreach ( $data_sanitised[ 'modified_by_sanitise' ] as $field ) {
+				$errors[] = $field[ 'error' ];
+			}
+			$form_values_ok = false;
+		}
+
+		// Collect validation errors.
+		if ( $data_validated[ 'validation_errors' ] ) {
+			foreach ( $data_validated[ 'validation_errors' ] as $error ) {
+				$errors[] = $error;
+			}
+			$form_values_ok = false;
+		}
+
+		// Return data to client if there are errors.
+		if ( false === !! $form_values_ok ) {
+			$this->send_json_response( [ 400, $errors ] );
+        	exit; //request handlers should exit() when done
+		}
+
+		$use_sendmail = get_option( 'use_sendmail' );
+		$mail_handler = ( $use_sendmail ) ? new Send_Sendmail() : new Send_SMTP();
+		$result       = $mail_handler->compose_and_send_email( $data );
+		$this->send_json_response( $result );
+
+		// Log form entry post.
+		Store_Submissions::log_form_entry( $data, $result );
+
+        exit; // Request handlers should exit() when done.
     }
 
 

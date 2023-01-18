@@ -9,7 +9,7 @@
  *
  * @package bigup_contact_form
  * @author Jefferson Real <me@jeffersonreal.uk>
- * @copyright Copyright (c) 2021, Jefferson Real
+ * @copyright Copyright (c) 2023, Jefferson Real
  * @license GPL2+
  * @link https://jeffersonreal.uk
  * 
@@ -22,6 +22,7 @@
 //$files (not applicable for widget)
 
 $dark_styles  = get_option('styles');
+$files_option = get_option('files');
 $classes      = ( $dark_styles ) ? 'bigup__form-dark' : 'bigup__form-vanilla';
 $classes     .= ' ' . $align;
 
@@ -102,7 +103,7 @@ $classes     .= ' ' . $align;
         </div>
 
 		<?php
-		if ( 'true' === $files ) {
+		if ( true === !! $files || true === !! $files_option ) {
 			?>
 
 			<div class="bigup__customFileUpload">

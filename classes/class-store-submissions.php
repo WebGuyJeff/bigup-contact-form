@@ -17,7 +17,10 @@ use function register_post_type;
 use function register_taxonomy_for_object_type;
 use function add_meta_box;
 use function add_action;
-
+use function wp_insert_post;
+use function is_wp_error;
+use function get_error_message;
+use function sanitize_title;
 
 class Store_Submissions {
 
@@ -57,6 +60,18 @@ class Store_Submissions {
 			"title"       => "Message",
 			"description" => "",
 			"type"        => "textarea"
+		),
+		array(
+			"name"        => "_files",
+			"title"       => "Files",
+			"description" => "",
+			"type"        => "textarea"
+		),
+		array(
+			"name"        => "_send-result",
+			"title"       => "Send Result",
+			"description" => "The response from the mailer.",
+			"type"        => "text"
 		)
 	);
 
@@ -91,7 +106,7 @@ class Store_Submissions {
 				'taxonomies'          => ['category'],
 				'show_in_rest'        => false,
 				'delete_with_user'    => false,
-				//'capabilities'        => array( 'create_posts' => false )
+				// 'capabilities'        => array( 'create_posts' => false )
 			)
 		);
 		register_taxonomy_for_object_type( 'category', $this->post_type );
@@ -187,9 +202,28 @@ class Store_Submissions {
 	/**
 	 * Log a new form submission.
 	 */
-	public function log_form_entry() {
+	public static function log_form_entry( $data, $result ) {
 
-		// set title here, something like timestamp_name
+		$file_info = '';
+		if ( array_key_exists( 'files', $data ) ) {
+			$number_of_files = count( $data[ 'files' ] ) - 1;
+			for ( $n = 0; $n <= $number_of_files; $n++ ) {
+				$file_info .= $data[ 'files' ][ $n ][ 'name' ] . "\n";
+			}
+		}
 
+		$result = wp_insert_post( array(
+			'post_type'              => 'bigup_form_entry',
+			'post_status'            => 'publish',
+			'post_title'             => date( 'd-m-Y_' ) . sanitize_title( $data[ 'fields' ][ 'name' ] ),
+			'meta_input'             => array(
+				'_bufe__name'        => $data[ 'fields' ][ 'name' ],
+				'_bufe__email'       => $data[ 'fields' ][ 'email' ],
+				'_bufe__message'     => $data[ 'fields' ][ 'message' ],
+				'_bufe__files'       => $file_info,
+				'_bufe__send-result' => implode( " | ", $result )
+			)
+		), true ); // Return error.
+		if ( is_wp_error( $result ) ) error_log( $result->get_error_message() );
 	}
 }

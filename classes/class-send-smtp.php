@@ -10,7 +10,7 @@ namespace Bigup\Contact_Form;
  *
  * @package bigup_contact_form
  * @author Jefferson Real <me@jeffersonreal.uk>
- * @copyright Copyright (c) 2021, Jefferson Real
+ * @copyright Copyright (c) 2023, Jefferson Real
  * @license GPL2+
  * @link https://jeffersonreal.uk
  * 
@@ -39,10 +39,6 @@ class Send_SMTP {
      */
     private $smtp_settings;
 
-    /**
-     * A checkable boolean to indicate settings are valid and this class is ok to run.
-     */
-    public $settings_ok;
 
     /**
      * Init the class by grabbing the saved options.
@@ -51,14 +47,10 @@ class Send_SMTP {
      * Form data is passed by handler.
      */
     public function __construct() {
-        
         $this->smtp_settings = Get_Settings::smtp();
-        if ( true === !! $this->smtp_settings ) {
-			if ( true === !! $this->smtp_settings[ 'use_sendmail' ] ) {
-				error_log( 'Bigup_Contact_Form: Invalid attempt to use SMTP - "Use Sendmail" is true in settings.' );
-				$this->settings_ok = false;
-			}
-            $this->settings_ok = true;
+        if ( false === !! $this->smtp_settings || true === $this->smtp_settings[ 'use_sendmail' ] ) {
+			error_log( 'Bigup_Contact_Form: Invalid SMTP settings retrieved from database.' );
+			return [ 500, 'Sending your message failed due to a bad local mailserver configuration.' ];
         }
     }
 
@@ -66,7 +58,7 @@ class Send_SMTP {
     /**
      * Compose and send an SMTP email.
      */
-    public function compose_and_send_smtp_email( $form_data ) {
+    public function compose_and_send_email( $form_data ) {
 
         $mail = new PHPMailer( true );
 
@@ -168,10 +160,6 @@ HTML;
             error_log( 'Bigup_Contact_Form: ' . $mail->ErrorInfo );
             //Generic public error.
             return [ 500, 'Sending your message failed while connecting to the mail server.' ];
-		} finally {
-
-			// Log the form submission as custom post
-
 		}
     }
 
