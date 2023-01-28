@@ -22,6 +22,8 @@
 	width: clamp(10em, 100%, 34em);
 	text-align: inherit;
 	font: inherit;
+	max-width: 96vw;
+	margin: 0 auto;
 }
         .bigup__form_section {
             margin: 0;
@@ -41,19 +43,14 @@
 				transition: 0.2s;
 				margin: 0.5em auto 0.5em 0;
 				border: var( --bigup_border );
-				width: 80%;
 				min-width: 8em;
 				min-height: fit-content;
 				overflow: hidden;
 				resize: none;
+				width: 100%;
 			}
-			.bigup__form_inputWrap-wide {
-				max-width: 100%;
-			}
-			@media (min-width: 48em) {
-				.bigup__form_inputWrap-short {
-					width: 65%;
-				}
+			.bigup__form_inputWrap-short {
+				max-width: 22em;
 			}
 				.bigup__form_input {
 					display: block;
@@ -101,6 +98,9 @@
 							cursor: pointer;
 							padding: 6px 12px;
 							width: fit-content;
+						}
+						.bigup__customFileUpload_label:hover {
+							text-decoration: underline;
 						}
 							.bigup__customFileUpload_input {
 								display: none;
