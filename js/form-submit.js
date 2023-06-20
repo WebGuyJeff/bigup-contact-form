@@ -44,16 +44,23 @@
      * Eventually this should be populated from form plugin settings.
      */
 	const allowedMimeTypes = [
-		'image/jpeg',
-		'image/png',
-		'image/gif',
-		'image/webp',
-		'image/svg+xml',
-		'application/pdf',
-		'application/vnd.oasis.opendocument.text',
-		'application/vnd.oasis.opendocument.spreadsheet',
-		'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-		'application/msword',
+		'image/jpeg',																// .jpeg
+		'image/png',																// .png
+		'image/gif',																// .gif
+		'image/webp',																// .webp
+		'image/heic',																// .heic
+		'image/avif',																// .avif
+		'image/svg+xml',															// .sgv
+		'text/plain',																// .txt
+		'application/pdf',															// .pdf
+		'application/vnd.oasis.opendocument.text',									// .odt
+		'application/vnd.oasis.opendocument.spreadsheet',							// .ods
+		'application/vnd.openxmlformats-officedocument.wordprocessingml.document',	// .docx
+		'application/msword',														// .doc
+		'application/vnd.ms-excel',													// .xls
+		'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 		// .xlsx
+		'application/zip',															// .zip
+		'application/vnd.rar'														// .rar
 	]
 
 
