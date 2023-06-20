@@ -149,9 +149,6 @@
 
 				} else {
 
-					console.log( allowedMimeTypes )
-					console.log( file )
-
 					// Animate an error message for bad MIME type.
 					const fileExt = file.name.split( '.' ).pop()
 					classes = [ ...classes, 'bigup__alert-danger' ]
