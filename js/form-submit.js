@@ -49,6 +49,7 @@
 		'image/gif',																// .gif
 		'image/webp',																// .webp
 		'image/heic',																// .heic
+		'image/heif',																// .heif
 		'image/avif',																// .avif
 		'image/svg+xml',															// .sgv
 		'text/plain',																// .txt
@@ -148,12 +149,16 @@
 
 				} else {
 
+					console.log( allowedMimeTypes )
+					console.log( file )
+
 					// Animate an error message for bad MIME type.
+					const fileExt = file.name.split( '.' ).pop()
 					classes = [ ...classes, 'bigup__alert-danger' ]
 					output.style.display = 'flex'
 					await transition( output, 'opacity', '0' )
 					await remove_children( output )
-					await popouts_into_dom( output, [ "The selected file type is not allowed" ], classes )
+					await popouts_into_dom( output, [ `The selected file type ".${fileExt}" is not allowed` ], classes )
 					await transition( output, 'opacity', '1' )
 					await pause( 5000 )
 					await transition( output, 'opacity', '0' )
