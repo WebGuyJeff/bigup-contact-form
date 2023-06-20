@@ -11,21 +11,21 @@
  * @link https://jeffersonreal.uk
  */
 
- const form_sender = (function () {
-	'use strict';
+ const form_sender = ( function () {
+	'use strict'
 
 
     /**
      * For debugging, set 'debug = true'. Output will be
      * sent to the console.
      */
-    let debug = false;
+    let debug = false
 
 
     /**
      * Holds the start time of the request for debugging.
      */
-    let start;
+    let start
 
 
     /**
@@ -33,15 +33,15 @@
      * @returns milliseconds since function call.
      */
      function stopwatch() {
-        let elapsed = Date.now() - start;
-        return elapsed.toString().padStart(5, '0');
+        let elapsed = Date.now() - start
+        return elapsed.toString().padStart( 5, '0' )
     }
 
 
     /**
      * Allowed MIME type array.
-	 * 
-	 * Eventually this should be populated from form plugin settings.
+     * 
+     * Eventually this should be populated from form plugin settings.
      */
 	const allowedMimeTypes = [
 		'image/jpeg',
@@ -54,7 +54,7 @@
 		'application/vnd.oasis.opendocument.spreadsheet',
 		'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
 		'application/msword',
-	];
+	]
 
 
     /**
@@ -66,7 +66,7 @@
      * .admin_email;
      * 
      */
-    const wp = wp_localize_bigup_contact_form_vars;
+    const wp = wp_localize_bigup_contact_form_vars
 
 
     /**
@@ -76,20 +76,20 @@
     function form_init() {
 
         // Hide the honeypot input field(s)
-        let honeypot = document.querySelectorAll( '.saveTheBees' );
-        honeypot.forEach( input => { input.style.display = "none" } );
+        let honeypot = document.querySelectorAll( '.saveTheBees' )
+        honeypot.forEach( input => { input.style.display = "none" } )
 
         // Attach submit listener callback to the form(s)
         document.querySelectorAll( '.bigup__form' ).forEach( form => {
-            form.addEventListener( 'submit', handle_form_submit );
-        } );
-    };
+            form.addEventListener( 'submit', handle_form_submit )
+        } )
+    }
 
 
     /**
      * True when the form is processing a submission.
      */
-    let form_busy = false;
+    let form_busy = false
 
 
     /**
@@ -104,61 +104,61 @@
      */
     async function handle_form_submit( event ) {
 
-        event.preventDefault();
-        start = Date.now();
-        if(debug) console.log( 'Time | Start/Finish | Function | Target' );
-        if(debug) console.log( stopwatch() + ' |START| handle_form_submit');
+        event.preventDefault()
+        start = Date.now()
+        if( debug ) console.log( 'Time | Start/Finish | Function | Target' )
+        if( debug ) console.log( stopwatch() + ' |START| handle_form_submit' )
 
-        const form = event.currentTarget;
-        const output = form.querySelector( '.bigup__form_output' );
-        let classes = [ 'bigup__form-popout', 'bigup__alert' ];
+        const form = event.currentTarget
+        const output = form.querySelector( '.bigup__form_output' )
+        let classes = [ 'bigup__form-popout', 'bigup__alert' ]
 
         // boot bots if honeypot is filled.
-        if ( '' != form.querySelector( '[name="required_field"]' ).value ) {
-            document.documentElement.remove();
-            window.location.replace( "https://en.wikipedia.org/wiki/Robot" );
+        if ( form.querySelector( '[name="required_field"]' ).value != '' ) {
+            document.documentElement.remove()
+            window.location.replace( "https://en.wikipedia.org/wiki/Robot" )
         }
 
-		const formData    = new FormData();
-		const textInputs  = form.querySelectorAll( '.bigup__form_input' );
-		const fileInput   = form.querySelector( '.bigup__customFileUpload_input' );
+		const formData    = new FormData()
+		const textInputs  = form.querySelectorAll( '.bigup__form_input' )
+		const fileInput   = form.querySelector( '.bigup__customFileUpload_input' )
 
 		textInputs.forEach( input => {
-			formData.append( input.name, input.value );
-		} );
+			formData.append( input.name, input.value )
+		} )
 
-		if ( !! fileInput ) {
-			const files = fileInput.files;
+		if ( fileInput ) {
+			const files = fileInput.files
 
 			// Loop through each of the selected files.
 			for( let i = 0; i < files.length; i++ ){
-				let file = files[i];
+				let file = files[ i ]
 				// Check the file type
 				if ( allowedMimeTypes.includes( file.type ) ) {
 
 					// Add the file to the form's data.
-					formData.append( 'files[]', file, file.name );
+					formData.append( 'files[]', file, file.name )
 
 				} else {
 
 					// Animate an error message for bad MIME type.
-					classes = [ ...classes, 'bigup__alert-danger' ];
-					output.style.display = 'flex';
-					await transition( output, 'opacity', '0' );
-					await remove_children( output );
-					await popouts_into_dom( output, [ "The selected file type is not allowed" ], classes );
-					await transition( output, 'opacity', '1' );
-					await pause( 5000 );
-					await transition( output, 'opacity', '0' );
-					await remove_children( output );
-					output.style.display = 'none';
-					return;
+					classes = [ ...classes, 'bigup__alert-danger' ]
+					output.style.display = 'flex'
+					await transition( output, 'opacity', '0' )
+					await remove_children( output )
+					await popouts_into_dom( output, [ "The selected file type is not allowed" ], classes )
+					await transition( output, 'opacity', '1' )
+					await pause( 5000 )
+					await transition( output, 'opacity', '0' )
+					await remove_children( output )
+					output.style.display = 'none'
+					return
 				}
 			}
 		}
 
         // Fetch params.
-        const url = wp.rest_url;
+        const url = wp.rest_url
         const fetch_options = {
             method: "POST",
             headers: {
@@ -166,49 +166,49 @@
                 "Accept"        : "application/json"
             },
             body: formData,
-        };
+        }
 
         // Async form submission timeline
         try {
 
-            form_busy = true;
-            lock_form( form );
-            output.style.display = 'flex';
+            form_busy = true
+            lock_form( form )
+            output.style.display = 'flex'
 
-            await popouts_into_dom( output, [ "Connecting..." ], classes );
+            await popouts_into_dom( output, [ "Connecting..." ], classes )
 
             let [ result, ] = await Promise.all( [
                 fetch_http_request( url, fetch_options ),
                 transition( output, 'opacity', '1' )
-            ] );
-            result.class = ( result.ok ) ? 'success' : 'danger';
-            classes = [ ...classes, 'bigup__alert-' + result.class ];
+            ] )
+            result.class = ( result.ok ) ? 'success' : 'danger'
+            classes = [ ...classes, 'bigup__alert-' + result.class ]
 
 			// Animate the popout messages.
-            await transition( output, 'opacity', '0' );
-            await remove_children( output );
-            await popouts_into_dom( output, result.output, classes );
-            await transition( output, 'opacity', '1' );
-            await pause( 5000 );
-            await transition( output, 'opacity', '0' );
-            await remove_children( output );
+            await transition( output, 'opacity', '0' )
+            await remove_children( output )
+            await popouts_into_dom( output, result.output, classes )
+            await transition( output, 'opacity', '1' )
+            await pause( 5000 )
+            await transition( output, 'opacity', '0' )
+            await remove_children( output )
 
 			// Clean up the form.
             if ( result.ok ) {
-                let fieldset = form.querySelectorAll( '.bigup__form_input' );
-                fieldset.forEach( input => { input.value = '' } );
-				remove_children( form.querySelector( '.bigup__customFileUpload_fileList' ) );
+                let fieldset = form.querySelectorAll( '.bigup__form_input' )
+                fieldset.forEach( input => { input.value = '' } )
+				remove_children( form.querySelector( '.bigup__customFileUpload_fileList' ) )
             }
-            output.style.display = 'none';
-            form_busy = false;
+            output.style.display = 'none'
+            form_busy = false
 
         } catch ( error ) {
-            console.error( error );
+            console.error( error )
         } finally {
-            if(debug) console.log( stopwatch() + ' | END | handle_form_submit');
+            if( debug ) console.log( stopwatch() + ' | END | handle_form_submit' )
         }
 
-    };
+    }
 
 
     /**
@@ -232,33 +232,33 @@
     async function fetch_http_request( url, options ) {
 
         try {
-            if(debug) console.log( `${stopwatch()} |START| Fetch request` );
-            const controller = new AbortController();
-            const abort = setTimeout( () => controller.abort(), 14000 );
+            if( debug ) console.log( `${stopwatch()} |START| Fetch request` )
+            const controller = new AbortController()
+            const abort = setTimeout( () => controller.abort(), 14000 )
         
-            const response = await fetch( url, { ...options, signal: controller.signal } );
-            clearTimeout( abort );
-            const result = await response.json();
-            result.ok = response.ok;
-            if ( typeof result.output === 'string' ) result.output = [ result.output ];
-            if ( ! result.ok ) throw result;
-            return result;
+            const response = await fetch( url, { ...options, signal: controller.signal } )
+            clearTimeout( abort )
+            const result = await response.json()
+            result.ok = response.ok
+            if ( typeof result.output === 'string' ) result.output = [ result.output ]
+            if ( ! result.ok ) throw result
+            return result
 
         } catch ( error ) {
             
             if ( ! error.output ) {
                 // error is not a server response, so display a generic error.
-                error.output = [ 'Failed to establish a connection to the server.' ];
-                error.ok = false;
-				console.error( error );
+                error.output = [ 'Failed to establish a connection to the server.' ]
+                error.ok = false
+				console.error( error )
             }
             for ( const message in error.output ) {
-                console.error( make_human_readable( error.output[ message ] ) );
+                console.error( make_human_readable( error.output[ message ] ) )
             }
-            return error;
+            return error
 
         } finally {
-            if(debug) console.log( `${stopwatch()} | END | Fetch request` );
+            if( debug ) console.log( `${stopwatch()} | END | Fetch request` )
         }
     }
 
@@ -286,13 +286,13 @@
      * 
      */
     function make_human_readable( string ) {
-        const tags = /(?<!\([^)]*?)<[^>]*?>/g;
-        const human_readable = /(\([^\)]*?\))|[ \p{L}\p{N}\p{M}\p{P}]/ug;
-        const bad_whitespaces = /^\s*|\s(?=\s)|\s*$/g;
-        let notags = string.replace( tags, '' );
-        let notags_human = notags.match( human_readable ).join('');
-        let notags_human_clean = notags_human.replace( bad_whitespaces, '' );
-        return notags_human_clean;
+        const tags = /(?<!\([^)]*?)<[^>]*?>/g
+        const human_readable = /(\([^\)]*?\))|[ \p{L}\p{N}\p{M}\p{P}]/ug
+        const bad_whitespaces = /^\s*|\s(?=\s)|\s*$/g
+        let notags = string.replace( tags, '' )
+        let notags_human = notags.match( human_readable ).join( '' )
+        let notags_human_clean = notags_human.replace( bad_whitespaces, '' )
+        return notags_human_clean
     }
 
 
@@ -304,19 +304,19 @@
      */
     function remove_children( parent ) {
 
-        if(debug) console.log( `${stopwatch()} |START| remove_children | ${parent.classList}` );
+        if( debug ) console.log( `${stopwatch()} |START| remove_children | ${parent.classList}` )
         return new Promise( ( resolve ) => {
             try {
                 while ( parent.firstChild ) {
-                    parent.removeChild( parent.firstChild );
+                    parent.removeChild( parent.firstChild )
                 }
-                resolve( 'Child nodes removed successfully.' );
+                resolve( 'Child nodes removed successfully.' )
             } catch ( error ) {
-                reject( error );
+                reject( error )
             } finally {
-                if(debug) console.log( `${stopwatch()} | END | remove_children | ${parent.classList}` );
+                if( debug ) console.log( `${stopwatch()} | END | remove_children | ${parent.classList}` )
             }
-        } );
+        } )
     }
 
 
@@ -329,9 +329,9 @@
     function pause( milliseconds ) { 
         return new Promise( ( resolve ) => { 
             setTimeout( () => {
-                resolve( 'Pause completed successfully.' );
+                resolve( 'Pause completed successfully.' )
             }, milliseconds )
-        } );
+        } )
     }
 
 
@@ -342,23 +342,23 @@
      */
     function lock_form( form ) {
 
-        if(debug) console.log( `${stopwatch()} |START| lock_form | Locked` );
+        if( debug ) console.log( `${stopwatch()} |START| lock_form | Locked` )
 
-        const button_label = form.querySelector( '.bigup__form_submit > *:first-child' );
-        const formfields = form.querySelectorAll( '.bigup__form_section' );
+        const button_label = form.querySelector( '.bigup__form_submit > *:first-child' )
+        const formfields = form.querySelectorAll( '.bigup__form_section' )
 
-        formfields.forEach( section => { section.disabled = true } );
-        let idle_text = button_label.innerText;
-        button_label.innerText = '[Busy]';
+        formfields.forEach( section => { section.disabled = true } )
+        let idle_text = button_label.innerText
+        button_label.innerText = '[Busy]'
 
         let unlock_form = setInterval( () => {
             if ( ! form_busy ) {
-                clearInterval( unlock_form );
-                formfields.forEach( section => { section.disabled = false } );
-                button_label.innerText = idle_text;
-                if(debug) console.log( `${stopwatch()} | END | lock_form | Unlocked` );
+                clearInterval( unlock_form )
+                formfields.forEach( section => { section.disabled = false } )
+                button_label.innerText = idle_text
+                if( debug ) console.log( `${stopwatch()} | END | lock_form | Unlocked` )
             }
-        }, 250);
+        }, 250 )
     }
 
 
@@ -372,31 +372,31 @@
      */
     function popouts_into_dom( parent_element, message_array, class_array ) {
 
-        if(debug) console.log( `${stopwatch()} |START| popouts_into_dom | ${message_array[0]}` );
+        if( debug ) console.log( `${stopwatch()} |START| popouts_into_dom | ${message_array[ 0 ]}` )
         return new Promise( ( resolve, reject ) => {
             try {
                 if ( ! parent_element || parent_element.nodeType !== Node.ELEMENT_NODE ) {
-                    throw new TypeError( `parent_element must be an element node.` );
+                    throw new TypeError( `parent_element must be an element node.` )
                 } else if ( ! is_iterable( message_array ) ) {
-                    throw new TypeError( `message_array must be non-string iterable. ${typeof message_array} found.` );
+                    throw new TypeError( `message_array must be non-string iterable. ${typeof message_array} found.` )
                 }
-                let popouts = [];
+                let popouts = []
                 message_array.forEach( ( message ) => {
-                    let p = document.createElement( 'p' );
-                    p.innerText = make_human_readable( message );
+                    let p = document.createElement( 'p' )
+                    p.innerText = make_human_readable( message )
                     class_array.forEach( ( class_name ) => {
-                        p.classList.add( class_name );
-                    } );
-                    parent_element.appendChild( p );
-                    popouts.push( p );
-                } );
-                resolve( popouts );
+                        p.classList.add( class_name )
+                    } )
+                    parent_element.appendChild( p )
+                    popouts.push( p )
+                } )
+                resolve( popouts )
             } catch ( error ) {
-                reject( error );
+                reject( error )
             } finally {
-                if(debug) console.log( `${stopwatch()} | END | popouts_into_dom | ${message_array[0]}` );
+                if( debug ) console.log( `${stopwatch()} | END | popouts_into_dom | ${message_array[ 0 ]}` )
             }
-        } );
+        } )
     }
 
 
@@ -421,22 +421,22 @@
 
         return new Promise( ( resolve ) => {
             try {
-                if(debug) console.log( `${stopwatch()} |START| transition | ${this.classList} : ${property} : ${value}` );
-                this.style[ property ] = value;
+                if( debug ) console.log( `${stopwatch()} |START| transition | ${this.classList} : ${property} : ${value}` )
+                this.style[ property ] = value
 
                 // Custom event listener to resolve the promise.
                 let transition_complete = setInterval( () => {
-                    let style = getComputedStyle( this );
+                    let style = getComputedStyle( this )
                     if ( style.opacity === value ) {
-                        clearInterval( transition_complete );
-                        if(debug) console.log( `${stopwatch()} | END | transition | ${this.classList} : ${property} : ${value}` );
-                        resolve( 'Transition complete.' );
+                        clearInterval( transition_complete )
+                        if( debug ) console.log( `${stopwatch()} | END | transition | ${this.classList} : ${property} : ${value}` )
+                        resolve( 'Transition complete.' )
                     }
-                }, 10);
+                }, 10 )
             } catch ( error ) {
-                reject( error );
+                reject( error )
             }
-        } );
+        } )
     }
 
 
@@ -455,16 +455,16 @@
      */
     async function transition( elements, property, value ) {
 
-        if ( ! is_iterable( elements ) ) elements = [ elements ];
+        if ( ! is_iterable( elements ) ) elements = [ elements ]
         if ( is_iterable( elements )
             && elements.every( ( element ) => { return element.nodeType === 1 } ) ) {
-            //we have an array of element nodes.
-            const promises = elements.map( ( node ) => transition_to_resolve.bind( node )( property, value ) );
-            let result = await Promise.all( promises );
-            return result;
+            // we have an array of element nodes.
+            const promises = elements.map( ( node ) => transition_to_resolve.bind( node )( property, value ) )
+            let result = await Promise.all( promises )
+            return result
 
         } else {
-            throw new TypeError( 'elements must be a non-string iterable. ' + typeof elements + ' found.');
+            throw new TypeError( 'elements must be a non-string iterable. ' + typeof elements + ' found.' )
         }
     }
 
@@ -476,9 +476,9 @@
     function is_iterable( object ) {
         // checks for null and undefined
         if ( object == null ) {
-          return false;
+          return false
         }
-        return typeof object[Symbol.iterator] === 'function';
+        return typeof object[ Symbol.iterator ] === 'function'
     }
 
 
@@ -488,25 +488,25 @@
      */
     let doc_ready = setInterval( () => {
         if ( document.readyState === 'complete' ) {
-            clearInterval( doc_ready );
-            form_init();
+            clearInterval( doc_ready )
+            form_init()
         }
-    }, 250);
+    }, 250 )
 
 
-	return { //------------------------------------------------------------------- Public functions.
+	return { // ------------------------------------------------------------------- Public functions.
 		/**
 		 * Update the file select custom input with details of selected files.
 		 */
 		updateFileList: function( input ) {
-			const output = input.parentElement.nextElementSibling;
-			const list   = document.createElement("ul");
-			remove_children( output );
-			output.appendChild( list );
-			for (var i = 0; i < input.files.length; ++i) {
-				list.innerHTML += '<li>' + input.files.item(i).name + '</li>';
+			const output = input.parentElement.nextElementSibling
+			const list   = document.createElement( "ul" )
+			remove_children( output )
+			output.appendChild( list )
+			for ( var i = 0; i < input.files.length; ++i ) {
+				list.innerHTML += '<li>' + input.files.item( i ).name + '</li>'
 			}
 		}
 	}
 
-})();
+} )()
