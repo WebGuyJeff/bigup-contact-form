@@ -15,16 +15,13 @@
  * 
  */
 
-//Variables passed from the calling file using Init::includeWithVariables()
-//$title
-//$message
-//$align (not applicable for widget)
-//$files (not applicable for widget)
-
-$dark_styles  = get_option('styles');
-$files_option = get_option('files');
-$classes      = ( $dark_styles ) ? 'bigup__form-dark' : 'bigup__form-vanilla';
-$classes     .= ' ' . $align;
+/*
+Variables passed from caller:
+$title
+$message
+$classes
+$files
+*/
 
 ?>
 
@@ -103,7 +100,7 @@ $classes     .= ' ' . $align;
         </div>
 
 		<?php
-		if ( true === !! $files || true === !! $files_option ) {
+		if ( true === !! $files ) {
 			?>
 
 			<div class="bigup__customFileUpload">

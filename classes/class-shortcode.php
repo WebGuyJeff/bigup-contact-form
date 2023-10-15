@@ -20,15 +20,11 @@ class Shortcode {
     /**
      * This function is called by WordPress when the shortcode is used.
      */
-    public static function display_shortcode( $attributes ) {
+    public static function display_shortcode( $attributes= array() ) {
 
         //enqueue contact form and styles
         wp_enqueue_script('bigup_contact_form_js');
         wp_enqueue_style('bigup_contact_form_css');
-
-        if ( empty( $attributes ) ) {
-            $attributes = array();
-        }
 
         if ( ! isset( $attributes[ 'title' ] ) ) {
             $attributes[ 'title' ] = 'Contact Form';
@@ -38,38 +34,9 @@ class Shortcode {
             $attributes[ 'message' ] = 'Complete this contact form to send a message';
         }
 
-        if ( ! isset( $attributes[ 'align' ] ) ) {
-            $align_class = '';
-        } elseif ( 'middle' === $attributes[ 'align' ] ) {
-			$align_class = 'aligncenter';
-		} elseif ( 'left' === $attributes[ 'align' ] ) {
-			$align_class = 'alignleft';
-		} elseif ( 'right' === $attributes[ 'align' ] ) {
-			$align_class = 'alignright';
-		} else {
-			$align_class = '';
-		}
-
-		if ( ! isset( $attributes[ 'files' ] ) ) {
-            $attributes[ 'files' ] = 'false';
-        }
-
-        //include the form template with the widget vars
-        //custom function defined in plugin-entry.php
-
-        $output_with_variables = Form_Template::include_with_variables(
-            plugin_dir_path( __DIR__ ) . 'parts/form.php',
-
-            array(
-                'title'   => $attributes[ 'title' ],
-                'message' => $attributes[ 'message' ],
-                'align'   => $align_class,
-				'files'   => $attributes[ 'files' ],
-            )
-        );
-
-        return $output_with_variables;
+		//get the form markup built with the passed vars.
+		$form = Form_Generator::get_form( $attributes );
+        return $form;
     }
 
-
-}// Class end
+}

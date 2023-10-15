@@ -70,25 +70,15 @@ class Widget extends WP_Widget {
         wp_enqueue_script('bigup_contact_form_js');
         wp_enqueue_style('bigup_contact_form_css');
 
-        //define variables
-        $title = apply_filters( 'widget_title', $instance[ 'title' ] );
-        $message = $instance[ 'message' ];
-
-        //output front end HTML
         echo $args[ 'before_widget' ];
-
-            //include the form template with the widget vars
-            //custom function defined in plugin-entry.php
-            $output_with_variables = Form_Template::include_with_variables(
-                plugin_dir_path( __DIR__ ) . 'parts/form.php',
-
-                array(
-                    'title' => $title,
-                    'message' => $message,
-                )
-            );
-            echo $output_with_variables;
-
+		//get the form markup built with the passed vars.
+		$form = Form_Generator::get_form(
+			array(
+				'title' => apply_filters( 'widget_title', $instance[ 'title' ] ),
+				'message' => $instance[ 'message' ],
+			)
+		);
+		echo $form;
         echo $args[ 'after_widget' ];
 
     }//function widget() end
