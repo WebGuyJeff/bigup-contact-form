@@ -53,8 +53,8 @@ class Init {
      * if api endpoint url is not adjusted to match.
      */
     public function register_scripts_and_styles() {
-        wp_register_style( 'bigup_contact_form_css', plugins_url ( 'css/form.css', __DIR__ ), array(), '0.1', 'all' );
-        wp_register_script ( 'bigup_contact_form_js', plugins_url ( 'js/form-submit.js', __DIR__ ), array(), '0.5', false );
+        wp_register_style( 'bigup_contact_form_css', plugins_url ( 'build/css/form.css', __DIR__ ), array(), '0.1', 'all' );
+        wp_register_script ( 'bigup_contact_form_js', plugins_url ( 'build/js/contact-form.js', __DIR__ ), array(), '0.5', false );
         wp_localize_script(
             'bigup_contact_form_js',
             'wp_localize_bigup_contact_form_vars',

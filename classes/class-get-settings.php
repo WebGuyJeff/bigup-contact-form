@@ -50,7 +50,6 @@ class Get_Settings {
 			return $smtp_settings;
 		}
 		// settings bad
-		error_log( 'Bigup_Contact_Form: SMTP settings invalid.' );
 		return false;
 	}
 
@@ -133,13 +132,8 @@ class Get_Settings {
 					break;
 
 				case 'port':
-					$port_range = [
-						'options' => [
-							'min_range' => 1,
-							'max_range' => 65535,
-						]
-					];
-					$valid = ( filter_var( $value, FILTER_VALIDATE_INT, $port_range ) === FALSE ) ? false : true;
+					$valid_ports = [ 25, 465, 587, 2525 ];
+					$valid = in_array( intval( $value ), $valid_ports, true );
 					break;
 
 				case 'auth':
@@ -159,6 +153,10 @@ class Get_Settings {
 					break;	
 
 				case 'styles':
+					$valid = ( is_bool( (bool)$value ) ) ? true : false;
+					break;
+
+				case 'nostyles':
 					$valid = ( is_bool( (bool)$value ) ) ? true : false;
 					break;
 

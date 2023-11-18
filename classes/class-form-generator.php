@@ -70,9 +70,18 @@ class Form_Generator {
 			$align = '';
 		}
 
-		$vars[ 'files' ]    = ( isset( $vars[ 'files' ] ) ) ? $vars[ 'files' ] : get_option('files');
-		$vars[ 'classes' ]  = ( get_option('styles') ) ? 'bigup__form-dark' : 'bigup__form-vanilla';
+		$nostyles = get_option('nostyles');
+		$styles = get_option('styles');
+		$files = get_option('files');
+		$vars[ 'classes' ] = '';
+
+		if ( $nostyles ) {
+			$vars[ 'classes' ] .= 'bigup__form-nostyles';
+		} else {
+			$vars[ 'classes' ] .= $styles ? 'bigup__form-dark' : 'bigup__form-vanilla';
+		}
 		$vars[ 'classes' ] .= ' ' . $align;
+		$vars[ 'files' ]    = isset( $vars[ 'files' ] ) ? $vars[ 'files' ] : $files;
 
 		// Include the form template with the widget vars.
 		$form = self::include_with_vars( $form_template, $vars );

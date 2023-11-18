@@ -48,10 +48,6 @@ class Send_SMTP {
      */
     public function __construct() {
         $this->smtp_settings = Get_Settings::smtp();
-        if ( false === !! $this->smtp_settings || true === $this->smtp_settings[ 'use_sendmail' ] ) {
-			error_log( 'Bigup_Contact_Form: Invalid SMTP settings retrieved from database.' );
-			return [ 500, 'Sending your message failed due to a bad local mailserver configuration.' ];
-        }
     }
 
 
@@ -59,6 +55,12 @@ class Send_SMTP {
      * Compose and send an SMTP email.
      */
     public function compose_and_send_email( $form_data ) {
+
+		// Check settings are ready.
+        if ( false === !! $this->smtp_settings || true === $this->smtp_settings[ 'use_sendmail' ] ) {
+			error_log( 'Bigup_Contact_Form: Invalid SMTP settings retrieved from database.' );
+			return [ 500, 'Sending your message failed due to a bad local mailserver configuration.' ];
+        }
 
         $mail = new PHPMailer( true );
 
@@ -129,7 +131,7 @@ HTML;
             $mail->Username     = $username;                   // SMTP username
             $mail->Password     = $password;                   // SMTP password
             $mail->SMTPSecure   = PHPMailer::ENCRYPTION_SMTPS; // TLS: Implicit/Explicit SMTPS/STARTTLS
-            $mail->Port         = $port;                       // TCP port
+            $mail->Port         = intval( $port );             // TCP port
             $mail->Timeout      = 6;                           // Connection timeout (secs)
             $mail->getSMTPInstance()->Timelimit = 8;           // Time allowed for each SMTP command response
 
@@ -139,6 +141,7 @@ HTML;
             $mail->addReplyTo( $email, $name );
 
             // Content.
+			$mail->isHTML(true);
             $mail->Subject = 'New website message from ' . $site_url;
 			$mail->Body    = $html;
             $mail->AltBody = $plaintext_cleaned;
@@ -150,9 +153,19 @@ HTML;
 				}
 			}
 			
+
+error_log( 'SMTP' );	
+
+
+
+
             // Gotime.
-            $mail->send();
-            return [ 200, 'Message sent successfully.' ];
+            $sent = $mail->send();
+			if ( $sent ) {
+				return [ 200, 'Message sent successfully.' ];
+			} else {
+				throw new Exception( 'SMTP Error: ' . $mail->ErrorInfo );
+			}
 
         } catch ( Exception $e ) {
 
@@ -162,6 +175,4 @@ HTML;
             return [ 500, 'Sending your message failed while connecting to the mail server.' ];
 		}
     }
-
-
-}//Class end
+}

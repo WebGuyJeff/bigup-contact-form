@@ -123,10 +123,18 @@ HTML;
         set_time_limit( 60 );
 
         try {
+
+			// Check mail() exists (does not gaurantee an MTA is configured!)
+			if ( ! function_exists( 'mail' ) ) {
+				throw new Exception('Function "mail" is not available on this server.');
+			}
+
             // Server settings.
             $mail->Debugoutput  = 'error_log'; // How to handle debug output
-			//$mail->isSendmail();               // Use Sendmail
-			$mail->isMail();                   // Use mail
+			//$mail->IsSendmail();             // Use the sendmail MTA.
+			$mail->isMail();                   // *May work on Linux and Windows servers.
+
+			// * see https://www.php.net/manual/en/function.mail.php
 
             // Recipients.
             $mail->setFrom( $from_email, $from_name); // Use fixed and owned address to pass SPF checks.
@@ -144,23 +152,27 @@ HTML;
 					$mail->AddAttachment( $file[ 'tmp_name' ], $file[ 'name' ] );
 				}
 			}
-			
-            // Gotime.
-            $mail->send();
-            return [ 200, 'Message sent successfully.' ];
+
+
+error_log( 'LOCAL' );		
+
+
+
+
+            // Send it!
+            $sent = $mail->send();
+			if ( $sent ) {
+				return [ 200, 'Message sent successfully.' ];
+			} else {
+				throw new Exception('Local mail server send failed.');
+			}
 
         } catch ( Exception $e ) {
 
             //PHPMailer exceptions are not public-safe - Send to logs.
             error_log( 'Bigup_Contact_Form: ' . $mail->ErrorInfo );
             //Generic public error.
-            return [ 500, 'Sending your message failed due to a bad server config.' ];
-        } finally {
-
-			// Log the form submission as custom post
-
-		}
+            return [ 500, 'Sending your message failed due to a webserver configuration error.' ];
+        }
     }
-
-
-}//Class end
+}

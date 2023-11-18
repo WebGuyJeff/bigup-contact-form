@@ -105,6 +105,8 @@ class Admin_Settings {
 				Bigup Web Contact Form Settings
 			</h1>
 
+			<?php settings_errors(); // Display the form save notices here. ?>
+
 			<h2>
 				Usage
 			</h2>
@@ -159,11 +161,12 @@ class Admin_Settings {
 
 
 	/**
-     * Output Form Fields - Sendmail Settings
+     * Output Form Fields - Local mail server Settings
      */
-    public function echo_field_use_sendmail() {
-        echo '<input type="checkbox" name="use_sendmail" id="use_sendmail" value="1"' . checked( '1', get_option('use_sendmail'), false ) . '>';
-        echo '<label for="use_sendmail">Tick to use Sendmail when SMTP isn\'t available. For this to work, Sendmail must be installed on the web server. This will override SMTP settings.</label>';
+    public function echo_field_use_local_mail_server() {
+        echo '<input type="checkbox" name="use_local_mail_server" id="use_local_mail_server" value="1"' . checked( '1', get_option('use_local_mail_server'), false ) . '>';
+        echo '<label for="use_local_mail_server">Try and use a local mail server instead of SMTP (overrides SMTP settings).</label>';
+		echo '<p><span style="font-weight:800;">WARNING:</span> Depending on the hosting config, this may return false positives making it look like mail has sent. Please test-send an email to yourself via the contact form. SMTP is highly recommended as it will always alert the user of send failure!</p>';
     }
 
 
@@ -190,6 +193,11 @@ class Admin_Settings {
     public function echo_field_styles() {
         echo '<input type="checkbox" name="styles" id="styles" value="1"' . checked( '1', get_option('styles'), false ) . '>';
         echo '<label for="styles">Tick to use the fancy dark form theme.</label>';
+    }
+
+    public function echo_field_nostyles() {
+		echo '<input type="checkbox" name="nostyles" id="nostyles" value="1"' . checked( '1', get_option('nostyles'), false ) . '>';
+        echo '<label for="nostyles">Tick to remove all styles provided by this plugin and allow theme styles to take precedence (overrides "Fancy dark theme" setting).</label>';
     }
 
 	/**
@@ -232,19 +240,19 @@ class Admin_Settings {
             register_setting( $group, 'host', [ &$this, 'validate_domain' ] );
 
             add_settings_field( 'port', 'Port', [ &$this, 'echo_field_port' ], $page, $section );
-            register_setting( $group, 'port', [ &$this, 'validate_port' ] );
+            register_setting( $group, 'port', [ &$this, 'sanitise_smtp_port' ] );
 
             add_settings_field( 'auth', 'Authentication', [ &$this, 'echo_field_auth' ], $page, $section );
             register_setting( $group, 'auth', [ &$this, 'sanitise_checkbox' ] );
 
         /**
-         * Register section and fields - Sendmail Settings
+         * Register section and fields - Local mail server Settings
          */
-        $section = 'section_sendmail';
-        add_settings_section( $section, 'Sendmail', null, $page );
+        $section = 'section_local_mail_server';
+        add_settings_section( $section, 'Local Mail Server', null, $page );
 
-			add_settings_field( 'use_sendmail', 'Use Sendmail', [ &$this, 'echo_field_use_sendmail' ], $page, $section );
-			register_setting( $group, 'use_sendmail', [ &$this, 'sanitise_checkbox' ] );
+			add_settings_field( 'use_local_mail_server', 'Use Local Mail Server', [ &$this, 'echo_field_use_local_mail_server' ], $page, $section );
+			register_setting( $group, 'use_local_mail_server', [ &$this, 'sanitise_checkbox' ] );
 
         /**
          * Register section and fields - Message Header Settings
@@ -264,8 +272,11 @@ class Admin_Settings {
         $section = 'section_appearance';
         add_settings_section( $section, 'Appearance', [ &$this, 'echo_intro_section_appearance' ], $page );
 
-			add_settings_field( 'styles', 'Fancy Dark Theme', [ &$this, 'echo_field_styles' ], $page, $section );
+			add_settings_field( 'styles', 'Fancy dark theme', [ &$this, 'echo_field_styles' ], $page, $section );
 			register_setting( $group, 'styles', [ &$this, 'sanitise_checkbox' ] );
+
+			add_settings_field( 'nostyles', 'Remove plugin styles', [ &$this, 'echo_field_nostyles' ], $page, $section );
+			register_setting( $group, 'nostyles', [ &$this, 'sanitise_checkbox' ] );
 
 
         /**
@@ -308,16 +319,14 @@ class Admin_Settings {
 
 
     /**
-     * Validate a port number.
+     * Sanitise an SMTP port number.
      */
-    function validate_port( $port ) {
+    function sanitise_smtp_port( $port ) {
+		$port_int    = intval( $port );
+		$valid_ports = [ 25, 465, 587, 2525 ];
 
-        $port = ( is_string( $port ) ) ? (int)$port : $port;
-
-        if ( is_int( $port )
-            && $port >= 1
-            && $port <= 65535 ) {
-            return $port;
+        if ( in_array( $port_int, $valid_ports, true ) ) {
+            return $port_int;
         } else {
             return '';
         }

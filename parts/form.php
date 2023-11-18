@@ -23,6 +23,8 @@ $classes
 $files
 */
 
+// Exclude decorative wrappers when 'nostyles' option is true.
+$decorative_markup = ! str_contains( $classes, 'bigup__form-nostyles' );
 ?>
 
 <form class="bigup__form <?php echo esc_attr( $classes ); ?>" method="post" accept-charset="utf-8" autocomplete="on">
@@ -35,7 +37,7 @@ $files
         ?>
     </header>
 
-    <fieldset class="bigup__form_section">
+    <div class="bigup__form_section">
 
         <input
             class="bigup__form_input saveTheBees"
@@ -44,60 +46,63 @@ $files
             autocomplete="off"
         >
 
-        <div class="bigup__form_inputWrap bigup__form_inputWrap-short">
-            
-            <input
-                class="bigup__form_input"
-                name="name"
-                type="text"
-                maxlength="100"
-                title="Name"
-                required aria-label="Name"
-                placeholder="Name (required)"
-                onfocus="this.placeholder=''"
-                onblur="this.placeholder='Name (required)'"
-            >
+		<?php if ( $decorative_markup ) : ?>
+			<div class="bigup__form_inputWrap bigup__form_inputWrap-short">
+		<?php endif ?>
 
-            <span class="bigup__form_flag bigup__form_flag-hover"></span>
-            <span class="bigup__form_flag bigup__form_flag-focus"></span>
+				<input
+					class="bigup__form_input"
+					name="name"
+					type="text"
+					maxlength="100"
+					title="Name"
+					required aria-label="Name"
+					placeholder="Name (required)"
+					onfocus="this.placeholder=''"
+					onblur="this.placeholder='Name (required)'"
+				>
 
-        </div>
+		<?php if ( $decorative_markup ) : ?>
+				<span class="bigup__form_flag bigup__form_flag-hover"></span>
+				<span class="bigup__form_flag bigup__form_flag-focus"></span>
+			</div>
+			<div class="bigup__form_inputWrap bigup__form_inputWrap-short">
+		<?php endif ?>
 
-        <div class="bigup__form_inputWrap bigup__form_inputWrap-short">
+				<input
+					class="bigup__form_input"
+					name="email" type="text"
+					maxlength="100" title="Email"
+					required aria-label="Email"
+					placeholder="Email (required)"
+					onfocus="this.placeholder=''"
+					onblur="this.placeholder='Email (required)'"
+				>
 
-            <input
-                class="bigup__form_input"
-                name="email" type="text"
-                maxlength="100" title="Email"
-                required aria-label="Email"
-                placeholder="Email (required)"
-                onfocus="this.placeholder=''"
-                onblur="this.placeholder='Email (required)'"
-            >
-
-            <span class="bigup__form_flag bigup__form_flag-hover"></span>
-            <span class="bigup__form_flag bigup__form_flag-focus"></span>
-
-        </div>
-
+		<?php if ( $decorative_markup ) : ?>
+				<span class="bigup__form_flag bigup__form_flag-hover"></span>
+				<span class="bigup__form_flag bigup__form_flag-focus"></span>
+			</div>
         <div class="bigup__form_inputWrap bigup__form_inputWrap-wide">
+		<?php endif ?>
 
-            <textarea
-                class="bigup__form_input"
-                name="message"
-                maxlength="5000"
-                title="Message"
-                rows="8"
-                aria-label="Message"
-                placeholder="Type your message here..."
-                onfocus="this.placeholder=''"
-                onblur="this.placeholder='Type your message...'"
-            ></textarea>
+				<textarea
+					class="bigup__form_input"
+					name="message"
+					maxlength="5000"
+					title="Message"
+					rows="8"
+					aria-label="Message"
+					placeholder="Type your message here..."
+					onfocus="this.placeholder=''"
+					onblur="this.placeholder='Type your message...'"
+				></textarea>
 
-            <span class="bigup__form_flag bigup__form_flag-hover"></span>
-            <span class="bigup__form_flag bigup__form_flag-focus"></span>
-
-        </div>
+		<?php if ( $decorative_markup ) : ?>
+				<span class="bigup__form_flag bigup__form_flag-hover"></span>
+				<span class="bigup__form_flag bigup__form_flag-focus"></span>
+			</div>
+		<?php endif ?>
 
 		<?php
 		if ( true === !! $files ) {
@@ -111,7 +116,6 @@ $files
 						type="file"
 						name="files"
 						multiple
-						onChange="form_sender.updateFileList( this )"
 					>
 					<span class="bigup__customFileUpload_icon">
 						<svg xmlns="http://www.w3.org/2000/svg" height="1em"  viewBox="0 0 512 512">
@@ -133,7 +137,7 @@ $files
             </span>
         </button>
 
-    </fieldset>
+    </div>
 
     <footer class="bigup__form_section">
         <div class="bigup__form_output" style="display:none; opacity:0;"></div>

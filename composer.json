@@ -3,7 +3,7 @@
     "description": "An SMTP contact form plugin for WordPress",
     "type": "project",
     "require": {
-        "phpmailer/phpmailer": "^6.5"
+        "phpmailer/phpmailer": "^6.8"
     },
     "license": "GPL-3.0",
     "authors": [

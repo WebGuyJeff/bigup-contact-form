@@ -11,7 +11,7 @@
  * @link https://jeffersonreal.uk
  */
 
- const form_sender = ( function () {
+ const contactForm = () => {
 	'use strict'
 
 
@@ -81,15 +81,25 @@
      * Prepare the form ready for input.
      * 
      */
-    function form_init() {
+    function formInit() {
 
         // Hide the honeypot input field(s)
-        let honeypot = document.querySelectorAll( '.saveTheBees' )
-        honeypot.forEach( input => { input.style.display = "none" } )
+        let honeypots = document.querySelectorAll( '.saveTheBees' )
+		honeypots.forEach( honeypot => {
+			if ( honeypot.style.display !== "none" ) {
+				honeypot.style.display = "none"
+			}
+		} )
 
-        // Attach submit listener callback to the form(s)
+        // Attach listeners to the form(s)
         document.querySelectorAll( '.bigup__form' ).forEach( form => {
-            form.addEventListener( 'submit', handle_form_submit )
+
+			// Submit.
+            form.addEventListener( 'submit', handleFormSubmit )
+
+			// File upload.
+			const fileUpload = form.querySelector( '.bigup__customFileUpload_input' )
+			fileUpload.addEventListener( 'change', updateFileList )
         } )
     }
 
@@ -97,7 +107,7 @@
     /**
      * True when the form is processing a submission.
      */
-    let form_busy = false
+    let formBusy = false
 
 
     /**
@@ -110,12 +120,12 @@
      * @param {SubmitEvent} event
      * 
      */
-    async function handle_form_submit( event ) {
+    async function handleFormSubmit( event ) {
 
         event.preventDefault()
         start = Date.now()
         if( debug ) console.log( 'Time | Start/Finish | Function | Target' )
-        if( debug ) console.log( stopwatch() + ' |START| handle_form_submit' )
+        if( debug ) console.log( stopwatch() + ' |START| handleFormSubmit' )
 
         const form = event.currentTarget
         const output = form.querySelector( '.bigup__form_output' )
@@ -154,12 +164,12 @@
 					classes = [ ...classes, 'bigup__alert-danger' ]
 					output.style.display = 'flex'
 					await transition( output, 'opacity', '0' )
-					await remove_children( output )
-					await popouts_into_dom( output, [ `The selected file type ".${fileExt}" is not allowed` ], classes )
+					await removeChildren( output )
+					await popoutsIntoDom( output, [ `The selected file type ".${fileExt}" is not allowed` ], classes )
 					await transition( output, 'opacity', '1' )
 					await pause( 5000 )
 					await transition( output, 'opacity', '0' )
-					await remove_children( output )
+					await removeChildren( output )
 					output.style.display = 'none'
 					return
 				}
@@ -168,7 +178,7 @@
 
         // Fetch params.
         const url = wp.rest_url
-        const fetch_options = {
+        const fetchOptions = {
             method: "POST",
             headers: {
                 "X-WP-Nonce"    : wp.rest_nonce,
@@ -180,14 +190,14 @@
         // Async form submission timeline
         try {
 
-            form_busy = true
-            lock_form( form )
+            formBusy = true
+            lockForm( form )
             output.style.display = 'flex'
 
-            await popouts_into_dom( output, [ "Connecting..." ], classes )
+            await popoutsIntoDom( output, [ "Connecting..." ], classes )
 
             let [ result, ] = await Promise.all( [
-                fetch_http_request( url, fetch_options ),
+                fetchHttpRequest( url, fetchOptions ),
                 transition( output, 'opacity', '1' )
             ] )
             result.class = ( result.ok ) ? 'success' : 'danger'
@@ -195,26 +205,26 @@
 
 			// Animate the popout messages.
             await transition( output, 'opacity', '0' )
-            await remove_children( output )
-            await popouts_into_dom( output, result.output, classes )
+            await removeChildren( output )
+            await popoutsIntoDom( output, result.output, classes )
             await transition( output, 'opacity', '1' )
             await pause( 5000 )
             await transition( output, 'opacity', '0' )
-            await remove_children( output )
+            await removeChildren( output )
 
 			// Clean up the form.
             if ( result.ok ) {
-                let fieldset = form.querySelectorAll( '.bigup__form_input' )
-                fieldset.forEach( input => { input.value = '' } )
-				remove_children( form.querySelector( '.bigup__customFileUpload_fileList' ) )
+                let inputs = form.querySelectorAll( '.bigup__form_input' )
+                inputs.forEach( input => { input.value = '' } )
+				removeChildren( form.querySelector( '.bigup__customFileUpload_fileList' ) )
             }
             output.style.display = 'none'
-            form_busy = false
+            formBusy = false
 
         } catch ( error ) {
             console.error( error )
         } finally {
-            if( debug ) console.log( stopwatch() + ' | END | handle_form_submit' )
+            if( debug ) console.log( stopwatch() + ' | END | handleFormSubmit' )
         }
 
     }
@@ -238,7 +248,7 @@
      * @return {object}         An object of message strings and ok flag.
      * 
      */
-    async function fetch_http_request( url, options ) {
+    async function fetchHttpRequest( url, options ) {
 
         try {
             if( debug ) console.log( `${stopwatch()} |START| Fetch request` )
@@ -262,7 +272,7 @@
 				console.error( error )
             }
             for ( const message in error.output ) {
-                console.error( make_human_readable( error.output[ message ] ) )
+                console.error( makeHumanReadable( error.output[ message ] ) )
             }
             return error
 
@@ -294,14 +304,14 @@
      * @returns The cleaned string.
      * 
      */
-    function make_human_readable( string ) {
+    function makeHumanReadable( string ) {
         const tags = /(?<!\([^)]*?)<[^>]*?>/g
-        const human_readable = /(\([^\)]*?\))|[ \p{L}\p{N}\p{M}\p{P}]/ug
-        const bad_whitespaces = /^\s*|\s(?=\s)|\s*$/g
+        const humanReadable = /(\([^\)]*?\))|[ \p{L}\p{N}\p{M}\p{P}]/ug
+        const badWhitespaces = /^\s*|\s(?=\s)|\s*$/g
         let notags = string.replace( tags, '' )
-        let notags_human = notags.match( human_readable ).join( '' )
-        let notags_human_clean = notags_human.replace( bad_whitespaces, '' )
-        return notags_human_clean
+        let notagsHuman = notags.match( humanReadable ).join( '' )
+        let notagsHumanClean = notagsHuman.replace( badWhitespaces, '' )
+        return notagsHumanClean
     }
 
 
@@ -311,9 +321,9 @@
      * @param {object} parent The dom node to remove all child nodes from.
      * 
      */
-    function remove_children( parent ) {
+    function removeChildren( parent ) {
 
-        if( debug ) console.log( `${stopwatch()} |START| remove_children | ${parent.classList}` )
+        if( debug ) console.log( `${stopwatch()} |START| removeChildren | ${parent.classList}` )
         return new Promise( ( resolve ) => {
             try {
                 while ( parent.firstChild ) {
@@ -323,7 +333,7 @@
             } catch ( error ) {
                 reject( error )
             } finally {
-                if( debug ) console.log( `${stopwatch()} | END | remove_children | ${parent.classList}` )
+                if( debug ) console.log( `${stopwatch()} | END | removeChildren | ${parent.classList}` )
             }
         } )
     }
@@ -345,27 +355,35 @@
 
 
     /**
-     * Lock the formfields to prevent editing while the form is processing.
+     * Lock the form while the form is processing.
      * 
      * @param {object} form element
      */
-    function lock_form( form ) {
+    function lockForm( form ) {
 
-        if( debug ) console.log( `${stopwatch()} |START| lock_form | Locked` )
+        if( debug ) console.log( `${stopwatch()} |START| lockForm | Locked` )
 
-        const button_label = form.querySelector( '.bigup__form_submit > *:first-child' )
-        const formfields = form.querySelectorAll( '.bigup__form_section' )
+		// Add disabled styles.
+		const sections = form.querySelectorAll( '.bigup__form_section' )
+        sections.forEach( section => { section.classList.add( 'disabled' ) } )
 
-        formfields.forEach( section => { section.disabled = true } )
-        let idle_text = button_label.innerText
-        button_label.innerText = '[Busy]'
+		// Disable inputs with html flag.
+		const inputs = form.querySelectorAll( ':is( input, textarea )' )
+        inputs.forEach( input => { input.disabled = true } )
 
-        let unlock_form = setInterval( () => {
-            if ( ! form_busy ) {
-                clearInterval( unlock_form )
-                formfields.forEach( section => { section.disabled = false } )
-                button_label.innerText = idle_text
-                if( debug ) console.log( `${stopwatch()} | END | lock_form | Unlocked` )
+		// Change button label.
+		const buttonLabel = form.querySelector( '.bigup__form_submit > *:first-child' )
+        let idleText = buttonLabel.innerText
+        buttonLabel.innerText = '[Busy]'
+
+		// Revert when we detect form is no longer busy.
+        let unlockForm = setInterval( () => {
+            if ( ! formBusy ) {
+                clearInterval( unlockForm )
+                sections.forEach( section => { section.classList.remove( 'disabled' ) } )
+				inputs.forEach( input => { input.disabled = false } )
+                buttonLabel.innerText = idleText
+                if( debug ) console.log( `${stopwatch()} | END | lockForm | Unlocked` )
             }
         }, 250 )
     }
@@ -374,36 +392,36 @@
     /**
      * Create an array of popout message elements and insert into dom.
      * 
-     * @param {object} parent_element The parent node to append to.
-     * @param {array}  message_array An array of messages as strings.
+     * @param {object} parentElement The parent node to append to.
+     * @param {array}  messageArray An array of messages as strings.
      * @param {array}  classes An array of classes.
      * 
      */
-    function popouts_into_dom( parent_element, message_array, class_array ) {
+    function popoutsIntoDom( parentElement, messageArray, classes ) {
 
-        if( debug ) console.log( `${stopwatch()} |START| popouts_into_dom | ${message_array[ 0 ]}` )
+        if( debug ) console.log( `${stopwatch()} |START| popoutsIntoDom | ${messageArray[ 0 ]}` )
         return new Promise( ( resolve, reject ) => {
             try {
-                if ( ! parent_element || parent_element.nodeType !== Node.ELEMENT_NODE ) {
-                    throw new TypeError( `parent_element must be an element node.` )
-                } else if ( ! is_iterable( message_array ) ) {
-                    throw new TypeError( `message_array must be non-string iterable. ${typeof message_array} found.` )
+                if ( ! parentElement || parentElement.nodeType !== Node.ELEMENT_NODE ) {
+                    throw new TypeError( `parentElement must be an element node.` )
+                } else if ( ! isIterable( messageArray ) ) {
+                    throw new TypeError( `messageArray must be non-string iterable. ${typeof messageArray} found.` )
                 }
                 let popouts = []
-                message_array.forEach( ( message ) => {
+                messageArray.forEach( ( message ) => {
                     let p = document.createElement( 'p' )
-                    p.innerText = make_human_readable( message )
-                    class_array.forEach( ( class_name ) => {
-                        p.classList.add( class_name )
+                    p.innerText = makeHumanReadable( message )
+                    classes.forEach( ( className ) => {
+                        p.classList.add( className )
                     } )
-                    parent_element.appendChild( p )
+                    parentElement.appendChild( p )
                     popouts.push( p )
                 } )
                 resolve( popouts )
             } catch ( error ) {
                 reject( error )
             } finally {
-                if( debug ) console.log( `${stopwatch()} | END | popouts_into_dom | ${message_array[ 0 ]}` )
+                if( debug ) console.log( `${stopwatch()} | END | popoutsIntoDom | ${messageArray[ 0 ]}` )
             }
         } )
     }
@@ -426,7 +444,7 @@
      * @return {Promise} A promise that resolves when the transition is complete.
      * 
      */
-    function transition_to_resolve( property, value ) {
+    function transitionToResolve( property, value ) {
 
         return new Promise( ( resolve ) => {
             try {
@@ -434,10 +452,10 @@
                 this.style[ property ] = value
 
                 // Custom event listener to resolve the promise.
-                let transition_complete = setInterval( () => {
+                let transitionComplete = setInterval( () => {
                     let style = getComputedStyle( this )
                     if ( style.opacity === value ) {
-                        clearInterval( transition_complete )
+                        clearInterval( transitionComplete )
                         if( debug ) console.log( `${stopwatch()} | END | transition | ${this.classList} : ${property} : ${value}` )
                         resolve( 'Transition complete.' )
                     }
@@ -464,11 +482,11 @@
      */
     async function transition( elements, property, value ) {
 
-        if ( ! is_iterable( elements ) ) elements = [ elements ]
-        if ( is_iterable( elements )
+        if ( ! isIterable( elements ) ) elements = [ elements ]
+        if ( isIterable( elements )
             && elements.every( ( element ) => { return element.nodeType === 1 } ) ) {
             // we have an array of element nodes.
-            const promises = elements.map( ( node ) => transition_to_resolve.bind( node )( property, value ) )
+            const promises = elements.map( ( node ) => transitionToResolve.bind( node )( property, value ) )
             let result = await Promise.all( promises )
             return result
 
@@ -482,7 +500,7 @@
      * Check if passed variable is iterable.
      * 
      */
-    function is_iterable( object ) {
+    function isIterable( object ) {
         // checks for null and undefined
         if ( object == null ) {
           return false
@@ -492,30 +510,30 @@
 
 
     /**
-     * Fire form_init() on 'doc ready'.
+     * Fire formInit() on 'doc ready'.
      * 
      */
-    let doc_ready = setInterval( () => {
+    let docReady = setInterval( () => {
         if ( document.readyState === 'complete' ) {
-            clearInterval( doc_ready )
-            form_init()
+            clearInterval( docReady )
+            formInit()
         }
     }, 250 )
 
 
-	return { // ------------------------------------------------------------------- Public functions.
-		/**
-		 * Update the file select custom input with details of selected files.
-		 */
-		updateFileList: function( input ) {
-			const output = input.parentElement.nextElementSibling
-			const list   = document.createElement( "ul" )
-			remove_children( output )
-			output.appendChild( list )
-			for ( var i = 0; i < input.files.length; ++i ) {
-				list.innerHTML += '<li>' + input.files.item( i ).name + '</li>'
-			}
+	/**
+	 * Update the file select custom input with details of selected files.
+	 */
+	const updateFileList = ( event ) => {
+		const input  = event.currentTarget
+		const output = input.parentElement.nextElementSibling
+		const list   = document.createElement( "ul" )
+		removeChildren( output )
+		output.appendChild( list )
+		for ( var i = 0; i < input.files.length; ++i ) {
+			list.innerHTML += '<li>' + input.files.item( i ).name + '</li>'
 		}
 	}
+}
 
-} )()
+contactForm()
