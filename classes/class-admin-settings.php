@@ -315,7 +315,7 @@ class Admin_Settings {
 			$setting,
 			isset( $this->settings['files'] ) ? checked( '1', $this->settings['files'], false ) : '',
 			$setting,
-			'Tick to enable the file select input so user can upload files.',
+			'Tick to enable the file select input so users can upload files.',
 		);
     }
 
