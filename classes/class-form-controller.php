@@ -92,7 +92,7 @@ class Form_Controller {
 
 		$saved_settings   = get_option( 'bigup_contact_form_settings' );
 		$use_local_mailer = $saved_settings['use_local_mail_server'];
-		$mail_handler     = ( $use_local_mailer ) ? new Send_Local() : new Send_SMTP();
+		$mail_handler     = ( isset( $use_local_mailer ) && true === $use_local_mailer ) ? new Send_Local() : new Send_SMTP();
 		$result           = $mail_handler->compose_and_send_email( $data );
 		$this->send_json_response( $result );
 

@@ -193,30 +193,38 @@ class Admin_Settings {
      * Output Form Fields - SMTP Account Settings
      */
     public function echo_field_username() {
+		$setting = 'bigup_contact_form_settings[username]';
 		printf(
-			'<input class="regular-text" type="text" name="%s" value="%s">',
-			'bigup_contact_form_settings[username]',
+			'<input class="regular-text" type="text" id="%s" name="%s" value="%s">',
+			$setting,
+			$setting,
 			$this->settings['username'] ?? ''
 		);
     }
     public function echo_field_password() {
+		$setting = 'bigup_contact_form_settings[password]';
 		printf(
-			'<input class="regular-text" type="password" name="%s" value="%s">',
-			'bigup_contact_form_settings[password]',
+			'<input class="regular-text" type="password" id="%s" name="%s" value="%s">',
+			$setting,
+			$setting,
 			 $this->settings['password'] ?? ''
 		);
     }
     public function echo_field_host() {
+		$setting = 'bigup_contact_form_settings[host]';
 		printf(
-			'<input class="regular-text" type="text" name="%s" value="%s">',
-			'bigup_contact_form_settings[host]',
+			'<input class="regular-text" type="text" id="%s" name="%s" value="%s">',
+			$setting,
+			$setting,
 			$this->settings['host'] ?? ''
 		);
     }
     public function echo_field_port() {
+		$setting = 'bigup_contact_form_settings[port]';
 		printf(
-			'<input class="regular-text" type="number" min="25" max="2525" step="1" name="%s" value="%s">',
-			'bigup_contact_form_settings[port]',
+			'<input class="regular-text" type="number" min="25" max="2525" step="1" id="%s" name="%s" value="%s">',
+			$setting,
+			$setting,
 			$this->settings['port'] ?? ''
 		);
     }
@@ -257,16 +265,20 @@ class Admin_Settings {
         echo '<p>These can be set to anything, however, setting <b>sent from</b> to an address that doesn&apos;t match the local domain will cause mail to fail SPF checks, not to mention being a form of forgery.</p>';
     }
     public function echo_field_to_email() {
+		$setting = 'bigup_contact_form_settings[to_email]';
 		printf(
-			'<input class="regular-text" type="email" name="%s" value="%s">',
-			'bigup_contact_form_settings[to_email]',
+			'<input class="regular-text" type="email" id="%s" name="%s" value="%s">',
+			$setting,
+			$setting,
 			$this->settings['to_email'] ?? get_bloginfo( 'admin_email' )
 		);
 	}
     public function echo_field_from_email() {
+		$setting = 'bigup_contact_form_settings[from_email]';
 		printf(
-			'<input class="regular-text" type="email" name="%s" value="%s">',
-			'bigup_contact_form_settings[from_email]',
+			'<input class="regular-text" type="email" id="%s" name="%s" value="%s">',
+			$setting,
+			$setting,
 			$this->settings['from_email'] ?? get_bloginfo( 'admin_email' )
 		);
 	}
@@ -321,6 +333,7 @@ class Admin_Settings {
 
 
 	public function sanitize( $input ) {
+
 		$sanitized = array();
 
 		if ( isset( $input['username'] ) ) {
@@ -366,6 +379,44 @@ class Admin_Settings {
 		if ( isset( $input['files'] ) ) {
 			$sanitized['files'] = $this->sanitise_checkbox( $input['files'] );
 		}
+
+	
+		/*
+		I cannot get PHPMailer to reliably return an Exception on success/failure to be able to
+		give feedback to the user :(
+
+		// Test the sanitized SMTP settings before saving.
+		$result = SMTP_Test::server_connection(
+			$sanitized[ 'username' ],
+			$sanitized[ 'password' ],
+			$sanitized[ 'host' ],
+			$sanitized[ 'port' ],
+			$sanitized[ 'auth' ],
+		);
+
+		if ( ! isset( $result ) ) {
+			error_log( 'Bigup_Contact_Form Error: No response while attempting to test SMTP settings.' );
+			add_settings_error( 'server_connection', 'SMTP Test', 'Possible incorrect credentials or internal error.' );
+
+		} elseif ( false === $result[ 'pass' ] ) {
+			$ids = array(
+				'username' => 'bigup_contact_form_settings[username]',
+				'password' => 'bigup_contact_form_settings[password]',
+				'host'     => 'bigup_contact_form_settings[host]',
+				'port'     => 'bigup_contact_form_settings[port]',
+				'auth' 	   => 'bigup_contact_form_settings[auth]',
+			);
+			foreach ( $result[ 'invalid' ] as $setting ) {
+				$message = $result[ 'message' ] . ". Check {$setting}";
+				add_settings_error( $setting, $ids[ $setting ], $message, 'error' );
+			}
+
+		} else {
+			add_settings_error( 'server_connection', 'SMTP Test', 'Settings saved.', 'success' );
+			add_settings_error( 'server_connection', $result[ 'message' ], 'success' );
+		}
+		*/
+
 
 		return $sanitized;
 	}

@@ -72,7 +72,7 @@ class Init {
 	 */
 	public function register_admin_scripts_and_styles() {
 		if ( ! wp_script_is( 'bigup_icons', 'registered' ) ) {
-			wp_register_style( 'bigup_icons', BIGUP_CONTACT_FORM_PLUGIN_URL . 'dashicons/css/bigup-icons.css', array(), filemtime( BIGUP_CONTACT_FORM_PLUGIN_PATH . 'dashicons/css/bigup-icons.css' ), 'all' );
+			wp_register_style( 'bigup_icons', BIGUPCF_URL . 'dashicons/css/bigup-icons.css', array(), filemtime( BIGUPCF_PATH . 'dashicons/css/bigup-icons.css' ), 'all' );
 		}
 		if ( ! wp_script_is( 'bigup_icons', 'enqueued' ) ) {
 			wp_enqueue_style( 'bigup_icons' );

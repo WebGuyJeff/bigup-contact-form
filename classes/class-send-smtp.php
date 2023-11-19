@@ -119,21 +119,29 @@ HTML;
 
         // Make sure PHP server script limit is higher than mailer timeout!
         set_time_limit( 60 );
+		// Ensure PHP time zone is set as SMTP requires accurate times.
+		date_default_timezone_set( 'UTC' );
 
         try {
-            // Server settings.
-            $mail->SMTPDebug    = SMTP::DEBUG_SERVER;          // Debug level: DEBUG_[OFF/SERVER/CONNECTION]
-            $mail->Debugoutput  = 'error_log';                 // How to handle debug output
-			$mail->Helo         = get_site_url();              // Sender's FQDN to identify as
-			$mail->isSMTP();                                   // Use SMTP
-            $mail->Host         = $host;                       // SMTP server to send through
-            $mail->SMTPAuth     = (bool)$auth;                 // Enable SMTP authentication
-            $mail->Username     = $username;                   // SMTP username
-            $mail->Password     = $password;                   // SMTP password
-            $mail->SMTPSecure   = PHPMailer::ENCRYPTION_SMTPS; // TLS: Implicit/Explicit SMTPS/STARTTLS
-            $mail->Port         = intval( $port );             // TCP port
-            $mail->Timeout      = 6;                           // Connection timeout (secs)
-            $mail->getSMTPInstance()->Timelimit = 8;           // Time allowed for each SMTP command response
+
+			// Server settings.
+
+			$port = (int)$port;
+			// SMTPS/STARTTLS (ssl/tls).
+			if ( $port !== 25 && $port !== 2525 ) {
+				$mail->SMTPSecure = ( $port === 465 ) ? 'ssl' : 'tls';
+			}
+            $mail->SMTPDebug    = SMTP::DEBUG_SERVER; // Debug level: DEBUG_[OFF/SERVER/CONNECTION]
+            $mail->Debugoutput  = 'error_log';        // How to handle debug output
+			$mail->Helo         = get_site_url();     // Sender's FQDN to identify as
+			$mail->isSMTP();                          // Use SMTP
+            $mail->Host         = $host;              // SMTP server to send through
+            $mail->SMTPAuth     = (bool)$auth;        // Enable SMTP authentication
+            $mail->Username     = $username;          // SMTP username
+            $mail->Password     = $password;          // SMTP password
+            $mail->Port         = $port;              // TCP port
+            $mail->Timeout      = 6;                  // Connection timeout (secs)
+            $mail->getSMTPInstance()->Timelimit = 8;  // Time allowed for each SMTP command response
 
             // Recipients.
             $mail->setFrom( $from_email, $from_name); // Use fixed and owned SMTP account address to pass SPF checks.

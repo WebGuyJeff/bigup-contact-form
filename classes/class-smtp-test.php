@@ -16,71 +16,120 @@ namespace Bigup\Contact_Form;
  * 
  */
 
-// Import PHPMailer classes into the global namespace
+// Import PHPMailer classes into the global namespace.
+use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
 
-// WordPress Dependencies
-use function plugin_dir_path;
-
-// Load Composer's autoloader
-require plugin_dir_path( __DIR__ ) . 'vendor/autoload.php';
-
+// Load Composer's autoloader.
+require BIGUPCF_PATH . 'vendor/autoload.php';
 
 class SMTP_Test {
 
-
     /**
-     * Perform a connection to the SMTP server.
+     * Perform a test connection to the SMTP server.
      * 
      */
     public static function server_connection( $username, $password, $host, $port, $auth ) {
 
-        //Create a new SMTP instance
-        $smtp = new SMTP();
+		$test              = array();
+		$test[ 'filled' ]  = array();
+		$test[ 'empty' ]   = array();
+		$test[ 'invalid' ] = array();
 
-        //Enable connection-level debug output
-        $smtp->do_debug = SMTP::DEBUG_CONNECTION;
-        $smtp_connection_ok = false;
+		$settings = array(
+			'username' => $username,
+			'password' => $password,
+			'host'     => $host,
+			'port'     => (int)$port,
+			'auth'     => (bool)$auth
+		);
 
-        try {
-            //Connect to an SMTP server
-            if (!$smtp->connect('mail.example.com', 25)) {
-                throw new Exception('Connect failed');
-            }
-            //Say hello
-            if (!$smtp->hello(gethostname())) {
-                throw new Exception('EHLO failed: ' . $smtp->getError()['error']);
-            }
-            //Get the list of ESMTP services the server offers
-            $e = $smtp->getServerExtList();
-            //If server can do TLS encryption, use it
-            if (is_array($e) && array_key_exists('STARTTLS', $e)) {
-                $tlsok = $smtp->startTLS();
-                if (!$tlsok) {
-                    throw new Exception('Failed to start encryption: ' . $smtp->getError()['error']);
-                }
-                //Repeat EHLO after STARTTLS
-                if (!$smtp->hello(gethostname())) {
-                    throw new Exception('EHLO (2) failed: ' . $smtp->getError()['error']);
-                }
-                //Get new capabilities list, which will usually now include AUTH if it didn't before
-                $e = $smtp->getServerExtList();
-            }
-            //If server supports authentication, do it (even if no encryption)
-            if (is_array($e) && array_key_exists('AUTH', $e)) {
-                if ($smtp->authenticate('username', 'password')) {
-                    echo 'Connected ok!';
-                } else {
-                    throw new Exception('Authentication failed: ' . $smtp->getError()['error']);
-                }
-            }
-        } catch (Exception $e) {
-            echo 'SMTP error: ' . $e->getMessage(), "\n";
-        }
-        //Whatever happened, close the connection.
-        $smtp->quit();
+		// Sort exisitng and empty.
+		foreach ( $settings as $key => $value ) {
+			if ( isset( $key ) ) {
+				$test[ 'filled' ][] = $key;
+			} else {
+				// auth is allowed to be null.
+				if ( $key !== 'auth' ) {
+					$test[ 'empty' ][] = $key;
+				}
+			}
+		}
+
+		// Ensure PHP time zone is set as SMTP requires accurate times.
+		date_default_timezone_set( 'UTC' );
+        // Create a new PHPMailer instance.
+		$mail = new PHPMailer( true );
+
+        // Perform tests...
+		try {
+
+			// Test if settings are incomplete or not provided.
+			if ( ! $test[ 'filled' ] ) {
+				// No settings exist - assume user has not configured or is using local mailer (pass).
+				$test[ 'message' ] = 'No SMTP settings provided, so nothing to test.';
+				$test[ 'pass' ]    = true;
+
+			} elseif ( $test[ 'filled' ] && $test[ 'empty' ] ) {
+				// Settings are incomplete, assume config as been attempted (fail).
+				$test[ 'pass' ]    = false;
+				$test[ 'invalid' ] = $test[ 'empty' ];
+				throw new Exception( 'SMTP partial settings error: Provide all account settings and try again.' );
+			}
+
+			// DEBUG
+            $mail->SMTPDebug    = SMTP::DEBUG_SERVER;          // Debug level: DEBUG_[OFF/SERVER/CONNECTION]
+            $mail->Debugoutput  = 'error_log';                 // How to handle debug output
+
+
+			// Setup mailer.
+
+			// SMTPS/STARTTLS (ssl/tls).
+			if ( $settings['port'] !== 25 && $settings['port'] !== 2525 ) {
+				$mail->SMTPSecure = ( $settings['port'] === 465 ) ? 'ssl' : 'tls';
+			}
+			$mail->isSMTP();
+			$mail->Helo     = gethostname();
+			$mail->Host     = $settings['host'];
+			$mail->Port     = $settings['port'];
+			$mail->SMTPAuth = $settings['auth'];
+			$mail->Username = $settings['username'];
+			$mail->Password = $settings['password'];
+			$mail->Timeout  = 10;
+			$mail->getSMTPInstance()->Timelimit = 8;
+
+			if ( ! $mail->smtpConnect() ) {
+				$test[ 'invalid' ] = array( 'host', 'port', 'auth', 'username', 'password' );
+				throw new Exception( 'SMTP connection error: ' . $mail->ErrorInfo );
+			} else {
+				$test[ 'pass' ]    = true;
+				$test[ 'message' ] = 'SMTP test successful';
+			}
+
+		} catch ( Exception $e ) {
+			//PHPMailer generated errors.
+			$test[ 'pass' ]    = false;
+			$exception         = $e->errorMessage(); // notice 'errorMessage' not 'getMessage'.
+			$test[ 'message' ] = $exception ?? 'There was a problem connecting to the SMTP server, but no error was returned';
+			$test[ 'invalid' ] = $exception ? $test[ 'invalid' ] : array( 'host', 'port', 'auth', 'username', 'password' );
+
+		} catch ( \Exception $e ) { // The leading slash means the Global PHP Exception class will be caught.
+			// Errors from anything else.
+			$exception         = $e->getMessage();
+			$test[ 'pass' ]    = false;
+			$test[ 'message' ] = $exception ?? 'There was a problem connecting to the SMTP server, but no error was returned';
+			$test[ 'invalid' ] = $exception ? $test[ 'invalid' ] : array( 'host', 'port', 'auth', 'username', 'password' );
+		}
+
+		// Close the connection.
+		$mail->smtpClose();
+
+		if ( ! isset($test[ 'pass' ]) ) {
+			$test[ 'pass' ]    = false;
+			$test[ 'message' ] = 'Unknown result';
+		}
+
+		return $test;
     }
-
-
-}//Class end
+}

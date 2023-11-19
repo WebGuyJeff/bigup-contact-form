@@ -24,9 +24,9 @@ namespace Bigup\Contact_Form;
  * write relative file references, making code portable.
  */
 $url = plugin_dir_url( __FILE__ );
-define( 'BIGUP_CONTACT_FORM_PLUGIN_URL', $url );
+define( 'BIGUPCF_URL', $url );
 $path = plugin_dir_path( __FILE__ );
-define( 'BIGUP_CONTACT_FORM_PLUGIN_PATH', $path );
+define( 'BIGUPCF_PATH', $path );
 
 /**
  * Load PHP autoloader to ready the classes.
