@@ -21,7 +21,7 @@ use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
 
-// Load Composer's autoloader.
+// Load Composer's autoloader
 require BIGUPCF_PATH . 'vendor/autoload.php';
 
 class SMTP_Test {

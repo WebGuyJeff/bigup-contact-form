@@ -21,18 +21,17 @@ use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
 
+// Load Composer's autoloader
+require BIGUPCF_PATH . 'vendor/autoload.php';
+
 // WordPress Dependencies
 use function get_bloginfo;
 use function wp_strip_all_tags;
 use function plugin_dir_path;
 use function get_site_url;
 
-// Load Composer's autoloader
-require plugin_dir_path( __DIR__ ) . 'vendor/autoload.php';
-
 
 class Send_SMTP {
-
 
     /**
      * Hold the SMTP account settings retrieved from the database.

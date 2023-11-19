@@ -17,13 +17,13 @@ namespace Bigup\Contact_Form;
  * 
  */
 
-// Load Composer's autoloader
-require plugin_dir_path( __DIR__ ) . 'vendor/autoload.php';
-
 // Import PHPMailer classes into the global namespace
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
+
+// Load Composer's autoloader
+require BIGUPCF_PATH . 'vendor/autoload.php';
 
 // WordPress Dependencies
 use WP_REST_Request;

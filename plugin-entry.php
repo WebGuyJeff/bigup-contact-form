@@ -23,9 +23,9 @@ namespace Bigup\Contact_Form;
  * There is no in-built WP function to get the base URL for a plugin, so this constant allows us to
  * write relative file references, making code portable.
  */
-$url = plugin_dir_url( __FILE__ );
+$url = trailingslashit( plugin_dir_url( __FILE__ ) );
 define( 'BIGUPCF_URL', $url );
-$path = plugin_dir_path( __FILE__ );
+$path = trailingslashit( plugin_dir_path( __FILE__ ) );
 define( 'BIGUPCF_PATH', $path );
 
 /**
