@@ -38,7 +38,7 @@ class Get_Settings {
 			'host',
 			'port',
 			'auth',
-			'use_sendmail',
+			'use_local_mail_server',
 			'from_email',
 			'to_email',
 		];
@@ -54,26 +54,26 @@ class Get_Settings {
 	}
 
 	/**
-	 * Get the Sendmail options.
+	 * Get the local mail server options.
 	 * 
 	 * Performs initial validation to ensure no values are empty.
 	 */
-	public static function sendmail() {
+	public static function local_mail_server() {
 		
 		$option_names = [
-			'use_sendmail',
+			'use_local_mail_server',
 			'from_email',
 			'to_email',
 		];
 
-		$sendmail_settings = Self::get_options_from_database( $option_names );
+		$local_mail_server_settings = Self::get_options_from_database( $option_names );
 
-		if ( Self::validate_settings( $sendmail_settings ) ) {
+		if ( Self::validate_settings( $local_mail_server_settings ) ) {
 			// settings ok
-			return $sendmail_settings;
+			return $local_mail_server_settings;
 		}
 		// settings bad
-		error_log( 'Bigup_Contact_Form: Sendmail settings invalid.' );
+		error_log( 'Bigup_Contact_Form: Local mail server settings invalid.' );
 		return false;
 	}
 
@@ -84,14 +84,11 @@ class Get_Settings {
 	 * Returns false if ANY option is empty.
 	 */
 	private static function get_options_from_database( $option_names ) {
-
 		if ( is_array( $option_names ) ) {
+			$saved_settings = get_option( 'bigup_contact_form_settings' );
 			foreach ( $option_names as $option ) {
-				$settings[ $option ] = get_option( $option );
+				$settings[ $option ] = $saved_settings[ $option ] ?? false;
 			}
-
-		} elseif ( is_string( $option_names ) ) {
-			$settings[ $option_names ] = get_option( $option_names );
 
 		} else {
 			error_log( 'Bigup_Contact_Form: get_options_from_database expects string or array but ' . gettype( $option_names ) . ' received.' );
@@ -140,7 +137,7 @@ class Get_Settings {
 					$valid = ( is_bool( (bool)$value ) ) ? true : false;
 					break;
 
-				case 'use_sendmail':
+				case 'use_local_mail_server':
 					$valid = ( is_bool( (bool)$value ) ) ? true : false;
 					break;
 

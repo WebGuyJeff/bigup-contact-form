@@ -20,18 +20,20 @@ use function menu_page_url;
 
 class Admin_Settings {
 
+    /**
+     * Settings page slug to add with add_submenu_page().
+     */
+    private $admin_label = 'Contact Form';
 
     /**
      * Settings page slug to add with add_submenu_page().
      */
-    public $admin_label = 'Contact Form';
-
+    private $page_slug = 'bigup-web-contact-form';
 
     /**
-     * Settings page slug to add with add_submenu_page().
+     * The plugin settings saved the wp_options table.
      */
-    public $page_slug = 'bigup-web-contact-form';
-
+    private $settings;
 
     /**
      * Settings group name called by settings_fields().
@@ -39,19 +41,19 @@ class Admin_Settings {
 	 * To add multiple sections to the same settings page, all settings
 	 * registered for that page MUST BE IN THE SAME 'OPTION GROUP'.
      */
-    public $group_name = 'group_contact_form_settings';
-
+    private $group_name = 'group_contact_form_settings';
 
     /**
      * base64 uri svg icon used next to page title.
      */
-    public $icon = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMzIiIGhlaWdodD0iMTMyIj48cGF0aCBmaWxsPSJjdXJyZW50Q29sb3IiIGQ9Ik0wIDB2MTMyaDM1LjRWODcuMmMwLTUuNiAwLTExLjYgMS43LTE2LjcuOC0yLjUgNC40LTMuNyA3LjEtMy43aDM0LjVjMy4yIDAgNi45LjEgOC4yIDEuMiAyLjMgMS44IDEuOSA3LjIgMi4xIDEwLjUuNCA0LjkgMSAxNC4yLS41IDE1LjYtMy4zIDMuNC0yLjggNC05LjIgMTAuMS0xLjggMS40LTYtLjktNS4zLTQuNC43LTMuNiAzLjQtOS43IDMuNC0xMS40IDAtMS43LTIgLjgtMi44IDAtLjMtLjQtLjYtLjktLjgtMS42LS43LTIuNCA0LjgtNy43IDQuMi04LjgtLjktMS4zLTQuMyA3LTYuNCA1LS42LS41LTIuMS00LjktMi44LTUtMSAwIDEuOCA0LjguOCA3LjktLjcgMi0zLjIgMi44LTUuMiAzLTIuNi41LTEzLjMtMTAuMS0xNC05LjUtLjguNyAxMC44IDEwLjcgMTIuNCAxNCAxLjMgMi4xIDIuMyA3LjUgMS43IDguMS0uNi43LTEwLjktNC05LjItMS41IDEuOCAyLjYgMTAgMy4yIDEzLjYgMy44IDEuMS4yIDMgLjEgNC42IDIuNS4zLjQtMi42LS40LTUuMy0xLTIuNi0uMy01LjQtMS01LjktLjgtLjcuNSAyIDMuMiAyLjggMy40IDEuMS40IDExLjUtLjUgMTIuMi0uNyAyLjgtMSAzLjktMS42IDQuMy0yIDUuOC02LjcgOS40LTkgOS42LTEyLjEuMi0zLjEtLjQtMTMgMi4zLTE0LjggMi42LTEuOCA1LjMuMSA2LjUgNS44IDEuMiA1LjcgMy40IDUuNiA0LjQgMTAuOCAxIDUuMi0zLjMgMTUuOS01LjYgMjEuOS0yLjIgNi03LjQgNy42LTEwLjYgOS42LTMuMyAyLTYuNyAzLjUtMTAuOCA0LjMtMi45LjYtNy41IDEuMS05LjkgMS4zSDEzMlYwSDY2czcuNC41IDExLjQgMS4zUzg1IDMuNyA4OC4yIDUuN2MzLjIgMiA4LjQgMy42IDEwLjYgOS42IDIuMyA2IDYuNyAxNi42IDUuNiAyMS44LTEgNS4zLTMuMiA1LjEtNC40IDEwLjgtMS4yIDUuNy0zLjkgNy43LTYuNSA1LjktMi43LTEuOS0yLjEtMTEuOC0yLjMtMTQuOC0uMi0zLjEtMy44LTUuNS05LjYtMTIuMS0uNC0uNS0xLjUtMS4xLTQuMy0yLS43LS4yLTExLTEuMi0xMi4yLS44LS44LjItMy41IDMtMi44IDMuNC41LjMgMy4zLS40IDUuOS0uOSAyLjctLjQgNS42LTEuMyA1LjMtLjlDNzIgMjguMSA3MCAyOCA2OSAyOC4yYy0zLjUuNi0xMS44IDEuMi0xMy42IDMuOC0xLjcgMi42IDguNi0yLjIgOS4yLTEuNS42LjctLjQgNi0xLjcgOC4yLTEuNiAzLjMtMTMuMiAxMy4yLTEyLjQgMTMuOS43LjcgMTEuNC0xMCAxNC05LjUgMiAuMyA0LjUgMSA1LjIgMyAxIDMuMS0xLjcgOC0uOCA3LjguNyAwIDIuMi00LjQgMi44LTUgMi0yIDUuNSA2LjQgNi40IDUgLjYtMS00LjktNi4zLTQuMi04LjcuMi0uNy41LTEuMi44LTEuNS44LTEgMi44IDEuNiAyLjggMCAwLTEuOC0yLjctNy44LTMuNC0xMS40LS43LTMuNiAzLjUtNS45IDUuMy00LjUgNi40IDYgNiA2LjggOS4yIDEwLjEgMS40IDEuNSAxIDEwLjcuNSAxNS43LS4yIDMuMi4yIDguNi0yLjEgMTAuNS0yIDEuNS04LjggMS4xLTEyIDEuMUg0NC4yYy0yLjcgMC02LjMtMS4xLTcuMS0zLjctMS43LTUtMS43LTExLTEuNy0xNi43VjBaIi8+PC9zdmc+Cg==';
+    private $icon = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMzIiIGhlaWdodD0iMTMyIj48cGF0aCBmaWxsPSJjdXJyZW50Q29sb3IiIGQ9Ik0wIDB2MTMyaDM1LjRWODcuMmMwLTUuNiAwLTExLjYgMS43LTE2LjcuOC0yLjUgNC40LTMuNyA3LjEtMy43aDM0LjVjMy4yIDAgNi45LjEgOC4yIDEuMiAyLjMgMS44IDEuOSA3LjIgMi4xIDEwLjUuNCA0LjkgMSAxNC4yLS41IDE1LjYtMy4zIDMuNC0yLjggNC05LjIgMTAuMS0xLjggMS40LTYtLjktNS4zLTQuNC43LTMuNiAzLjQtOS43IDMuNC0xMS40IDAtMS43LTIgLjgtMi44IDAtLjMtLjQtLjYtLjktLjgtMS42LS43LTIuNCA0LjgtNy43IDQuMi04LjgtLjktMS4zLTQuMyA3LTYuNCA1LS42LS41LTIuMS00LjktMi44LTUtMSAwIDEuOCA0LjguOCA3LjktLjcgMi0zLjIgMi44LTUuMiAzLTIuNi41LTEzLjMtMTAuMS0xNC05LjUtLjguNyAxMC44IDEwLjcgMTIuNCAxNCAxLjMgMi4xIDIuMyA3LjUgMS43IDguMS0uNi43LTEwLjktNC05LjItMS41IDEuOCAyLjYgMTAgMy4yIDEzLjYgMy44IDEuMS4yIDMgLjEgNC42IDIuNS4zLjQtMi42LS40LTUuMy0xLTIuNi0uMy01LjQtMS01LjktLjgtLjcuNSAyIDMuMiAyLjggMy40IDEuMS40IDExLjUtLjUgMTIuMi0uNyAyLjgtMSAzLjktMS42IDQuMy0yIDUuOC02LjcgOS40LTkgOS42LTEyLjEuMi0zLjEtLjQtMTMgMi4zLTE0LjggMi42LTEuOCA1LjMuMSA2LjUgNS44IDEuMiA1LjcgMy40IDUuNiA0LjQgMTAuOCAxIDUuMi0zLjMgMTUuOS01LjYgMjEuOS0yLjIgNi03LjQgNy42LTEwLjYgOS42LTMuMyAyLTYuNyAzLjUtMTAuOCA0LjMtMi45LjYtNy41IDEuMS05LjkgMS4zSDEzMlYwSDY2czcuNC41IDExLjQgMS4zUzg1IDMuNyA4OC4yIDUuN2MzLjIgMiA4LjQgMy42IDEwLjYgOS42IDIuMyA2IDYuNyAxNi42IDUuNiAyMS44LTEgNS4zLTMuMiA1LjEtNC40IDEwLjgtMS4yIDUuNy0zLjkgNy43LTYuNSA1LjktMi43LTEuOS0yLjEtMTEuOC0yLjMtMTQuOC0uMi0zLjEtMy44LTUuNS05LjYtMTIuMS0uNC0uNS0xLjUtMS4xLTQuMy0yLS43LS4yLTExLTEuMi0xMi4yLS44LS44LjItMy41IDMtMi44IDMuNC41LjMgMy4zLS40IDUuOS0uOSAyLjctLjQgNS42LTEuMyA1LjMtLjlDNzIgMjguMSA3MCAyOCA2OSAyOC4yYy0zLjUuNi0xMS44IDEuMi0xMy42IDMuOC0xLjcgMi42IDguNi0yLjIgOS4yLTEuNS42LjctLjQgNi0xLjcgOC4yLTEuNiAzLjMtMTMuMiAxMy4yLTEyLjQgMTMuOS43LjcgMTEuNC0xMCAxNC05LjUgMiAuMyA0LjUgMSA1LjIgMyAxIDMuMS0xLjcgOC0uOCA3LjguNyAwIDIuMi00LjQgMi44LTUgMi0yIDUuNSA2LjQgNi40IDUgLjYtMS00LjktNi4zLTQuMi04LjcuMi0uNy41LTEuMi44LTEuNS44LTEgMi44IDEuNiAyLjggMCAwLTEuOC0yLjctNy44LTMuNC0xMS40LS43LTMuNiAzLjUtNS45IDUuMy00LjUgNi40IDYgNiA2LjggOS4yIDEwLjEgMS40IDEuNSAxIDEwLjcuNSAxNS43LS4yIDMuMi4yIDguNi0yLjEgMTAuNS0yIDEuNS04LjggMS4xLTEyIDEuMUg0NC4yYy0yLjcgMC02LjMtMS4xLTcuMS0zLjctMS43LTUtMS43LTExLTEuNy0xNi43VjBaIi8+PC9zdmc+Cg==';
 
 
     /**
      * Init the class by hooking into the admin interface.
      */
     public function __construct() {
+		$this->settings = get_option( 'bigup_contact_form_settings' );
 		add_action( 'bigup_below_parent_settings_page_heading', [ &$this, 'echo_plugin_settings_link' ] );
 		new Admin_Settings_Parent();
         add_action( 'admin_menu', [ &$this, 'register_admin_menu' ], 99 );
@@ -121,13 +123,8 @@ class Admin_Settings {
             <form method="post" action="options.php">
 
                 <?php
-                    /* Setup hidden input functionality */
                     settings_fields( $this->group_name );
-
-                    /* Print the input fields */
                     do_settings_sections( $this->page_slug );
-
-                    /* Print the submit button */
                     submit_button( 'Save' );
                 ?>
 
@@ -140,23 +137,99 @@ class Admin_Settings {
 
 
     /**
+     * Register all settings fields and call their functions to build the page.
+     * 
+     * add_settings_section( $id, $title, $callback, $page )
+     * add_settings_field( $id, $title, $callback, $page, $section, $args )
+     * register_setting( $option_group, $option_name, $sanitize_callback )
+     */
+    public function register_settings() {
+
+        $group    = $this->group_name;
+        $page     = $this->page_slug;
+
+		// A single serialsed array holds all plugin settings.
+		register_setting(
+			$group,                        // option_group
+			'bigup_contact_form_settings', // option_name
+			array( $this, 'sanitize' )     // sanitize_callback
+		);
+
+        // SMTP Account.
+        $section = 'section_smtp';
+        add_settings_section( $section, 'SMTP Account', null, $page );
+            add_settings_field( 'username', 'Username', [ &$this, 'echo_field_username' ], $page, $section );
+            add_settings_field( 'password', 'Password', [ &$this, 'echo_field_password' ], $page, $section );
+            add_settings_field( 'host', 'Host', [ &$this, 'echo_field_host' ], $page, $section );
+            add_settings_field( 'port', 'Port', [ &$this, 'echo_field_port' ], $page, $section );
+            add_settings_field( 'auth', 'Authentication', [ &$this, 'echo_field_auth' ], $page, $section );
+
+        // Local mail server.
+        $section = 'section_local_mail_server';
+        add_settings_section( $section, 'Local Mail Server', null, $page );
+			add_settings_field( 'use_local_mail_server', 'Use Local Mail Server', [ &$this, 'echo_field_use_local_mail_server' ], $page, $section );
+
+
+        // Message Header.
+        $section = 'section_headers';
+        add_settings_section( $section, 'Message Headers', [ &$this, 'echo_intro_section_headers' ], $page );
+            add_settings_field( 'to_email', 'Recipient Email Address', [ &$this, 'echo_field_to_email' ], $page, $section );
+            add_settings_field( 'from_email', 'Sent-from Email Address', [ &$this, 'echo_field_from_email' ], $page, $section );
+
+        // Appearance.
+        $section = 'section_appearance';
+        add_settings_section( $section, 'Appearance', [ &$this, 'echo_intro_section_appearance' ], $page );
+			add_settings_field( 'styles', 'Fancy dark theme', [ &$this, 'echo_field_styles' ], $page, $section );
+			add_settings_field( 'nostyles', 'Remove plugin styles', [ &$this, 'echo_field_nostyles' ], $page, $section );
+
+        // Fields.
+        $section = 'section_fields';
+        add_settings_section( $section, 'Fields', [ &$this, 'echo_intro_section_fields' ], $page );
+			add_settings_field( 'files', 'Files', [ &$this, 'echo_field_files' ], $page, $section );
+    }
+
+
+    /**
      * Output Form Fields - SMTP Account Settings
      */
     public function echo_field_username() {
-        echo '<input type="text" name="username" id="username" value="' . get_option('username') . '" required>';
+		printf(
+			'<input class="regular-text" type="text" name="%s" value="%s">',
+			'bigup_contact_form_settings[username]',
+			$this->settings['username'] ?? ''
+		);
     }
     public function echo_field_password() {
-        echo '<input type="password" name="password" id="password" value="' . get_option('password') . '" required>';
+		printf(
+			'<input class="regular-text" type="password" name="%s" value="%s">',
+			'bigup_contact_form_settings[password]',
+			 $this->settings['password'] ?? ''
+		);
     }
     public function echo_field_host() {
-        echo '<input type="text" name="host" id="host" value="' . get_option('host') . '" required>';
+		printf(
+			'<input class="regular-text" type="text" name="%s" value="%s">',
+			'bigup_contact_form_settings[host]',
+			$this->settings['host'] ?? ''
+		);
     }
     public function echo_field_port() {
-        echo '<input type="number" min="1" max="65535" step="1" name="port" id="port" value="' . get_option('port') . '" required>';
+		printf(
+			'<input class="regular-text" type="number" min="25" max="2525" step="1" name="%s" value="%s">',
+			'bigup_contact_form_settings[port]',
+			$this->settings['port'] ?? ''
+		);
     }
     public function echo_field_auth() {
-        echo '<input type="checkbox" name="auth" id="auth" value="1"' . checked( '1', get_option('auth'), false ) . '>';
-        echo '<label for="auth">Tick if your SMTP provider requires authentication.</label>';
+		$setting = 'bigup_contact_form_settings[auth]';
+		printf(
+			'<input type="checkbox" value="1" id="%s" name="%s" %s><label for="%s">%s</label>',
+			$setting,
+			$setting,
+			isset( $this->settings['auth'] ) ? checked( '1', $this->settings['auth'], false ) : '',
+			$setting,
+			'Tick if your SMTP provider requires authentication.'
+		);
     }
 
 
@@ -164,9 +237,16 @@ class Admin_Settings {
      * Output Form Fields - Local mail server Settings
      */
     public function echo_field_use_local_mail_server() {
-        echo '<input type="checkbox" name="use_local_mail_server" id="use_local_mail_server" value="1"' . checked( '1', get_option('use_local_mail_server'), false ) . '>';
-        echo '<label for="use_local_mail_server">Try and use a local mail server instead of SMTP (overrides SMTP settings).</label>';
-		echo '<p><span style="font-weight:800;">WARNING:</span> Depending on the hosting config, this may return false positives making it look like mail has sent. Please test-send an email to yourself via the contact form. SMTP is highly recommended as it will always alert the user of send failure!</p>';
+		$setting = 'bigup_contact_form_settings[use_local_mail_server]';
+		printf(
+			'<input type="checkbox" value="1" id="%s" name="%s" %s><label for="%s">%s</label><p><span style="font-weight:800;">WARNING: </span>%s</p>',
+			$setting,
+			$setting,
+			isset( $this->settings['use_local_mail_server'] ) ? checked( '1', $this->settings['use_local_mail_server'], false ) : '',
+			$setting,
+			'Try and use a local mail server instead of SMTP (overrides SMTP settings).',
+			'Depending on the hosting config, this may return false positives making it look like mail has sent. Please test-send an email to yourself via the contact form. SMTP is highly recommended as it will always alert the user of send failure!'
+		);
     }
 
 
@@ -177,11 +257,19 @@ class Admin_Settings {
         echo '<p>These can be set to anything, however, setting <b>sent from</b> to an address that doesn&apos;t match the local domain will cause mail to fail SPF checks, not to mention being a form of forgery.</p>';
     }
     public function echo_field_to_email() {
-        echo '<input type="email" name="to_email" id="to_email" value="' . get_option( 'to_email', get_bloginfo( 'admin_email' ) ) . '">';
-    }
+		printf(
+			'<input class="regular-text" type="email" name="%s" value="%s">',
+			'bigup_contact_form_settings[to_email]',
+			$this->settings['to_email'] ?? get_bloginfo( 'admin_email' )
+		);
+	}
     public function echo_field_from_email() {
-        echo '<input type="email" name="from_email" id="from_email" value="' . get_option( 'from_email', get_bloginfo( 'admin_email' ) ) . '">';
-    }
+		printf(
+			'<input class="regular-text" type="email" name="%s" value="%s">',
+			'bigup_contact_form_settings[from_email]',
+			$this->settings['from_email'] ?? get_bloginfo( 'admin_email' )
+		);
+	}
 
 
     /**
@@ -191,14 +279,27 @@ class Admin_Settings {
         echo '<p>These options determine the appearance of your form.</p>';
     }
     public function echo_field_styles() {
-        echo '<input type="checkbox" name="styles" id="styles" value="1"' . checked( '1', get_option('styles'), false ) . '>';
-        echo '<label for="styles">Tick to use the fancy dark form theme.</label>';
+		$setting = 'bigup_contact_form_settings[styles]';
+		printf(
+			'<input type="checkbox" value="1" id="%s" name="%s" %s><label for="%s">%s</label>',
+			$setting,
+			$setting,
+			isset( $this->settings['styles'] ) ? checked( '1', $this->settings['styles'], false ) : '',
+			$setting,
+			'Tick to use the fancy dark form theme.',
+		);
     }
-
     public function echo_field_nostyles() {
-		echo '<input type="checkbox" name="nostyles" id="nostyles" value="1"' . checked( '1', get_option('nostyles'), false ) . '>';
-        echo '<label for="nostyles">Tick to remove all styles provided by this plugin and allow theme styles to take precedence (overrides "Fancy dark theme" setting).</label>';
-    }
+		$setting = 'bigup_contact_form_settings[nostyles]';
+		printf(
+			'<input type="checkbox" value="1" id="%s" name="%s" %s><label for="%s">%s</label>',
+			$setting,
+			$setting,
+			isset( $this->settings['nostyles'] ) ? checked( '1', $this->settings['nostyles'], false ) : '',
+			$setting,
+			'Tick to remove all styles provided by this plugin and allow theme styles to take precedence (overrides "Fancy dark theme" setting).',
+		);
+	}
 
 	/**
      * Output Form Fields - Fields Settings
@@ -207,107 +308,75 @@ class Admin_Settings {
         echo '<p>Customise the fields on the form.</p>';
     }
     public function echo_field_files() {
-        echo '<input type="checkbox" name="files" id="files" value="1"' . checked( '1', get_option('files'), false ) . '>';
-        echo '<label for="files">Tick to enable the file select input so user can upload files.</label>';
+		$setting = 'bigup_contact_form_settings[files]';
+		printf(
+			'<input type="checkbox" value="1" id="%s" name="%s" %s><label for="%s">%s</label>',
+			$setting,
+			$setting,
+			isset( $this->settings['files'] ) ? checked( '1', $this->settings['files'], false ) : '',
+			$setting,
+			'Tick to enable the file select input so user can upload files.',
+		);
     }
 
 
-    /**
-     * Register all settings fields and call their functions to build the page.
-     * 
-     * add_settings_section( $id, $title, $callback, $page )
-     * add_settings_field( $id, $title, $callback, $page, $section, $args )
-     * register_setting( $option_group, $option_name, $sanitize_callback )
-     */
-    public function register_settings() {
+	public function sanitize( $input ) {
+		$sanitized = array();
 
-        $group = $this->group_name;
-        $page = $this->page_slug;
+		if ( isset( $input['username'] ) ) {
+			$sanitized['username'] = sanitize_text_field( $input['username'] );
+		}
 
-        /**
-         * Register section and fields - SMTP Account Settings
-         */
-        $section = 'section_smtp';
-        add_settings_section( $section, 'SMTP Account', null, $page );
+		if ( isset( $input['password'] ) ) {
+			$sanitized['password'] = $this->sanitize_password( $input['password'] );
+		}
 
-            add_settings_field( 'username', 'Username', [ &$this, 'echo_field_username' ], $page, $section );
-            register_setting( $group, 'username', [ &$this, 'validate_text' ] );
+        if ( isset( $input['host'] ) ) {
+			$sanitized['host'] = $this->validate_domain( $input['host'] );
+		}
 
-            add_settings_field( 'password', 'Password', [ &$this, 'echo_field_password' ], $page, $section );
-            register_setting( $group, 'password', [ &$this, 'validate_text' ] );
+		if ( isset( $input['port'] ) ) {
+			$sanitized['port'] = $this->sanitise_smtp_port( $input['port'] );
+		}
 
-            add_settings_field( 'host', 'Host', [ &$this, 'echo_field_host' ], $page, $section );
-            register_setting( $group, 'host', [ &$this, 'validate_domain' ] );
+        if ( isset( $input['auth'] ) ) {
+			$sanitized['auth'] = $this->sanitise_checkbox( $input['auth'] );
+		}
 
-            add_settings_field( 'port', 'Port', [ &$this, 'echo_field_port' ], $page, $section );
-            register_setting( $group, 'port', [ &$this, 'sanitise_smtp_port' ] );
+		if ( isset( $input['use_local_mail_server'] ) ) {
+			$sanitized['use_local_mail_server'] = $this->sanitise_checkbox( $input['use_local_mail_server'] );
+		}
 
-            add_settings_field( 'auth', 'Authentication', [ &$this, 'echo_field_auth' ], $page, $section );
-            register_setting( $group, 'auth', [ &$this, 'sanitise_checkbox' ] );
+		if ( isset( $input['to_email'] ) ) {
+			$sanitized['to_email'] = sanitize_email( $input['to_email'] );
+		}
 
-        /**
-         * Register section and fields - Local mail server Settings
-         */
-        $section = 'section_local_mail_server';
-        add_settings_section( $section, 'Local Mail Server', null, $page );
+        if ( isset( $input['from_email'] ) ) {
+			$sanitized['from_email'] = sanitize_email( $input['from_email'] );
+		}
 
-			add_settings_field( 'use_local_mail_server', 'Use Local Mail Server', [ &$this, 'echo_field_use_local_mail_server' ], $page, $section );
-			register_setting( $group, 'use_local_mail_server', [ &$this, 'sanitise_checkbox' ] );
+		if ( isset( $input['styles'] ) ) {
+			$sanitized['styles'] = $this->sanitise_checkbox( $input['styles'] );
+		}
 
-        /**
-         * Register section and fields - Message Header Settings
-         */
-        $section = 'section_headers';
-        add_settings_section( $section, 'Message Headers', [ &$this, 'echo_intro_section_headers' ], $page );
+		if ( isset( $input['nostyles'] ) ) {
+			$sanitized['nostyles'] = $this->sanitise_checkbox( $input['nostyles'] );
+		}
 
-            add_settings_field( 'to_email', 'Recipient Email Address', [ &$this, 'echo_field_to_email' ], $page, $section );
-            register_setting( $group, 'to_email', 'sanitize_email' );
+		if ( isset( $input['files'] ) ) {
+			$sanitized['files'] = $this->sanitise_checkbox( $input['files'] );
+		}
 
-            add_settings_field( 'from_email', 'Sent-from Email Address', [ &$this, 'echo_field_from_email' ], $page, $section );
-            register_setting( $group, 'from_email', 'sanitize_email' );
-
-        /**
-         * Register section and fields - Appearance Settings
-         */
-        $section = 'section_appearance';
-        add_settings_section( $section, 'Appearance', [ &$this, 'echo_intro_section_appearance' ], $page );
-
-			add_settings_field( 'styles', 'Fancy dark theme', [ &$this, 'echo_field_styles' ], $page, $section );
-			register_setting( $group, 'styles', [ &$this, 'sanitise_checkbox' ] );
-
-			add_settings_field( 'nostyles', 'Remove plugin styles', [ &$this, 'echo_field_nostyles' ], $page, $section );
-			register_setting( $group, 'nostyles', [ &$this, 'sanitise_checkbox' ] );
-
-
-        /**
-         * Register section and fields - Fields Settings
-         */
-        $section = 'section_fields';
-        add_settings_section( $section, 'Fields', [ &$this, 'echo_intro_section_fields' ], $page );
-
-			add_settings_field( 'files', 'Files', [ &$this, 'echo_field_files' ], $page, $section );
-			register_setting( $group, 'files', [ &$this, 'sanitise_checkbox' ] );
-    }
-
-
-    /**
-     * Validate a text field.
-     */
-    function validate_text( $text ) {
- 
-        $clean_text = sanitize_text_field( $text );
-        return $clean_text;
-    }
+		return $sanitized;
+	}
 
 
     /**
      * Validate a domain name.
      */
-    function validate_domain( $domain ) {
- 
+    private function validate_domain( $domain ) {
         $ip = gethostbyname( $domain );
         $ip = filter_var( $ip, FILTER_VALIDATE_IP );
-
         if ( $domain == '' || $domain == null ) {
             return '';
         } elseif ( $ip ) {
@@ -321,10 +390,9 @@ class Admin_Settings {
     /**
      * Sanitise an SMTP port number.
      */
-    function sanitise_smtp_port( $port ) {
+    private function sanitise_smtp_port( $port ) {
 		$port_int    = intval( $port );
 		$valid_ports = [ 25, 465, 587, 2525 ];
-
         if ( in_array( $port_int, $valid_ports, true ) ) {
             return $port_int;
         } else {
@@ -336,10 +404,16 @@ class Admin_Settings {
     /**
      * Validate a checkbox.
      */
-    function sanitise_checkbox( $checkbox ) {
-
-        $bool_checkbox = (bool)$checkbox;
+    private function sanitise_checkbox( $checkbox ) {
+        $bool_checkbox = ( bool )$checkbox;
         return $bool_checkbox;
     }
 
-}// Class end
+    /**
+     * Validate a checkbox.
+     */
+    private function sanitize_password( $password ) {
+        $trimmed_password = trim( $password );
+        return $trimmed_password;
+    }
+}

@@ -29,7 +29,7 @@ $decorative_markup = ! str_contains( $classes, 'bigup__form-nostyles' );
 
 <form class="bigup__form <?php echo esc_attr( $classes ); ?>" method="post" accept-charset="utf-8" autocomplete="on">
 
-    <header class="bigup__form_section">
+    <header>
         <?php
             $title   = ( ! empty( $title ) ) ? '<h3 id="aria_form-title" class="bigup__form_title">' . $title . '</h3>' . "\n" : '';
             $message = ( ! empty( $message ) ) ? '<p id="aria_form-desc" class="bigup__form_message">' . $message . '</p>' . "\n" : '';
@@ -139,7 +139,7 @@ $decorative_markup = ! str_contains( $classes, 'bigup__form-nostyles' );
 
     </div>
 
-    <footer class="bigup__form_section">
+    <footer>
         <div class="bigup__form_output" style="display:none; opacity:0;"></div>
     </footer>
 

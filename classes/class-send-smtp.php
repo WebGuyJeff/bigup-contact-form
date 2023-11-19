@@ -57,7 +57,7 @@ class Send_SMTP {
     public function compose_and_send_email( $form_data ) {
 
 		// Check settings are ready.
-        if ( false === !! $this->smtp_settings || true === $this->smtp_settings[ 'use_sendmail' ] ) {
+        if ( false === !! $this->smtp_settings || true === $this->smtp_settings[ 'use_local_mail_server' ] ) {
 			error_log( 'Bigup_Contact_Form: Invalid SMTP settings retrieved from database.' );
 			return [ 500, 'Sending your message failed due to a bad local mailserver configuration.' ];
         }
@@ -152,12 +152,6 @@ HTML;
 					$mail->AddAttachment( $file[ 'tmp_name' ], $file[ 'name' ] );
 				}
 			}
-			
-
-error_log( 'SMTP' );	
-
-
-
 
             // Gotime.
             $sent = $mail->send();

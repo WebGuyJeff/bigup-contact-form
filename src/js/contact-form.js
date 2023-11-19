@@ -99,7 +99,9 @@
 
 			// File upload.
 			const fileUpload = form.querySelector( '.bigup__customFileUpload_input' )
-			fileUpload.addEventListener( 'change', updateFileList )
+			if ( fileUpload ) {
+				fileUpload.addEventListener( 'change', updateFileList )
+			}
         } )
     }
 
@@ -216,7 +218,8 @@
             if ( result.ok ) {
                 let inputs = form.querySelectorAll( '.bigup__form_input' )
                 inputs.forEach( input => { input.value = '' } )
-				removeChildren( form.querySelector( '.bigup__customFileUpload_fileList' ) )
+				const fileList = form.querySelector( '.bigup__customFileUpload_fileList' )
+				if ( fileList ) removeChildren( fileList )
             }
             output.style.display = 'none'
             formBusy = false
@@ -324,11 +327,11 @@
     function removeChildren( parent ) {
 
         if( debug ) console.log( `${stopwatch()} |START| removeChildren | ${parent.classList}` )
-        return new Promise( ( resolve ) => {
+        return new Promise( ( resolve, reject ) => {
             try {
-                while ( parent.firstChild ) {
-                    parent.removeChild( parent.firstChild )
-                }
+				while ( parent.firstChild ) {
+					parent.removeChild( parent.firstChild )
+				}
                 resolve( 'Child nodes removed successfully.' )
             } catch ( error ) {
                 reject( error )
@@ -446,7 +449,7 @@
      */
     function transitionToResolve( property, value ) {
 
-        return new Promise( ( resolve ) => {
+        return new Promise( ( resolve, reject ) => {
             try {
                 if( debug ) console.log( `${stopwatch()} |START| transition | ${this.classList} : ${property} : ${value}` )
                 this.style[ property ] = value

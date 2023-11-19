@@ -5,9 +5,9 @@ namespace Bigup\Contact_Form;
  * Bigup Contact Form - PHPMailer Handler.
  *
  * This template handles the construction of the email using values submitted
- * via the form, and sends the email via PHPMailer using Sendmail which must
- * be installed on the host server. By default Sendmail is installed on most
- * Linux platforms, so this is a good backup when SMTP isn't an available.
+ * via the form, and sends the email via PHPMailer using mail() which must
+ * be installed on the host server. Package mail() is often available on Windows
+ * and Linux, so this is a good backup when SMTP isn't an available.
  *
  * @package bigup_contact_form
  * @author Jefferson Real <me@jeffersonreal.uk>
@@ -31,7 +31,7 @@ use function get_site_url;
 require plugin_dir_path( __DIR__ ) . 'vendor/autoload.php';
 
 
-class Send_Sendmail {
+class Send_Local {
 
     /**
      * Hold the settings retrieved from the database.
@@ -51,7 +51,7 @@ class Send_Sendmail {
      */
     public function __construct() {
 
-        $this->settings = Get_Settings::sendmail();
+        $this->settings = Get_Settings::local_mail_server();
         if ( true === !! $this->settings ) {
             $this->settings_ok = true;
         }
@@ -152,12 +152,6 @@ HTML;
 					$mail->AddAttachment( $file[ 'tmp_name' ], $file[ 'name' ] );
 				}
 			}
-
-
-error_log( 'LOCAL' );		
-
-
-
 
             // Send it!
             $sent = $mail->send();

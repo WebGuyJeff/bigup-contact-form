@@ -90,9 +90,10 @@ class Form_Controller {
         	exit; //request handlers should exit() when done
 		}
 
-		$use_sendmail = get_option( 'use_sendmail' );
-		$mail_handler = ( $use_sendmail ) ? new Send_Sendmail() : new Send_SMTP();
-		$result       = $mail_handler->compose_and_send_email( $data );
+		$saved_settings   = get_option( 'bigup_contact_form_settings' );
+		$use_local_mailer = $saved_settings['use_local_mail_server'];
+		$mail_handler     = ( $use_local_mailer ) ? new Send_Local() : new Send_SMTP();
+		$result           = $mail_handler->compose_and_send_email( $data );
 		$this->send_json_response( $result );
 
 		// Log form entry post.

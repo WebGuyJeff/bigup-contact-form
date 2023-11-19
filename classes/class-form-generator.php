@@ -70,9 +70,10 @@ class Form_Generator {
 			$align = '';
 		}
 
-		$nostyles = get_option('nostyles');
-		$styles = get_option('styles');
-		$files = get_option('files');
+		$saved_settings = get_option( 'bigup_contact_form_settings' );
+		$nostyles       = $saved_settings['nostyles'] ?? false;
+		$styles         = $saved_settings['styles'] ?? false;
+		$files          = $saved_settings['files'] ?? false;
 		$vars[ 'classes' ] = '';
 
 		if ( $nostyles ) {
