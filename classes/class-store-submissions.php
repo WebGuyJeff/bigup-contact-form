@@ -6,7 +6,7 @@ namespace Bigup\Contact_Form;
  *
  * Handle logging form submissions with a custom post type.
  *
- * @package bigup_contact_form
+ * @package bigup-contact-form
  * @author Jefferson Real <me@jeffersonreal.uk>
  * @license GPL2+
  * @link https://jeffersonreal.uk

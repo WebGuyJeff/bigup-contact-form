@@ -13,7 +13,7 @@
  *  - See an undefined class being used in the code being executed
  *  - Call all the functions registered with the spl_autoloader, and pass them the undefined class name
  * 
- * @package bigup_contact_form
+ * @package bigup-contact-form
  * @author Jefferson Real <me@jeffersonreal.uk>
  * @copyright Copyright (c) 2023, Jefferson Real
  * @license GPL2+

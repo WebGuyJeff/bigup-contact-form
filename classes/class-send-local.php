@@ -9,7 +9,7 @@ namespace Bigup\Contact_Form;
  * be installed on the host server. Package mail() is often available on Windows
  * and Linux, so this is a good backup when SMTP isn't an available.
  *
- * @package bigup_contact_form
+ * @package bigup-contact-form
  * @author Jefferson Real <me@jeffersonreal.uk>
  * @copyright Copyright (c) 2023, Jefferson Real
  * @license GPL2+

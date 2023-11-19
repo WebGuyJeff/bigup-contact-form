@@ -6,7 +6,7 @@ namespace Bigup\Contact_Form;
  *
  * This class handles all aspects of shortcode usage.
  *
- * @package bigup_contact_form
+ * @package bigup-contact-form
  * @author Jefferson Real <me@jeffersonreal.uk>
  * @copyright Copyright (c) 2023, Jefferson Real
  * @license GPL2+

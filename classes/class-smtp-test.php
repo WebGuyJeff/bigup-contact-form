@@ -8,7 +8,7 @@ namespace Bigup\Contact_Form;
  * can be established. Otherwise the settings are invalid and the
  * form should not be displayed to users.
  *
- * @package bigup_contact_form
+ * @package bigup-contact-form
  * @author Jefferson Real <me@jeffersonreal.uk>
  * @copyright Copyright (c) 2023, Jefferson Real
  * @license GPL2+

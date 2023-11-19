@@ -8,7 +8,7 @@ namespace Bigup\Contact_Form;
  * values before passing them back to caller. If ANY of the settings are
  * invalid, returns false.
  *
- * @package bigup_contact_form
+ * @package bigup-contact-form
  * @author Jefferson Real <me@jeffersonreal.uk>
  * @copyright Copyright (c) 2023, Jefferson Real
  * @license GPL2+

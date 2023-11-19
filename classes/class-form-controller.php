@@ -9,7 +9,7 @@ namespace Bigup\Contact_Form;
  * 
  * Note: Rest api handles nonces automatically.
  *
- * @package bigup_contact_form
+ * @package bigup-contact-form
  * @author Jefferson Real <me@jeffersonreal.uk>
  * @copyright Copyright (c) 2023, Jefferson Real
  * @license GPL2+

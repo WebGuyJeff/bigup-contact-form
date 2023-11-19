@@ -4,7 +4,7 @@
  * Control client form submission performed with fetch and the
  * WP REST api. All data transmitted in JSON for extensibility.
  * 
- * @package bigup_contact_form
+ * @package bigup-contact-form
  * @author Jefferson Real <me@jeffersonreal.uk>
  * @copyright Copyright (c) 2023, Jefferson Real
  * @license GPL2+

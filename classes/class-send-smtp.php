@@ -8,7 +8,7 @@ namespace Bigup\Contact_Form;
  * via the form, and sends the email via PHPMailer using the SMTP account
  * configured by the user.
  *
- * @package bigup_contact_form
+ * @package bigup-contact-form
  * @author Jefferson Real <me@jeffersonreal.uk>
  * @copyright Copyright (c) 2023, Jefferson Real
  * @license GPL2+
