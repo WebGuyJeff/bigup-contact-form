@@ -1,5 +1,4 @@
 import { submitTest, wpLocalized } from './_submit-test'
-import { formLock } from './_form-lock'
 
 /**
  * Admin client view.
@@ -13,7 +12,6 @@ import { formLock } from './_form-lock'
 function init() {
 
 	const button = document.querySelector( '.bigup__smtpTest_button' )
-	const form   = button.closest( 'form' )
 
 	if ( ! button ) return
 
