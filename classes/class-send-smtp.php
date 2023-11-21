@@ -66,9 +66,11 @@ class Send_SMTP {
         extract( $this->smtp_settings );
         extract( $form_data[ 'fields' ] );
 
-        $site_url  = get_bloginfo( 'url' );
-		$site_name = get_bloginfo( 'name' );
-        $from_name = ( $site_name ) ? $site_name : 'Bigup Contact Form';
+        $site_url  = html_entity_decode( get_bloginfo( 'url' ) );
+		$domain    = parse_url( $site_url, PHP_URL_HOST );
+		$site_name = html_entity_decode( get_bloginfo( 'name' ) );
+		$from_name = $site_name ? $site_name : 'Bigup Contact Form';
+		$subject   = 'New website message from ' . $domain;
 
 // Build plaintext email body
 $plaintext = <<<PLAIN
@@ -130,17 +132,17 @@ HTML;
 			if ( $port !== 25 && $port !== 2525 ) {
 				$mail->SMTPSecure = ( $port === 465 ) ? 'ssl' : 'tls';
 			}
-            $mail->SMTPDebug    = SMTP::DEBUG_SERVER; // Debug level: DEBUG_[OFF/SERVER/CONNECTION]
-            $mail->Debugoutput  = 'error_log';        // How to handle debug output
-			$mail->Helo         = get_site_url();     // Sender's FQDN to identify as
-			$mail->isSMTP();                          // Use SMTP
-            $mail->Host         = $host;              // SMTP server to send through
-            $mail->SMTPAuth     = (bool)$auth;        // Enable SMTP authentication
-            $mail->Username     = $username;          // SMTP username
-            $mail->Password     = $password;          // SMTP password
-            $mail->Port         = $port;              // TCP port
-            $mail->Timeout      = 6;                  // Connection timeout (secs)
-            $mail->getSMTPInstance()->Timelimit = 8;  // Time allowed for each SMTP command response
+            $mail->SMTPDebug    = SMTP::DEBUG_OFF;   // Debug level: DEBUG_[OFF/SERVER/CONNECTION]
+            $mail->Debugoutput  = 'error_log';       // How to handle debug output
+			$mail->Helo         = get_site_url();    // Sender's FQDN to identify as
+			$mail->isSMTP();                         // Use SMTP
+            $mail->Host         = $host;             // SMTP server to send through
+            $mail->SMTPAuth     = (bool)$auth;       // Enable SMTP authentication
+            $mail->Username     = $username;         // SMTP username
+            $mail->Password     = $password;         // SMTP password
+            $mail->Port         = $port;             // TCP port
+            $mail->Timeout      = 6;                 // Connection timeout (secs)
+            $mail->getSMTPInstance()->Timelimit = 8; // Time allowed for each SMTP command response
 
             // Recipients.
             $mail->setFrom( $from_email, $from_name); // Use fixed and owned SMTP account address to pass SPF checks.
@@ -149,9 +151,10 @@ HTML;
 
             // Content.
 			$mail->isHTML(true);
-            $mail->Subject = 'New website message from ' . $site_url;
+			$mail->CharSet = "UTF-8";
+			$mail->Subject = $subject;
 			$mail->Body    = $html;
-            $mail->AltBody = $plaintext_cleaned;
+			$mail->AltBody = $plaintext_cleaned;
 
 			// File attachments.
 			if ( array_key_exists( 'files', $form_data ) ) {

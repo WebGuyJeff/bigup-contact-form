@@ -26,11 +26,11 @@ class Shortcode {
         wp_enqueue_script('bigup_contact_form_public_js');
         wp_enqueue_style('bigup_contact_form_public_css');
 
-        if ( ! isset( $attributes[ 'title' ] ) ) {
+        if ( empty( $attributes[ 'title' ] ) ) {
             $attributes[ 'title' ] = 'Contact Form';
         }
 
-        if ( ! isset( $attributes[ 'message' ] ) ) {
+        if ( empty( $attributes[ 'message' ] ) ) {
             $attributes[ 'message' ] = 'Complete this contact form to send a message';
         }
 

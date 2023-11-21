@@ -91,7 +91,7 @@ class Form_Controller {
 		}
 
 		$saved_settings   = get_option( 'bigup_contact_form_settings' );
-		$use_local_mailer = $saved_settings['use_local_mail_server'];
+		$use_local_mailer = ( ! empty( $saved_settings['use_local_mail_server'] ) && true === $saved_settings['use_local_mail_server'] );
 		$mail_handler     = ( isset( $use_local_mailer ) && true === $use_local_mailer ) ? new Send_Local() : new Send_SMTP();
 		$result           = $mail_handler->compose_and_send_email( $data );
 		$this->send_json_response( $result );
@@ -213,7 +213,7 @@ class Form_Controller {
                     continue 2;
             }
         }
-        if ( isset( $results[ 0 ] ) ) {
+        if ( ! empty( $results[ 0 ] ) ) {
             $form_data_array[ 'validation_errors' ] = $results;
         } else {
             $form_data_array[ 'validation_errors' ] = false;

@@ -161,7 +161,7 @@ class Admin_Settings {
 
         // SMTP Account.
         $section = 'section_smtp';
-        add_settings_section( $section, 'SMTP Account', array( $this, 'section_smtp_callback' ), $page );
+        add_settings_section( $section, 'SMTP Account', array( $this, 'smtp_test_markup_callback' ), $page );
             add_settings_field( 'username', 'Username', [ &$this, 'echo_field_username' ], $page, $section );
             add_settings_field( 'password', 'Password', [ &$this, 'echo_field_password' ], $page, $section );
             add_settings_field( 'host', 'Host', [ &$this, 'echo_field_host' ], $page, $section );
@@ -194,11 +194,12 @@ class Admin_Settings {
 
 
     /**
-     * Section Callback - SMTP Account Settings
+     * SMTP test markup.
 	 * 
 	 * Output a button which will trigger an email send test.
      */
-    public function section_smtp_callback() {
+    public function smtp_test_markup_callback() {
+		// The SMTP test button is enabled by JS once vaild saved settings are detected.
         ?>
 			<div class="bigup__smtpTest_wrapper">
 				<button class="button button-secondary bigup__form_submit bigup__smtpTest_button" type="submit" disabled>
@@ -405,44 +406,6 @@ class Admin_Settings {
 		if ( isset( $input['files'] ) ) {
 			$sanitized['files'] = $this->sanitise_checkbox( $input['files'] );
 		}
-
-	
-		/*
-		I cannot get PHPMailer to reliably return an Exception on success/failure to be able to
-		give feedback to the user :(
-
-		// Test the sanitized SMTP settings before saving.
-		$result = SMTP_Test::server_connection(
-			$sanitized[ 'username' ],
-			$sanitized[ 'password' ],
-			$sanitized[ 'host' ],
-			$sanitized[ 'port' ],
-			$sanitized[ 'auth' ],
-		);
-
-		if ( ! isset( $result ) ) {
-			error_log( 'Bigup_Contact_Form Error: No response while attempting to test SMTP settings.' );
-			add_settings_error( 'server_connection', 'SMTP Test', 'Possible incorrect credentials or internal error.' );
-
-		} elseif ( false === $result[ 'pass' ] ) {
-			$ids = array(
-				'username' => 'bigup_contact_form_settings[username]',
-				'password' => 'bigup_contact_form_settings[password]',
-				'host'     => 'bigup_contact_form_settings[host]',
-				'port'     => 'bigup_contact_form_settings[port]',
-				'auth' 	   => 'bigup_contact_form_settings[auth]',
-			);
-			foreach ( $result[ 'invalid' ] as $setting ) {
-				$message = $result[ 'message' ] . ". Check {$setting}";
-				add_settings_error( $setting, $ids[ $setting ], $message, 'error' );
-			}
-
-		} else {
-			add_settings_error( 'server_connection', 'SMTP Test', 'Settings saved.', 'success' );
-			add_settings_error( 'server_connection', $result[ 'message' ], 'success' );
-		}
-		*/
-
 
 		return $sanitized;
 	}

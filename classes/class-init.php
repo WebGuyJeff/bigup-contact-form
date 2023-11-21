@@ -26,25 +26,17 @@ use function is_admin;
 class Init {
 
 	// Store view (admin || notAdmin).
-	private $view;
+	private string $view;
 
-	// Store localization vars for frontend js.
-	private $localize_vars_frontend;
-
-	// Store localization vars for admin js.
-	private $localize_vars_admin;
+	// Store mail settings check result.
+	private bool $mail_settings_are_set;
 
     /**
      * Setup the class.
      */
     public function __construct() {
 		$this->view          = ( is_admin() ) ? 'admin' : 'notAdmin';
-		$this->localize_vars_frontend = array(
-			'rest_url'    => 'bigup/contact-form/v1/submit',
-			'rest_nonce'  => 'wp_rest',
-		);
-
-		// Check if settings have been configured.
+		// Check if settings have been configured ready to test email sending.
 		$settings = get_option( 'bigup_contact_form_settings' );
 		$required_smtp = array(
 			'username',
@@ -56,12 +48,10 @@ class Init {
 			'to_email',
 			'from_email'
 		);
-		$smtp_ok               = $this->are_all_set( $settings, $required_smtp );
-		$headers_ok            = $this->are_all_set( $settings, $required_headers );
-		$local_mailer_selected = ( isset( $settings['use_local_mail_server'] ) && true === $settings['use_local_mail_server'] );
-		$this->localize_vars_admin = array(
-			'settings_ok' => ( $smtp_ok && $headers_ok ) ?? ( $local_mailer_selected && $headers_ok ),
-		);
+		$smtp_ok                     = $this->are_all_set( $settings, $required_smtp );
+		$headers_ok                  = $this->are_all_set( $settings, $required_headers );
+		$local_mailer_selected       = ( ! empty( $settings['use_local_mail_server'] ) && true === $settings['use_local_mail_server'] );
+		$this->mail_settings_are_set = ( $smtp_ok && $headers_ok || $local_mailer_selected && $headers_ok );
     }
 
 
@@ -71,7 +61,7 @@ class Init {
     public function are_all_set( $data, $testItems ) {
 		$all_set = true;
 		foreach( $testItems as $item ) {
-			if ( ! isset( $data[ $item ] ) ) {
+			if ( empty( $data[ $item ] ) ) {
 				$all_set = false;
 			}
 		}
@@ -130,7 +120,7 @@ class Init {
             'bigup_contact_form_admin_js',
             'wp_localize_bigup_contact_form_admin',
 			array(
-				'settings_ok' => $this->localize_vars_admin['settings_ok'],
+				'settings_ok' => $this->mail_settings_are_set,
 				'rest_url'    => get_rest_url( null, 'bigup/contact-form/v1/submit' ),
 				'rest_nonce'  => wp_create_nonce( 'wp_rest' ),
 			),

@@ -1,6 +1,6 @@
 {
 	"name": "bigup-contact-form",
-	"version": "0.6.5",
+	"version": "0.6.6",
 	"dependencies": {
 		"@wordpress/block-editor": "^12.10.0",
 		"@wordpress/blocks": "^12.19.0",

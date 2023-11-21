@@ -68,10 +68,11 @@ class Send_Local {
 		extract( $this->settings );
         extract( $form_data[ 'fields' ] );
 
-        // Meta variables
-        $site_url  = get_bloginfo( 'url' );
-		$site_name = get_bloginfo( 'name' );
-        $from_name = ( $site_name ) ? $site_name : 'Bigup Contact Form';
+        $site_url  = html_entity_decode( get_bloginfo( 'url' ) );
+		$domain    = parse_url( $site_url, PHP_URL_HOST );
+		$site_name = html_entity_decode( get_bloginfo( 'name' ) );
+		$from_name = $site_name ? $site_name : 'Bigup Contact Form';
+		$subject   = 'New website message from ' . $domain;
 
 // Build plaintext email body
 $plaintext = <<<PLAIN
@@ -142,10 +143,13 @@ HTML;
             $mail->addReplyTo( $email, $name );
 
             // Content.
-            $mail->Subject = 'New website message from ' . $site_url;
-            $mail->Body    = $html;
-            $mail->AltBody = $plaintext_cleaned;
-        
+			$mail->isHTML(true);
+			$mail->CharSet = "UTF-8";
+            $mail->Subject = $subject;
+			$mail->Body    = $html;
+			$mail->AltBody = $plaintext_cleaned;
+
+
 			// File attachments.
 			if ( array_key_exists( 'files', $form_data ) ) {
 				foreach ( $form_data[ 'files' ] as $file ) {
