@@ -20,20 +20,22 @@ use WP_Widget;
 
 class Widget extends WP_Widget {
 
+	// Store widget options.
+	private $bigup_widget_options;
+
 
     /**
-     * Construct the contact form widget.
+     * Construct the widget.
      */
     public function __construct() {
-
-        $widget_options = array (
+        $this->bigup_widget_options = array (
             'classname' => 'bigup_contact_form',
             'description' => 'An SMTP contact form.'
         );
-        parent::__construct(
-			'bigup_contact_form',		/* Base ID */
-			'Bigup Web: Contact Form',	/* widget name as it appears in widget picker */
-			$widget_options
+		parent::__construct(
+			'bigup_contact_form',	   /* Base ID */
+			'Bigup Web: Contact Form', /* widget name as it appears in widget picker */
+			$this->widget_options
 		);
     }
 
@@ -67,8 +69,8 @@ class Widget extends WP_Widget {
     public function widget( $args, $instance ) {
 
         //enqueue contact form and styles
-        wp_enqueue_script('bigup_contact_form_js');
-        wp_enqueue_style('bigup_contact_form_css');
+        wp_enqueue_script('bigup_contact_form_public_js');
+        wp_enqueue_style('bigup_contact_form_public_css');
 
         echo $args[ 'before_widget' ];
 		//get the form markup built with the passed vars.
@@ -81,7 +83,7 @@ class Widget extends WP_Widget {
 		echo $form;
         echo $args[ 'after_widget' ];
 
-    }//function widget() end
+    }
 
 
     /**
@@ -93,5 +95,4 @@ class Widget extends WP_Widget {
         $instance[ 'message' ] = strip_tags( $new_instance[ 'message' ] );
         return $instance;
     }
-
-} // Class Widget end
+} 

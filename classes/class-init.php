@@ -25,21 +25,75 @@ use function is_admin;
 
 class Init {
 
+	// Store view (admin || notAdmin).
+	private $view;
+
+	// Store localization vars for frontend js.
+	private $localize_vars_frontend;
+
+	// Store localization vars for admin js.
+	private $localize_vars_admin;
+
     /**
-     * Initialise all dependencies for the plugin.
+     * Setup the class.
      */
     public function __construct() {
-		if ( is_admin() ){
+		$this->view          = ( is_admin() ) ? 'admin' : 'notAdmin';
+		$this->localize_vars_frontend = array(
+			'rest_url'    => 'bigup/contact-form/v1/submit',
+			'rest_nonce'  => 'wp_rest',
+		);
+
+		// Check if settings have been configured.
+		$settings = get_option( 'bigup_contact_form_settings' );
+		$required_smtp = array(
+			'username',
+			'password',
+			'host',
+			'port',
+		);
+		$required_headers = array(
+			'to_email',
+			'from_email'
+		);
+		$smtp_ok               = $this->are_all_set( $settings, $required_smtp );
+		$headers_ok            = $this->are_all_set( $settings, $required_headers );
+		$local_mailer_selected = ( isset( $settings['use_local_mail_server'] ) && true === $settings['use_local_mail_server'] );
+		$this->localize_vars_admin = array(
+			'settings_ok' => ( $smtp_ok && $headers_ok ) ?? ( $local_mailer_selected && $headers_ok ),
+		);
+    }
+
+
+	/**
+     * Check all test items exist as populated keys in data.
+     */
+    public function are_all_set( $data, $testItems ) {
+		$all_set = true;
+		foreach( $testItems as $item ) {
+			if ( ! isset( $data[ $item ] ) ) {
+				$all_set = false;
+			}
+		}
+		return $all_set;
+	}
+
+
+	/**
+     * Setup the plugin.
+     */
+    public function setup() {
+		if ( $this->view === 'admin' ) {
 			new Admin_Settings();
 		}
-		add_action( 'init', [ new Store_Submissions, 'create_cpt' ] );
-        add_action( 'rest_api_init', [ $this, 'register_rest_api_routes' ] );
-        add_action( 'wp_enqueue_scripts', [ $this, 'register_scripts_and_styles' ] );
-		add_action( 'admin_enqueue_scripts', [ $this, 'register_admin_scripts_and_styles' ] );
-        add_shortcode( 'bigup_contact_form', [ new Shortcode, 'display_shortcode' ] );
+		add_action( 'init', [ new Store_Submissions, 'create_cpt' ], 10, 0 );
+        add_action( 'rest_api_init', [ $this, 'register_rest_api_routes' ], 10, 0 );
+        add_action( 'wp_enqueue_scripts', [ $this, 'frontend_scripts_and_styles' ], 10, 0 );
+		add_action( 'admin_enqueue_scripts', [ $this, 'admin_scripts_and_styles' ], 10, 0 );
+        add_shortcode( 'bigup_contact_form', [ new Shortcode, 'display_shortcode' ], 10, 0 );
 		add_action('widgets_init', function() {
-			return register_widget(new Widget);
-		} );
+			return register_widget( new Widget );
+		}, 10, 0 );
     }
 
 
@@ -52,17 +106,16 @@ class Init {
      * WARNING - extensionless php may break form submission
      * if api endpoint url is not adjusted to match.
      */
-    public function register_scripts_and_styles() {
-        wp_register_style( 'bigup_contact_form_css', plugins_url ( 'build/css/form.css', __DIR__ ), array(), '0.1', 'all' );
-        wp_register_script ( 'bigup_contact_form_js', plugins_url ( 'build/js/contact-form.js', __DIR__ ), array(), '0.5', false );
+    public function frontend_scripts_and_styles() {
+        wp_register_style( 'bigup_contact_form_public_css', plugins_url ( 'build/css/bigup-contact-form-public.css', __DIR__ ), array(), '0.2', 'all' );
+        wp_register_script ( 'bigup_contact_form_public_js', plugins_url ( 'build/js/bigup-contact-form-public.js', __DIR__ ), array(), '0.6', false );
         wp_localize_script(
-            'bigup_contact_form_js',
-            'wp_localize_bigup_contact_form_vars',
-            array(
-                'rest_url'    => get_rest_url( null, 'bigup/contact-form/v1/submit' ),
-                'rest_nonce'  => wp_create_nonce( 'wp_rest' ),
-                'admin_email' => get_bloginfo( 'admin_email' )
-            )
+            'bigup_contact_form_public_js',
+            'wp_localize_bigup_contact_form_frontend',
+			array(
+				'rest_url'   => get_rest_url( null, 'bigup/contact-form/v1/submit' ),
+				'rest_nonce' => wp_create_nonce( 'wp_rest' ),
+			),
         );
     }
 
@@ -70,7 +123,18 @@ class Init {
 	/**
 	 * Register admin scripts and styles.
 	 */
-	public function register_admin_scripts_and_styles() {
+	public function admin_scripts_and_styles() {
+		wp_register_style( 'bigup_contact_form_admin_css', plugins_url ( 'build/css/bigup-contact-form-admin.css', __DIR__ ), array(), '0.1', 'all' );
+		wp_register_script ( 'bigup_contact_form_admin_js', plugins_url ( 'build/js/bigup-contact-form-admin.js', __DIR__ ), array(), '0.1', false );
+        wp_localize_script(
+            'bigup_contact_form_admin_js',
+            'wp_localize_bigup_contact_form_admin',
+			array(
+				'settings_ok' => $this->localize_vars_admin['settings_ok'],
+				'rest_url'    => get_rest_url( null, 'bigup/contact-form/v1/submit' ),
+				'rest_nonce'  => wp_create_nonce( 'wp_rest' ),
+			),
+        );
 		if ( ! wp_script_is( 'bigup_icons', 'registered' ) ) {
 			wp_register_style( 'bigup_icons', BIGUPCF_URL . 'dashicons/css/bigup-icons.css', array(), filemtime( BIGUPCF_PATH . 'dashicons/css/bigup-icons.css' ), 'all' );
 		}

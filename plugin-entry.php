@@ -36,4 +36,5 @@ require_once( plugin_dir_path( __FILE__ ) . 'classes/autoload.php');
 /**
  * Init class which in turn calls all plugin dependencies.
  */
-new Init();
+$Init = new Init();
+$Init->setup();

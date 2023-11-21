@@ -1,6 +1,9 @@
-/build
-/classes
-/dashicons
-/parts
-/vendor
-plugin-entry.php
+# Consumed by bash script ./bin/dist.sh
+# Be sure to specify project root (./) where applicable otherwise it may break packages!
+#
+./build
+./classes
+./dashicons
+./parts
+./vendor
+./plugin-entry.php

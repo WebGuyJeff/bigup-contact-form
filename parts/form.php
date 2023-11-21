@@ -1,4 +1,5 @@
 <?php
+namespace Bigup\Contact_Form;
 
 /**
  * Bigup Contact Form - HTML Template.
@@ -118,29 +119,35 @@ $decorative_markup = ! str_contains( $classes, 'bigup__form-nostyles' );
 						multiple
 					>
 					<span class="bigup__customFileUpload_icon">
-						<svg xmlns="http://www.w3.org/2000/svg" height="1em"  viewBox="0 0 512 512">
-							<path fill="currentColor" preserveAspectRatio="xMidYMid meet" d="M512 144v288c0 26.5-21.5 48-48 48h-416C21.5 480 0 458.5 0 432v-352C0 53.5 21.5 32 48 32h160l64 64h192C490.5 96 512 117.5 512 144z"/>
-						</svg>
+						<?php echo Util::get_contents( BIGUPCF_PATH . 'assets/svg/file.svg' ) ?>
 					</span>	
 					<?php _e( 'Attach file', 'bigup_contact_form' ); ?>
 				</label>
-				<div class="bigup__customFileUpload_fileList"></div>
+				<div class="bigup__customFileUpload_output"></div>
+				<template>
+					<span class="bigup__customFileUpload_icon">
+						<?php echo Util::get_contents( BIGUPCF_PATH . 'assets/svg/bin.svg' ) ?>
+					</span>	
+				</template>
 			</div>
 
 			<?php
 		}
 		?>
 
-        <button class="button bigup__form_submit" type="submit" value="Submit">
-            <span>
+        <button class="button bigup__form_submit" type="submit" value="Submit" disabled>
+            <span class="bigup__form_submitLabel-ready">
                 <?php _e( 'Submit', 'bigup_contact_form' ); ?>
+            </span>
+			<span class="bigup__form_submitLabel-notReady">
+                <?php _e( '[please wait]', 'bigup_contact_form' ); ?>
             </span>
         </button>
 
     </div>
 
     <footer>
-        <div class="bigup__form_output" style="display:none; opacity:0;"></div>
+        <div class="bigup__alert_output" style="display:none; opacity:0;"></div>
     </footer>
 
 </form>

@@ -13,8 +13,10 @@ module.exports = {
 		// Everything outputs to build/.
 		...getWebpackEntryPoints(),
 		// 'example/output': './path/to/dir/entrypoint.js'
-		'css/form': path.join( __dirname, '/src/css/form.scss' ),
-		'js/contact-form': path.join( __dirname, 'src/js/contact-form.js' ),
+		'css/bigup-contact-form-public': path.join( __dirname, '/src/css/form.scss' ),
+		'css/bigup-contact-form-admin': path.join( __dirname, '/src/css/admin.scss' ),
+		'js/bigup-contact-form-public': path.join( __dirname, '/src/js/view-public.js' ),
+		'js/bigup-contact-form-admin': path.join( __dirname, '/src/js/view-admin.js' ),
 	},
 	plugins: [
 		...wordpressConfig.plugins,

@@ -23,8 +23,8 @@ class Shortcode {
     public static function display_shortcode( $attributes= array() ) {
 
         //enqueue contact form and styles
-        wp_enqueue_script('bigup_contact_form_js');
-        wp_enqueue_style('bigup_contact_form_css');
+        wp_enqueue_script('bigup_contact_form_public_js');
+        wp_enqueue_style('bigup_contact_form_public_css');
 
         if ( ! isset( $attributes[ 'title' ] ) ) {
             $attributes[ 'title' ] = 'Contact Form';

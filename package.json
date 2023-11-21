@@ -13,7 +13,7 @@
 	"scripts": {
 		"build": "webpack --mode production",
 		"dev": "webpack --watch --mode development",
-		"dist": "FOR SOME REASON IS BREAKING CONTACT FORM PLUGIN bash ./bin/dist.sh",
+		"dist": "bash ./bin/dist.sh",
 		"build:plugin": "wp-scripts build",
 		"check-engines": "wp-scripts check-engines",
 		"check-licenses": "wp-scripts check-licenses",

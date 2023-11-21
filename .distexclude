@@ -1,6 +1,9 @@
-src
-dist
-node_modules
-package*
-webpack*
-.*
+# Consumed by bash script ./bin/dist.sh
+# Be sure to specify project root (./) where applicable otherwise it may break packages!
+#
+./src
+./dist
+./node_modules
+./package*
+./webpack*
+./.*

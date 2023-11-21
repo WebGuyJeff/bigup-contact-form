@@ -98,6 +98,10 @@ class Admin_Settings {
      * Create Contact Form Settings Page
      */
     public function create_settings_page() {
+
+		// Enqueue admin assets.
+        wp_enqueue_script('bigup_contact_form_admin_js');
+        wp_enqueue_style('bigup_contact_form_admin_css');
     	?>
 
 		<div class="wrap">
@@ -157,7 +161,7 @@ class Admin_Settings {
 
         // SMTP Account.
         $section = 'section_smtp';
-        add_settings_section( $section, 'SMTP Account', null, $page );
+        add_settings_section( $section, 'SMTP Account', array( $this, 'section_smtp_callback' ), $page );
             add_settings_field( 'username', 'Username', [ &$this, 'echo_field_username' ], $page, $section );
             add_settings_field( 'password', 'Password', [ &$this, 'echo_field_password' ], $page, $section );
             add_settings_field( 'host', 'Host', [ &$this, 'echo_field_host' ], $page, $section );
@@ -187,6 +191,28 @@ class Admin_Settings {
         add_settings_section( $section, 'Fields', [ &$this, 'echo_intro_section_fields' ], $page );
 			add_settings_field( 'files', 'Files', [ &$this, 'echo_field_files' ], $page, $section );
     }
+
+
+    /**
+     * Section Callback - SMTP Account Settings
+	 * 
+	 * Output a button which will trigger an email send test.
+     */
+    public function section_smtp_callback() {
+        ?>
+			<div class="bigup__smtpTest_wrapper">
+				<button class="button button-secondary bigup__form_submit bigup__smtpTest_button" type="submit" disabled>
+					<span class="bigup__form_submitLabel-ready">
+						<?php _e( 'Send test email', 'bigup_contact_form' ); ?>
+					</span>
+					<span class="bigup__form_submitLabel-notReady">
+						<?php _e( 'Send test email [Check your configuration]', 'bigup_contact_form' ); ?>
+					</span>
+				</button>
+				<div class="bigup__alert_output" style="display:none; opacity:0;"></div>
+			</div>
+		<?php
+	}
 
 
     /**
