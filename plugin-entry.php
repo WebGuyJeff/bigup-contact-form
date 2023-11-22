@@ -17,24 +17,14 @@ namespace Bigup\Contact_Form;
  * @link https://jeffersonreal.uk
  */
 
-/**
- * Set this plugin's base URL constant for use throughout the plugin.
- * 
- * There is no in-built WP function to get the base URL for a plugin, so this constant allows us to
- * write relative file references, making code portable.
- */
-$url = trailingslashit( plugin_dir_url( __FILE__ ) );
-define( 'BIGUPCF_URL', $url );
-$path = trailingslashit( plugin_dir_path( __FILE__ ) );
-define( 'BIGUPCF_PATH', $path );
+// Set global constants.
+define( 'BIGUPCF_DEBUG', defined( 'WP_DEBUG' ) && WP_DEBUG === true );
+define( 'BIGUPCF_PATH', trailingslashit( __DIR__ ) );
+define( 'BIGUPCF_URL', trailingslashit( get_site_url( null, strstr( __DIR__, '/wp-content/' ) ) ) );
 
-/**
- * Load PHP autoloader to ready the classes.
- */
-require_once( plugin_dir_path( __FILE__ ) . 'classes/autoload.php');
+// Setup PHP namespace.
+require_once BIGUPCF_PATH . 'classes/autoload.php';
 
-/**
- * Init class which in turn calls all plugin dependencies.
- */
+// Setup the plugin.
 $Init = new Init();
 $Init->setup();
