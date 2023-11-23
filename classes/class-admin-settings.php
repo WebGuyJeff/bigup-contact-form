@@ -49,7 +49,7 @@ class Admin_Settings {
 	 */
 	public function __construct() {
 		$this->settings = get_option( 'bigup_contact_form_settings' );
-		add_action( 'bigup_below_parent_settings_page_heading', array( &$this, 'echo_plugin_settings_link' ) );
+		add_action( 'bigup_plugin_settings_dashboard_entry', array( &$this, 'echo_plugin_settings_link' ) );
 		new Admin_Settings_Parent();
 		add_action( 'admin_menu', array( &$this, 'register_admin_menu' ), 99 );
 		add_action( 'admin_init', array( &$this, 'register_settings' ) );
@@ -79,12 +79,9 @@ class Admin_Settings {
 	 */
 	public function echo_plugin_settings_link() {
 		?>
-
 		<a href="/wp-admin/admin.php?page=<?php echo $this->page_slug; ?>">
-			Go to <?php echo $this->admin_label; ?> settings
+			<?php echo $this->admin_label; ?> settings
 		</a>
-		<br>
-
 		<?php
 	}
 
