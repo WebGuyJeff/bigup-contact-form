@@ -32,7 +32,7 @@ rsync -rc --files-from ".distinclude" --exclude-from ".distexclude" "./" "dist/$
 cd dist
 
 # Create a zip file in './dist' from the filtered files in './dist/temp'
-echo "$ZIP_COMMENT" | zip -r -z -9 "./$ZIP_NAME" "./$BUILD_NAME"
+echo "$ZIP_COMMENT" | zip -FS -r -z "./$ZIP_NAME" "./$BUILD_NAME"
 
 rm -r $BUILD_NAME
 
