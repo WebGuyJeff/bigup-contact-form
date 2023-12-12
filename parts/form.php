@@ -32,8 +32,8 @@ $decorative_markup = ! str_contains( $classes, 'bigup__form-nostyles' );
 
     <header>
         <?php
-            $title   = ( ! empty( $title ) ) ? '<h3 id="aria_form-title" class="bigup__form_title">' . $title . '</h3>' . "\n" : '';
-            $message = ( ! empty( $message ) ) ? '<p id="aria_form-desc" class="bigup__form_message">' . $message . '</p>' . "\n" : '';
+            $title   = ( $title ) ? '<h3 id="aria_form-title" class="bigup__form_title">' . $title . '</h3>' . "\n" : '';
+            $message = ( $message ) ? '<p id="aria_form-desc" class="bigup__form_message">' . $message . '</p>' . "\n" : '';
             echo $title . $message;
         ?>
     </header>

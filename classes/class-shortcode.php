@@ -27,11 +27,11 @@ class Shortcode {
         wp_enqueue_style('bigup_contact_form_public_css');
 
         if ( empty( $attributes[ 'title' ] ) ) {
-            $attributes[ 'title' ] = 'Contact Form';
+            $attributes[ 'title' ] = false;
         }
 
         if ( empty( $attributes[ 'message' ] ) ) {
-            $attributes[ 'message' ] = 'Complete this contact form to send a message';
+            $attributes[ 'message' ] = false;
         }
 
 		//get the form markup built with the passed vars.

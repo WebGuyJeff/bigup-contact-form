@@ -45,8 +45,8 @@ class Widget extends WP_Widget {
      */
     public function form( $instance ) {
 
-        $title = ! empty( $instance[ 'title' ] ) ? $instance[ 'title' ] : 'Contact Form';
-        $message = ! empty( $instance['message'] ) ? $instance['message'] : 'Complete this contact form to send me a message';
+        $title = ! empty( $instance[ 'title' ] ) ? $instance[ 'title' ] : false;
+        $message = ! empty( $instance['message'] ) ? $instance['message'] : false;
         ?>
 
         <p>
