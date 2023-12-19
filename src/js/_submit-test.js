@@ -15,7 +15,7 @@ import { alertsShowWaitHide, alertsShow } from './_alert'
  * wp_localize_bigup_contact_form_vars.rest_nonce
  * 
  */
-const wpLocalized = wp_localize_bigup_contact_form_admin
+const wpLocalized = bigupContactFormWpInlinedAdmin
 
 
 /**
@@ -24,8 +24,8 @@ const wpLocalized = wp_localize_bigup_contact_form_admin
  * Backend controller expects values for 'email', 'name' and 'message'.
  */
 const testValues = {
-	'email': 'testemail@fakedomain.test',
-	'name': 'Ima Testname',
+	'email': 'test@email.test',
+	'name': 'Test Email',
 	'message': 'This is a test message. If you receive this, your email settings are OK! 🥳',
 }
 

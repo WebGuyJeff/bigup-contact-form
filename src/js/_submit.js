@@ -17,7 +17,7 @@ import { alertsShowWaitHide, alertsShow } from './_alert'
  * wp_localize_bigup_contact_form_vars.rest_nonce
  * 
  */
-const wpLocalized = wp_localize_bigup_contact_form_frontend
+const wpLocalized = bigupContactFormWpInlinedPublic
 
 
 /**

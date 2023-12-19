@@ -23,7 +23,7 @@ class Admin_Settings {
 	/**
 	 * Settings page slug to add with add_submenu_page().
 	 */
-	private $admin_label = 'Contact Form';
+	private $admin_label = 'Bigup Contact Form';
 
 	/**
 	 * Settings page slug to add with add_submenu_page().

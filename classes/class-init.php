@@ -76,6 +76,7 @@ class Init {
 		if ( $this->view === 'admin' ) {
 			new Admin_Settings();
 		}
+		add_action( 'init', array( new Blocks(), 'register_all' ), 10, 0 );
 		add_action( 'init', [ new Store_Submissions, 'create_cpt' ], 10, 0 );
         add_action( 'rest_api_init', [ $this, 'register_rest_api_routes' ], 10, 0 );
         add_action( 'wp_enqueue_scripts', [ $this, 'frontend_scripts_and_styles' ], 10, 0 );
@@ -97,16 +98,16 @@ class Init {
      * if api endpoint url is not adjusted to match.
      */
     public function frontend_scripts_and_styles() {
-        wp_register_style( 'bigup_contact_form_public_css', plugins_url ( 'build/css/bigup-contact-form-public.css', __DIR__ ), array(), '0.2', 'all' );
-        wp_register_script ( 'bigup_contact_form_public_js', plugins_url ( 'build/js/bigup-contact-form-public.js', __DIR__ ), array(), '0.6', false );
-        wp_localize_script(
-            'bigup_contact_form_public_js',
-            'wp_localize_bigup_contact_form_frontend',
-			array(
+        wp_register_style( 'bigup_contact_form_public_css', BIGUPCF_URL . 'build/css/bigup-contact-form-public.css', array(), filemtime( BIGUPCF_PATH . 'build/css/bigup-contact-form-public.css' ), 'all' );
+        wp_register_script ( 'bigup_contact_form_public_js', BIGUPCF_URL . 'build/js/bigup-contact-form-public.js', array(), filemtime( BIGUPCF_PATH . 'build/js/bigup-contact-form-public.js' ), false );
+		wp_add_inline_script(
+			'bigup_contact_form_public_js',
+			'const bigupContactFormWpInlinedPublic = ' . json_encode( array(
 				'rest_url'   => get_rest_url( null, 'bigup/contact-form/v1/submit' ),
 				'rest_nonce' => wp_create_nonce( 'wp_rest' ),
-			),
-        );
+			) ),
+			'before'
+		);
     }
 
 
@@ -114,17 +115,17 @@ class Init {
 	 * Register admin scripts and styles.
 	 */
 	public function admin_scripts_and_styles() {
-		wp_register_style( 'bigup_contact_form_admin_css', plugins_url ( 'build/css/bigup-contact-form-admin.css', __DIR__ ), array(), '0.1', 'all' );
-		wp_register_script ( 'bigup_contact_form_admin_js', plugins_url ( 'build/js/bigup-contact-form-admin.js', __DIR__ ), array(), '0.1', false );
-        wp_localize_script(
-            'bigup_contact_form_admin_js',
-            'wp_localize_bigup_contact_form_admin',
-			array(
+		wp_register_style( 'bigup_contact_form_admin_css', BIGUPCF_URL . 'build/css/bigup-contact-form-admin.css', array(), filemtime( BIGUPCF_PATH . 'build/css/bigup-contact-form-admin.css' ), 'all' );
+		wp_register_script ( 'bigup_contact_form_admin_js', BIGUPCF_URL . 'build/js/bigup-contact-form-admin.js', array(), filemtime( BIGUPCF_PATH . 'build/js/bigup-contact-form-admin.js' ), false );
+		wp_add_inline_script(
+			'bigup_contact_form_admin_js',
+			'const bigupContactFormWpInlinedAdmin = ' . json_encode( array(
 				'settings_ok' => $this->mail_settings_are_set,
 				'rest_url'    => get_rest_url( null, 'bigup/contact-form/v1/submit' ),
 				'rest_nonce'  => wp_create_nonce( 'wp_rest' ),
-			),
-        );
+			) ),
+			'before'
+		);
 		if ( ! wp_script_is( 'bigup_icons', 'registered' ) ) {
 			wp_register_style( 'bigup_icons', BIGUPCF_URL . 'dashicons/css/bigup-icons.css', array(), filemtime( BIGUPCF_PATH . 'dashicons/css/bigup-icons.css' ), 'all' );
 		}

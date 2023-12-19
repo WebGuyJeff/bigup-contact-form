@@ -164,9 +164,10 @@ class Get_Settings {
 				return false;
 			}
 		}
+		
 		//settings ok
 		return true;
 	}
 
 
-}//Class end
+}

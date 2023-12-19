@@ -1,0 +1,15 @@
+{
+	"apiVersion": 2,
+	"name": "bigup-contact-form/form",
+	"version": "0.0.1",
+	"title": "Form",
+	"category": "widgets",
+	"icon": "forms",
+	"description": "Build any form type with customisable fields",
+	"keywords": [ "form", "contact", "booking", "input" ],
+	"textdomain": "bigup-contact-form",
+	"editorScript": "file:./form.js",
+	"viewScript": "file:./form-view.js",
+	"editorStyle": "file:./form-editor.css",
+	"style": "file:./form.css"
+}
