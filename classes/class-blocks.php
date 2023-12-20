@@ -44,6 +44,18 @@ class Blocks {
 
 
 	/**
+	 * Renders a block on the server.
+	 * 
+ 	 * @param string $content The saved content.
+	 * 
+	 * @return string The content of the block being rendered.
+	 */
+	function render_block_serverside( $attributes, $content ) {
+		return $content;
+	}
+	
+
+	/**
 	 * Register all blocks.
 	 */
 	public function register_all() {
@@ -51,7 +63,11 @@ class Blocks {
 			return;
 		}
 		foreach( $this->names as $name ) {
-			$result = register_block_type_from_metadata( self::BIGUPCF_BLOCKS_PATH . $name );
+			$result = register_block_type_from_metadata( self::BIGUPCF_BLOCKS_PATH . $name,
+			array(
+				'render_callback' => 'render_block_serverside',
+			)
+		);
 
 			if ( false === $result ) {
 				error_log( "ERROR: Block registration failed for '{$name}'" );

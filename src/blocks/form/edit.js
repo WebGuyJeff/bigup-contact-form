@@ -1,5 +1,5 @@
 import { __ } from '@wordpress/i18n'
-import { useBlockProps } from '@wordpress/block-editor'
+import { InnerBlocks, useBlockProps } from '@wordpress/block-editor'
 
 /**
  * The edit function describes the structure of your block in the context of the
@@ -25,7 +25,7 @@ const noStyles = false, // Bool - remove all styles on true.
 	} )
 
 
-	const fancyWrap = () => {
+	const FancyWrap = () => {
 		return (
 			<div class='bigup__form_inputWrap'>
 				<InnerBlocks/>
@@ -34,8 +34,7 @@ const noStyles = false, // Bool - remove all styles on true.
 			</div>
 		)
 	}
-
-	const inputName = () => {
+	const InputName = () => {
 		return (
 			<input
 				className='bigup__form_input'
@@ -51,7 +50,7 @@ const noStyles = false, // Bool - remove all styles on true.
 		)
 	}
 
-	const inputEmail = () => {
+	const InputEmail = () => {
 		return (
 			<input
 				className='bigup__form_input'
@@ -65,7 +64,7 @@ const noStyles = false, // Bool - remove all styles on true.
 		)
 	}
 
-	const inputMessage = () => {
+	const InputMessage = () => {
 		return (
 			<textarea
 				className='bigup__form_input'
@@ -77,11 +76,13 @@ const noStyles = false, // Bool - remove all styles on true.
 				placeholder='Type your message here...'
 				onfocus='this.placeholder=""'
 				onblur='this.placeholder="Type your message..."'
-			></textarea>
+			>
+				<InnerBlocks/>
+			</textarea>
 		)
 	}
 
-	const inputFiles = () => {
+	const InputFiles = () => {
 		return (
 			<div className='bigup__customFileUpload'>
 				<label className='bigup__customFileUpload_label'>
@@ -129,25 +130,26 @@ const noStyles = false, // Bool - remove all styles on true.
 					autocomplete='off'
 				/>
 
+				<InputName />
 
 				{ noStyles ?
-					<inputText /> :
-					<fancyWrap><inputText /></fancyWrap>
+					<InputName /> :
+					<FancyWrap><InputName /></FancyWrap>
 				}
 
 				{ noStyles ?
-					<inputEmail /> :
-					<fancyWrap><inputEmail /></fancyWrap>
+					<InputEmail /> :
+					<FancyWrap><InputEmail /></FancyWrap>
 				}
 
 				{ noStyles ?
-					<inputMessage /> :
-					<fancyWrap><inputMessage /></fancyWrap>
+					<InputMessage /> :
+					<FancyWrap><InputMessage /></FancyWrap>
 				}
 
 				{ noStyles ?
-					<inputFiles /> :
-					<fancyWrap><inputFiles /></fancyWrap>
+					<InputFiles /> :
+					<FancyWrap><InputFiles /></FancyWrap>
 				}
 
 				<button className='button bigup__form_submit' type='submit' value='Submit' disabled>
@@ -162,7 +164,7 @@ const noStyles = false, // Bool - remove all styles on true.
 			</div>
 
 			<footer>
-				<div className='bigup__alert_output' style='display:none; opacity:0;'></div>
+				<div className='bigup__alert_output' style={{ display: 'none', opacity: 0 }}></div>
 			</footer>
 
 		</form>
