@@ -76,7 +76,6 @@ class Init {
 		if ( $this->view === 'admin' ) {
 			new Admin_Settings();
 		}
-		add_action( 'init', array( new Blocks(), 'register_all' ), 10, 0 );
 		add_action( 'init', [ new Store_Submissions, 'create_cpt' ], 10, 0 );
         add_action( 'rest_api_init', [ $this, 'register_rest_api_routes' ], 10, 0 );
         add_action( 'wp_enqueue_scripts', [ $this, 'frontend_scripts_and_styles' ], 10, 0 );
